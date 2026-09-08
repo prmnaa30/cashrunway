@@ -18,7 +18,8 @@ export interface CalculateSafeDailySpendOptions {
   recurringBills: EngineRecurringBill[];
   transactions: EngineTransaction[];
   settings: EngineSettings;
-  todayDate: string; // YYYY-MM-DD
+  /** Date in YYYY-MM-DD format */
+  todayDate: string;
 }
 
 /**

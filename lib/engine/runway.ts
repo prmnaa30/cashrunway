@@ -12,8 +12,10 @@ export interface CalculateDiscreteRunwayOptions {
   vaultBalance?: number;
   dailyBurnRate: number;
   recurringBills: EngineRecurringBill[];
-  todayDate: string; // YYYY-MM-DD
-  maxHorizonDays?: number; // Default: 1095 (3 years)
+  /** Date in YYYY-MM-DD format */
+  todayDate: string;
+  /** Maximum simulation horizon in days (default: 1095) */
+  maxHorizonDays?: number;
 }
 
 /**

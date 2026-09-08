@@ -59,6 +59,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+        headerShown: false,
         tabBarActiveTintColor: colors.tint,
         tabBarInactiveTintColor: colors.tabIconDefault,
         tabBarStyle: {
@@ -69,17 +70,6 @@ export default function TabLayout() {
           height: tabHeight,
           paddingTop: 8,
           paddingBottom: bottomInset > 0 ? bottomInset + 2 : 10,
-        },
-        headerStyle: {
-          backgroundColor: colors.surface,
-          elevation: 0,
-          shadowOpacity: 0,
-          borderBottomWidth: 1,
-          borderBottomColor: colors.border,
-        },
-        headerTintColor: colors.text,
-        headerTitleStyle: {
-          fontWeight: '700',
         },
       }}>
 

@@ -1,0 +1,343 @@
+import { create } from 'zustand';
+import {
+  Wallet,
+  Category,
+  RecurringBill,
+  Settings,
+  TransactionWithDetails,
+  getWallets,
+  getCategories,
+  getRecurringBills,
+  getTransactionsWithDetails,
+  getSettings,
+  deleteTransaction as deleteTxDb,
+  insertTransaction,
+  updateWallet,
+  seedDemoTransactions as seedDemoDb,
+  ensureDatabaseInitialized,
+} from '@/lib/db';
+import {
+  calculateRollingBurnRate,
+  calculateDiscreteRunway,
+  calculateSafeDailySpend,
+  calculateVaultAccrual,
+  formatLocalDate,
+  BurnRateResult,
+  RunwayResult,
+  SafeSpendResult,
+  EngineWallet,
+  EngineTransaction,
+  EngineRecurringBill,
+  EngineSettings,
+  VaultAccrualResult,
+} from '@/lib/engine';
+
+export interface VaultYieldStats {
+  estimatedDailyGross: number;
+  estimatedDailyNet: number;
+  projectedMonthlyYield: number;
+  projectedAnnualYield: number;
+  totalPendingInterest: number;
+  pendingAccruals: VaultAccrualResult[];
+}
+
+export interface LoadDataOptions {
+  force?: boolean;
+  showLoading?: boolean;
+}
+
+export interface FinanceState {
+  wallets: Wallet[];
+  transactions: TransactionWithDetails[];
+  categories: Category[];
+  recurringBills: RecurringBill[];
+  settings: Settings | null;
+  isLoading: boolean;
+  isInitialized: boolean;
+
+  operationalBalance: number;
+  vaultBalance: number;
+  totalBalance: number;
+
+  burnRate: BurnRateResult;
+  runway: RunwayResult;
+  safeSpend: SafeSpendResult;
+  vaultStats: VaultYieldStats;
+
+  loadAllData: (options?: LoadDataOptions) => Promise<void>;
+  deleteTx: (id: string) => Promise<void>;
+  applyVaultAccrual: () => Promise<void>;
+  seedDemoData: () => Promise<void>;
+}
+
+const DEFAULT_BURN_RATE: BurnRateResult = {
+  dailyBurnRate: 50000,
+  effectiveDays: 14,
+  isColdStart: true,
+  totalVariableExpense: 0,
+};
+
+const DEFAULT_RUNWAY: RunwayResult = {
+  operationalRunwayDays: 0,
+  operationalProjectedDate: null,
+  emergencyRunwayDays: 0,
+  emergencyProjectedDate: null,
+  isDepleted: true,
+  isInfinite: false,
+  status: 'critical',
+};
+
+const DEFAULT_SAFE_SPEND: SafeSpendResult = {
+  targetDate: '',
+  daysRemaining: 1,
+  unpaidBillsTotal: 0,
+  baseDailyAllowance: 0,
+  todaySpent: 0,
+  remainingDailyAllowance: 0,
+  isOverspent: false,
+};
+
+const DEFAULT_VAULT_STATS: VaultYieldStats = {
+  estimatedDailyGross: 0,
+  estimatedDailyNet: 0,
+  projectedMonthlyYield: 0,
+  projectedAnnualYield: 0,
+  totalPendingInterest: 0,
+  pendingAccruals: [],
+};
+
+export const useFinanceStore = create<FinanceState>((set, get) => ({
+  wallets: [],
+  transactions: [],
+  categories: [],
+  recurringBills: [],
+  settings: null,
+  isLoading: false,
+  isInitialized: false,
+
+  operationalBalance: 0,
+  vaultBalance: 0,
+  totalBalance: 0,
+
+  burnRate: DEFAULT_BURN_RATE,
+  runway: DEFAULT_RUNWAY,
+  safeSpend: DEFAULT_SAFE_SPEND,
+  vaultStats: DEFAULT_VAULT_STATS,
+
+  loadAllData: async (options?: LoadDataOptions) => {
+    const { force = false, showLoading = false } = options ?? {};
+    const state = get();
+
+    if (state.isInitialized && !force) {
+      return;
+    }
+
+    try {
+      if (showLoading || !state.isInitialized) {
+        set({ isLoading: true });
+      }
+      await ensureDatabaseInitialized();
+
+      const [wallets, transactions, categories, recurringBills, settings] = await Promise.all([
+        getWallets(),
+        getTransactionsWithDetails(100),
+        getCategories(),
+        getRecurringBills(),
+        getSettings(),
+      ]);
+
+      const operationalBalance = wallets
+        .filter((w) => w.isVault === 0)
+        .reduce((sum, w) => sum + (w.balance || 0), 0);
+
+      const vaultBalance = wallets
+        .filter((w) => w.isVault === 1)
+        .reduce((sum, w) => sum + (w.balance || 0), 0);
+
+      const totalBalance = operationalBalance + vaultBalance;
+
+      const todayDate = formatLocalDate(new Date());
+
+      const engineWallets: EngineWallet[] = wallets.map((w) => ({
+        id: w.id,
+        name: w.name,
+        balance: w.balance || 0,
+        isVault: Boolean(w.isVault),
+        isInterestEnabled: Boolean(w.isInterestEnabled),
+        interestRate: w.interestRate || 0,
+        interestPeriod: (w.interestPeriod as any) || 'none',
+        autoTax: Boolean(w.autoTax),
+        lastAccruedDate: w.lastAccruedDate,
+      }));
+
+      const engineTxs: EngineTransaction[] = transactions.map((tx) => ({
+        id: tx.id,
+        type: tx.type,
+        amount: tx.amount,
+        fee: tx.fee || 0,
+        walletId: tx.walletId,
+        targetWalletId: tx.targetWalletId,
+        categoryId: tx.categoryId,
+        isCategoryFixed: Boolean(tx.category?.isFixed),
+        isOutlier: Boolean(tx.isOutlier),
+        date: tx.date,
+        localDate: tx.localDate,
+      }));
+
+      const engineBills: EngineRecurringBill[] = recurringBills.map((b) => ({
+        id: b.id,
+        name: b.name,
+        amount: b.amount,
+        dueDay: b.dueDay,
+        walletId: b.walletId,
+        lastPaidPeriod: b.lastPaidPeriod,
+        isActive: Boolean(b.isActive),
+      }));
+
+      const engineSettings: EngineSettings = {
+        paydayDay: settings?.paydayDay ?? 25,
+        fallbackDailyBurn: settings?.fallbackDailyBurn ?? 50000,
+        burnWindowDays: settings?.burnWindowDays ?? 14,
+        targetDate: settings?.targetDate ?? null,
+        dualRunwayMode: Boolean(settings?.dualRunwayMode ?? 1),
+      };
+
+      const burnRate = calculateRollingBurnRate({
+        transactions: engineTxs,
+        burnWindowDays: engineSettings.burnWindowDays,
+        fallbackDailyBurn: engineSettings.fallbackDailyBurn,
+        todayDate,
+      });
+
+      const runway = calculateDiscreteRunway({
+        operationalBalance,
+        vaultBalance,
+        dailyBurnRate: burnRate.dailyBurnRate,
+        recurringBills: engineBills,
+        todayDate,
+      });
+
+      const safeSpend = calculateSafeDailySpend({
+        operationalBalance,
+        recurringBills: engineBills,
+        transactions: engineTxs,
+        settings: engineSettings,
+        todayDate,
+      });
+
+      let estimatedDailyGross = 0;
+      let estimatedDailyNet = 0;
+      const pendingAccruals: VaultAccrualResult[] = [];
+
+      for (const w of engineWallets) {
+        if (w.isVault && w.isInterestEnabled && w.interestRate > 0 && w.balance > 0) {
+          const gross = (w.balance * w.interestRate) / 365;
+          const isTaxable = w.balance > 7500000 && w.autoTax;
+          const net = isTaxable ? gross * 0.8 : gross;
+          estimatedDailyGross += gross;
+          estimatedDailyNet += net;
+
+          if (w.lastAccruedDate) {
+            const accrual = calculateVaultAccrual({ wallet: w, todayDate });
+            if (accrual.missedDays > 0 && accrual.totalNetInterest > 0) {
+              pendingAccruals.push(accrual);
+            }
+          }
+        }
+      }
+
+      const totalPendingInterest = pendingAccruals.reduce(
+        (sum, a) => sum + a.totalNetInterest,
+        0
+      );
+
+      const vaultStats: VaultYieldStats = {
+        estimatedDailyGross: Math.round(estimatedDailyGross * 100) / 100,
+        estimatedDailyNet: Math.round(estimatedDailyNet * 100) / 100,
+        projectedMonthlyYield: Math.round(estimatedDailyNet * 30),
+        projectedAnnualYield: Math.round(estimatedDailyNet * 365),
+        totalPendingInterest: Math.round(totalPendingInterest * 100) / 100,
+        pendingAccruals,
+      };
+
+      set({
+        wallets,
+        transactions,
+        categories,
+        recurringBills,
+        settings,
+        operationalBalance,
+        vaultBalance,
+        totalBalance,
+        burnRate,
+        runway,
+        safeSpend,
+        vaultStats,
+        isLoading: false,
+        isInitialized: true,
+      });
+    } catch (error) {
+      console.error('Failed to load finance data:', error);
+      set({ isLoading: false });
+    }
+  },
+
+  deleteTx: async (id: string) => {
+    try {
+      set({ isLoading: true });
+      await deleteTxDb(id);
+      await get().loadAllData({ force: true, showLoading: false });
+    } catch (error) {
+      console.error('Failed to delete transaction:', error);
+      set({ isLoading: false });
+    }
+  },
+
+  applyVaultAccrual: async () => {
+    try {
+      const { vaultStats } = get();
+      if (!vaultStats.pendingAccruals || vaultStats.pendingAccruals.length === 0) {
+        return;
+      }
+
+      set({ isLoading: true });
+      for (const accrual of vaultStats.pendingAccruals) {
+        if (accrual.suggestedTransaction) {
+          await insertTransaction({
+            type: accrual.suggestedTransaction.type,
+            amount: accrual.suggestedTransaction.amount,
+            fee: 0,
+            walletId: accrual.suggestedTransaction.walletId,
+            targetWalletId: null,
+            categoryId: 'cat_interest',
+            recurringBillId: null,
+            isOutlier: 0,
+            date: accrual.suggestedTransaction.date,
+            localDate: accrual.suggestedTransaction.localDate,
+            note: accrual.suggestedTransaction.note,
+          });
+
+          await updateWallet(accrual.walletId, {
+            lastAccruedDate: accrual.newLastAccruedDate,
+          });
+        }
+      }
+
+      await get().loadAllData({ force: true, showLoading: false });
+    } catch (error) {
+      console.error('Failed to apply vault accrual:', error);
+      set({ isLoading: false });
+    }
+  },
+
+  seedDemoData: async () => {
+    try {
+      set({ isLoading: true });
+      await seedDemoDb();
+      await get().loadAllData({ force: true, showLoading: false });
+    } catch (error) {
+      console.error('Failed to seed demo data:', error);
+      set({ isLoading: false });
+    }
+  },
+}));

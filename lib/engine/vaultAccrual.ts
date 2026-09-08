@@ -3,7 +3,8 @@ import { parseLocalDate, diffDays } from './dateUtils';
 
 export interface CalculateVaultAccrualOptions {
   wallet: EngineWallet;
-  todayDate: string; // YYYY-MM-DD
+  /** Date in YYYY-MM-DD format */
+  todayDate: string;
 }
 
 /**
