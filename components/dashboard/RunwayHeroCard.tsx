@@ -3,8 +3,8 @@ import { View, Text, Pressable } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
-  withSpring,
   withTiming,
+  Easing,
   FadeIn,
   FadeOut,
   LinearTransition,
@@ -41,9 +41,10 @@ export function RunwayHeroCard({
 
   const handleSwitchMode = (mode: 'operational' | 'total') => {
     setRunwayMode(mode);
-    tabAnim.value = withSpring(mode === 'operational' ? 0 : 1, {
-      damping: 55,
-      stiffness: 400,
+    // Smooth sliding pill indicator without bouncy jelly overshoot
+    tabAnim.value = withTiming(mode === 'operational' ? 0 : 1, {
+      duration: 200,
+      easing: Easing.bezier(0.16, 1, 0.3, 1),
     });
   };
 

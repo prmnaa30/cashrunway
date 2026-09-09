@@ -261,7 +261,7 @@ function CalculatorKeypadComponent({
         />
       </View>
 
-      {/* Row 4: 000, 0, =, Simpan */}
+      {/* Row 4: 000, 0, =, Save */}
       <View className="flex-row w-full gap-2">
         <KeyDigit
           keyId="000"

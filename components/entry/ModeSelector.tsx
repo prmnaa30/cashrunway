@@ -11,7 +11,7 @@ export interface ModeSelectorProps {
 }
 
 /**
- * 3-mode segmented tab selector for Quick Entry: Pengeluaran, Pemasukan, and Transfer.
+ * 3-mode segmented tab selector for Quick Entry: Expense, Income, and Transfer.
  */
 function ModeSelectorComponent({
   mode,
