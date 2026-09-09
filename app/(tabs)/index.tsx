@@ -28,6 +28,7 @@ export default function DashboardScreen() {
   const {
     operationalBalance,
     totalBalance,
+    wallets,
     burnRate,
     runway,
     safeSpend,
@@ -134,24 +135,30 @@ export default function DashboardScreen() {
         </View>
       )}
 
+      {/* Runway Hero Card */}
       <RunwayHeroCard
         runway={runway}
         burnRate={burnRate}
         operationalBalance={operationalBalance}
+        totalBalance={totalBalance}
         isPrivacyMode={isPrivacyMode}
         statusColor={statusColor}
         colorScheme={colorScheme}
       />
 
+      {/* Safe Spend Card */}
       <SafeSpendCard
         safeSpend={safeSpend}
+        operationalBalance={operationalBalance}
         isPrivacyMode={isPrivacyMode}
         colorScheme={colorScheme}
       />
 
+      {/* Liquidity Breakdown Bar */}
       <LiquidityBar
         totalBalance={totalBalance}
         operationalBalance={operationalBalance}
+        wallets={wallets}
         isPrivacyMode={isPrivacyMode}
         colorScheme={colorScheme}
       />

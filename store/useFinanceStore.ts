@@ -64,7 +64,24 @@ export interface FinanceState {
   safeSpend: SafeSpendResult;
   vaultStats: VaultYieldStats;
 
+  isQuickEntryOpen: boolean;
+  quickEntryType: 'expense' | 'income' | 'transfer';
+  openQuickEntry: (type?: 'expense' | 'income' | 'transfer') => void;
+  closeQuickEntry: () => void;
+
   loadAllData: (options?: LoadDataOptions) => Promise<void>;
+  addTransaction: (tx: {
+    type: 'expense' | 'income' | 'transfer';
+    amount: number;
+    fee?: number;
+    walletId: string;
+    targetWalletId?: string | null;
+    categoryId?: string | null;
+    isOutlier?: number;
+    date: string;
+    localDate: string;
+    note?: string | null;
+  }) => Promise<string>;
   deleteTx: (id: string) => Promise<void>;
   applyVaultAccrual: () => Promise<void>;
   seedDemoData: () => Promise<void>;
@@ -123,6 +140,23 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
   runway: DEFAULT_RUNWAY,
   safeSpend: DEFAULT_SAFE_SPEND,
   vaultStats: DEFAULT_VAULT_STATS,
+
+  isQuickEntryOpen: false,
+  quickEntryType: 'expense',
+  openQuickEntry: (type = 'expense') => {
+    try {
+      const { useQuickEntryStore } = require('@/store/useQuickEntryStore');
+      useQuickEntryStore.getState().open(type);
+    } catch (_) {}
+    set({ isQuickEntryOpen: true, quickEntryType: type });
+  },
+  closeQuickEntry: () => {
+    try {
+      const { useQuickEntryStore } = require('@/store/useQuickEntryStore');
+      useQuickEntryStore.getState().close();
+    } catch (_) {}
+    set({ isQuickEntryOpen: false });
+  },
 
   loadAllData: async (options?: LoadDataOptions) => {
     const { force = false, showLoading = false } = options ?? {};
@@ -279,6 +313,32 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     } catch (error) {
       console.error('Failed to load finance data:', error);
       set({ isLoading: false });
+    }
+  },
+
+  addTransaction: async (tx) => {
+    try {
+      set({ isLoading: true });
+      const id = await insertTransaction({
+        type: tx.type,
+        amount: tx.amount,
+        fee: tx.fee ?? 0,
+        walletId: tx.walletId,
+        targetWalletId: tx.targetWalletId ?? null,
+        categoryId: tx.categoryId ?? null,
+        recurringBillId: null,
+        isOutlier: tx.isOutlier ?? 0,
+        date: tx.date,
+        localDate: tx.localDate,
+        note: tx.note ?? null,
+      });
+
+      await get().loadAllData({ force: true, showLoading: false });
+      return id;
+    } catch (error) {
+      console.error('Failed to add transaction:', error);
+      set({ isLoading: false });
+      throw error;
     }
   },
 

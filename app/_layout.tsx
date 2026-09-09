@@ -1,3 +1,4 @@
+import 'react-native-gesture-handler';
 import "../global.css";
 import { useFonts } from 'expo-font';
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
@@ -6,6 +7,8 @@ import { useEffect } from 'react';
 import 'react-native-reanimated';
 import { SQLiteProvider } from "expo-sqlite";
 
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { useColorScheme } from '@/components/useColorScheme';
 import { DATABASE_NAME, initDatabase } from '@/lib/db';
 
@@ -37,9 +40,13 @@ export default function RootLayout() {
   }
 
   return (
-    <SQLiteProvider databaseName={DATABASE_NAME} onInit={initDatabase}>
-      <RootLayoutNav />
-    </SQLiteProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SQLiteProvider databaseName={DATABASE_NAME} onInit={initDatabase}>
+        <BottomSheetModalProvider>
+          <RootLayoutNav />
+        </BottomSheetModalProvider>
+      </SQLiteProvider>
+    </GestureHandlerRootView>
   );
 }
 

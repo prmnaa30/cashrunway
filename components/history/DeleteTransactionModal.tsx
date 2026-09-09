@@ -188,7 +188,7 @@ export function DeleteTransactionModal({
             </Text>
           </View>
 
-          <View className="flex-row space-x-3">
+          <View className="flex-row gap-3">
             <Pressable
               onPress={onClose}
               className="flex-1 py-3 rounded-2xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70"
