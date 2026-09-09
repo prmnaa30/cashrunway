@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text } from 'react-native';
-import { Landmark, Banknote, Smartphone } from 'lucide-react-native';
+import { View, Text, Pressable } from 'react-native';
+import { Landmark, Banknote, Smartphone, MoreVertical } from 'lucide-react-native';
 import { formatCurrency } from '@/lib/format';
 import { Wallet } from '@/lib/db';
 import Colors from '@/constants/Colors';
@@ -10,6 +10,7 @@ interface WalletCardProps {
   totalOperationalBalance: number;
   isPrivacyMode: boolean;
   colorScheme: 'light' | 'dark';
+  onOpenOptions?: (wallet: Wallet) => void;
 }
 
 export function WalletCard({
@@ -17,6 +18,7 @@ export function WalletCard({
   totalOperationalBalance,
   isPrivacyMode,
   colorScheme,
+  onOpenOptions,
 }: WalletCardProps) {
   const colors = Colors[colorScheme];
 
@@ -55,7 +57,10 @@ export function WalletCard({
         </View>
 
         <View className="flex-1">
-          <Text className="text-sm font-bold text-linen-text-primary dark:text-cypress-text-primary">
+          <Text
+            numberOfLines={1}
+            className="text-sm font-bold text-linen-text-primary dark:text-cypress-text-primary"
+          >
             {wallet.name}
           </Text>
           <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary mt-0.5">
@@ -64,10 +69,21 @@ export function WalletCard({
         </View>
       </View>
 
-      <View className="items-end">
-        <Text className="text-sm font-bold font-mono text-linen-text-primary dark:text-cypress-text-primary">
+      <View className="flex-row items-center">
+        <Text className="text-sm font-bold font-mono text-linen-text-primary dark:text-cypress-text-primary mr-2">
           {formatCurrency(wallet.balance, isPrivacyMode)}
         </Text>
+
+        {onOpenOptions && (
+          <Pressable
+            onPress={() => onOpenOptions(wallet)}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            className="w-8 h-8 rounded-lg items-center justify-center active:opacity-60"
+            accessibilityLabel={`Opsi ${wallet.name}`}
+          >
+            <MoreVertical size={16} color={colors.textSecondary} />
+          </Pressable>
+        )}
       </View>
     </View>
   );

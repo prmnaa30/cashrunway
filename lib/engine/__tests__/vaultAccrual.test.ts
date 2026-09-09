@@ -117,4 +117,27 @@ describe('lib/engine/vaultAccrual', () => {
     expect(result.missedDays).toBe(0);
     expect(result.totalNetInterest).toBe(0);
   });
+
+  it('should support custom tax rate (e.g. 10% SBN/Obligasi) and custom threshold (0)', () => {
+    const customVault: EngineWallet = {
+      ...baseVault,
+      balance: 10000000,
+      interestRate: 0.0365,
+      // 10% tax rate
+      taxRate: 0.1,
+      // Taxed from first rupiah
+      taxThreshold: 0,
+    };
+
+    const result = calculateVaultAccrual({
+      wallet: customVault,
+      todayDate: '2026-09-08',
+    });
+
+    expect(result.missedDays).toBe(1);
+    expect(result.totalGrossInterest).toBe(1000);
+    // 10% of 1000
+    expect(result.totalTax).toBe(100);
+    expect(result.totalNetInterest).toBe(900);
+  });
 });

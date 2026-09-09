@@ -68,6 +68,17 @@ export async function initDatabase(dbInstance?: SQLite.SQLiteDatabase): Promise<
       }
     }
 
+    // Safe migration: add is_deleted, tax_rate, tax_threshold columns to existing databases if missing
+    try {
+      await targetDb.execAsync('ALTER TABLE wallets ADD COLUMN is_deleted INTEGER NOT NULL DEFAULT 0;');
+    } catch (_) {}
+    try {
+      await targetDb.execAsync('ALTER TABLE wallets ADD COLUMN tax_rate REAL NOT NULL DEFAULT 0.2;');
+    } catch (_) {}
+    try {
+      await targetDb.execAsync('ALTER TABLE wallets ADD COLUMN tax_threshold REAL NOT NULL DEFAULT 7500000;');
+    } catch (_) {}
+
     const drizzleClient = dbInstance ? drizzle(dbInstance, { schema }) : db;
     await seedInitialData(drizzleClient);
     isDbInitialized = true;
@@ -84,9 +95,10 @@ export async function ensureDatabaseInitialized(): Promise<void> {
   return initDatabase();
 }
 
-export async function getWallets(): Promise<Wallet[]> {
+export async function getWallets(includeDeleted = false): Promise<Wallet[]> {
   await ensureDatabaseInitialized();
   return await db.query.wallets.findMany({
+    where: includeDeleted ? undefined : eq(schema.wallets.isDeleted, 0),
     orderBy: [asc(schema.wallets.isVault), asc(schema.wallets.name)],
   });
 }
@@ -182,6 +194,50 @@ export async function updateWalletBalance(walletId: string, newBalance: number):
     date: dateStr,
     note: 'Cash balancing',
   });
+}
+
+export async function insertWallet(
+  wallet: Omit<Wallet, 'id' | 'isDeleted'> & { id?: string; isDeleted?: number; initialBalance?: number }
+): Promise<string> {
+  await ensureDatabaseInitialized();
+  const id = wallet.id ?? generateId('w');
+  const { initialBalance = 0, ...walletData } = wallet;
+
+  await db.insert(schema.wallets).values({
+    ...walletData,
+    id,
+    balance: 0,
+    isDeleted: wallet.isDeleted ?? 0,
+  });
+
+  if (initialBalance > 0) {
+    const now = new Date();
+    const dateStr = now.toISOString().replace('T', ' ').substring(0, 19);
+    await insertTransaction({
+      type: 'adjustment',
+      amount: initialBalance,
+      fee: 0,
+      walletId: id,
+      targetWalletId: null,
+      categoryId: null,
+      recurringBillId: null,
+      isOutlier: 1,
+      date: dateStr,
+      note: 'Saldo Awal',
+    });
+  }
+
+  return id;
+}
+
+export async function softDeleteWallet(walletId: string): Promise<void> {
+  await ensureDatabaseInitialized();
+  await db.update(schema.wallets).set({ isDeleted: 1 }).where(eq(schema.wallets.id, walletId));
+}
+
+export async function restoreWallet(walletId: string): Promise<void> {
+  await ensureDatabaseInitialized();
+  await db.update(schema.wallets).set({ isDeleted: 0 }).where(eq(schema.wallets.id, walletId));
 }
 
 export async function updateWallet(

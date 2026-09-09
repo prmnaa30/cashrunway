@@ -13,6 +13,9 @@ import {
   deleteTransaction as deleteTxDb,
   insertTransaction,
   updateWallet,
+  insertWallet,
+  softDeleteWallet,
+  updateWalletBalance,
   seedDemoTransactions as seedDemoDb,
   ensureDatabaseInitialized,
 } from '@/lib/db';
@@ -84,6 +87,24 @@ export interface FinanceState {
   }) => Promise<string>;
   deleteTx: (id: string) => Promise<void>;
   applyVaultAccrual: () => Promise<void>;
+  applyVaultAccrualForWallet: (walletId: string) => Promise<void>;
+  createWallet: (wallet: {
+    name: string;
+    type: 'cash' | 'bank' | 'ewallet';
+    isVault: boolean;
+    initialBalance?: number;
+    isInterestEnabled?: boolean;
+    interestRate?: number;
+    autoTax?: boolean;
+    taxRate?: number;
+    taxThreshold?: number;
+  }) => Promise<string>;
+  editWallet: (
+    walletId: string,
+    data: Partial<Omit<Wallet, 'id'>>
+  ) => Promise<void>;
+  adjustBalance: (walletId: string, newBalance: number) => Promise<void>;
+  removeWallet: (walletId: string) => Promise<void>;
   seedDemoData: () => Promise<void>;
 }
 
@@ -201,6 +222,8 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
         interestRate: w.interestRate || 0,
         interestPeriod: (w.interestPeriod as any) || 'none',
         autoTax: Boolean(w.autoTax),
+        taxRate: w.taxRate ?? 0.2,
+        taxThreshold: w.taxThreshold ?? 7500000,
         lastAccruedDate: w.lastAccruedDate,
       }));
 
@@ -266,8 +289,10 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       for (const w of engineWallets) {
         if (w.isVault && w.isInterestEnabled && w.interestRate > 0 && w.balance > 0) {
           const gross = (w.balance * w.interestRate) / 365;
-          const isTaxable = w.balance > 7500000 && w.autoTax;
-          const net = isTaxable ? gross * 0.8 : gross;
+          const threshold = w.taxThreshold !== undefined ? w.taxThreshold : 7500000;
+          const rate = w.taxRate !== undefined ? w.taxRate : 0.2;
+          const isTaxable = w.balance > threshold && w.autoTax;
+          const net = isTaxable ? gross * (1 - rate) : gross;
           estimatedDailyGross += gross;
           estimatedDailyNet += net;
 
@@ -387,6 +412,105 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     } catch (error) {
       console.error('Failed to apply vault accrual:', error);
       set({ isLoading: false });
+    }
+  },
+
+  applyVaultAccrualForWallet: async (walletId: string) => {
+    try {
+      const { vaultStats } = get();
+      const accrual = vaultStats.pendingAccruals.find((a) => a.walletId === walletId);
+      if (!accrual || !accrual.suggestedTransaction) {
+        return;
+      }
+
+      set({ isLoading: true });
+      await insertTransaction({
+        type: accrual.suggestedTransaction.type,
+        amount: accrual.suggestedTransaction.amount,
+        fee: 0,
+        walletId: accrual.suggestedTransaction.walletId,
+        targetWalletId: null,
+        categoryId: 'cat_interest',
+        recurringBillId: null,
+        isOutlier: 0,
+        date: accrual.suggestedTransaction.date,
+        localDate: accrual.suggestedTransaction.localDate,
+        note: accrual.suggestedTransaction.note,
+      });
+
+      await updateWallet(accrual.walletId, {
+        lastAccruedDate: accrual.newLastAccruedDate,
+      });
+
+      await get().loadAllData({ force: true, showLoading: false });
+    } catch (error) {
+      console.error(`Failed to apply vault accrual for wallet ${walletId}:`, error);
+      set({ isLoading: false });
+      throw error;
+    }
+  },
+
+  createWallet: async (wallet) => {
+    try {
+      set({ isLoading: true });
+      const id = await insertWallet({
+        name: wallet.name.trim(),
+        type: wallet.type,
+        balance: 0,
+        isVault: wallet.isVault ? 1 : 0,
+        isInterestEnabled: wallet.isInterestEnabled ? 1 : 0,
+        interestRate: wallet.interestRate ?? 0,
+        interestPeriod: 'daily',
+        payoutDay: 1,
+        autoTax: wallet.autoTax === false ? 0 : 1,
+        taxRate: wallet.taxRate ?? 0.2,
+        taxThreshold: wallet.taxThreshold ?? 7500000,
+        lastAccruedDate: formatLocalDate(new Date()),
+        initialBalance: wallet.initialBalance ?? 0,
+      });
+
+      await get().loadAllData({ force: true, showLoading: false });
+      return id;
+    } catch (error) {
+      console.error('Failed to create wallet:', error);
+      set({ isLoading: false });
+      throw error;
+    }
+  },
+
+  editWallet: async (walletId, data) => {
+    try {
+      set({ isLoading: true });
+      await updateWallet(walletId, data);
+      await get().loadAllData({ force: true, showLoading: false });
+    } catch (error) {
+      console.error('Failed to edit wallet:', error);
+      set({ isLoading: false });
+      throw error;
+    }
+  },
+
+  adjustBalance: async (walletId, newBalance) => {
+    try {
+      set({ isLoading: true });
+      await updateWalletBalance(walletId, newBalance);
+      await get().loadAllData({ force: true, showLoading: false });
+    } catch (error) {
+      console.error('Failed to adjust wallet balance:', error);
+      set({ isLoading: false });
+      throw error;
+    }
+  },
+
+  removeWallet: async (walletId) => {
+    try {
+      set({ isLoading: true });
+      await softDeleteWallet(walletId);
+      await get().loadAllData({ force: true, showLoading: false });
+    } catch (error) {
+      console.error('Failed to remove wallet:', error);
+      set({ isLoading: false });
+      throw error;
     }
   },
 

@@ -12,7 +12,10 @@ export const wallets = sqliteTable('wallets', {
   interestPeriod: text('interest_period', { enum: ['daily', 'monthly', 'none'] }).default('none'),
   payoutDay: integer('payout_day').default(1),
   autoTax: integer('auto_tax').notNull().default(1),
+  taxRate: real('tax_rate').notNull().default(0.2),
+  taxThreshold: real('tax_threshold').notNull().default(7500000),
   lastAccruedDate: text('last_accrued_date'),
+  isDeleted: integer('is_deleted').notNull().default(0),
 });
 
 export const categories = sqliteTable('categories', {
@@ -122,7 +125,10 @@ export const CREATE_TABLES_SQL_STATEMENTS = [
     interest_period TEXT CHECK(interest_period IN ('daily', 'monthly', 'none')) DEFAULT 'none',
     payout_day INTEGER DEFAULT 1,
     auto_tax INTEGER NOT NULL DEFAULT 1,
-    last_accrued_date TEXT
+    tax_rate REAL NOT NULL DEFAULT 0.2,
+    tax_threshold REAL NOT NULL DEFAULT 7500000,
+    last_accrued_date TEXT,
+    is_deleted INTEGER NOT NULL DEFAULT 0
   );`,
   `CREATE TABLE IF NOT EXISTS categories (
     id TEXT PRIMARY KEY,

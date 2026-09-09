@@ -1,6 +1,6 @@
 import React from 'react';
-import { View, Text, Pressable } from 'react-native';
-import { Sparkles } from 'lucide-react-native';
+import { View, Text } from 'react-native';
+import { Sparkles, Vault } from 'lucide-react-native';
 import { formatCurrency } from '@/lib/format';
 import { VaultYieldStats } from '@/store/useFinanceStore';
 import Colors from '@/constants/Colors';
@@ -9,14 +9,16 @@ interface VaultYieldCardProps {
   vaultStats: VaultYieldStats;
   isPrivacyMode: boolean;
   colorScheme: 'light' | 'dark';
-  onAccrue: () => void;
 }
 
+/**
+ * Clean, uncluttered overview card summarizing total savings portfolio yield & passive income.
+ * Individual claim buttons are located directly inside each VaultCard.
+ */
 export function VaultYieldCard({
   vaultStats,
   isPrivacyMode,
   colorScheme,
-  onAccrue,
 }: VaultYieldCardProps) {
   const colors = Colors[colorScheme];
 
@@ -26,15 +28,23 @@ export function VaultYieldCard({
         <View className="flex-row items-center">
           <Sparkles size={16} color={colors.tint} />
           <Text className="ml-1.5 text-xs font-bold uppercase tracking-wider text-accent-brass dark:text-accent-champagne">
-            Bunga Tabungan
+            Portofolio Bunga Tabungan
           </Text>
         </View>
 
-        <View className="px-2 py-0.5 rounded bg-accent-brass/15 dark:bg-accent-champagne/15 border border-accent-brass/30 dark:border-accent-champagne/30">
-          <Text className="text-[10px] font-bold text-accent-brass dark:text-accent-champagne font-mono">
-            3.75% per tahun
-          </Text>
-        </View>
+        {vaultStats.totalPendingInterest > 0 ? (
+          <View className="px-2 py-0.5 rounded-full bg-status-safe/15 border border-status-safe/30">
+            <Text className="text-[10px] font-bold text-status-safe font-mono">
+              +{formatCurrency(vaultStats.totalPendingInterest, isPrivacyMode)} siap diambil
+            </Text>
+          </View>
+        ) : (
+          <View className="px-2 py-0.5 rounded bg-accent-brass/15 dark:bg-accent-champagne/15 border border-accent-brass/30 dark:border-accent-champagne/30">
+            <Text className="text-[10px] font-bold text-accent-brass dark:text-accent-champagne font-mono">
+              Bunga Harian
+            </Text>
+          </View>
+        )}
       </View>
 
       <View className="my-1">
@@ -47,7 +57,7 @@ export function VaultYieldCard({
           </Text>
         </View>
         <Text className="mt-1 text-xs text-linen-text-secondary dark:text-cypress-text-secondary">
-          Perkiraan bunga bersih yang didapat tiap hari (sudah dipotong pajak)
+          Akumulasi perkiraan bunga bersih seluruh tabungan (setelah pajak)
         </Text>
       </View>
 
@@ -70,27 +80,6 @@ export function VaultYieldCard({
           </Text>
         </View>
       </View>
-
-      {vaultStats.totalPendingInterest > 0 && (
-        <View className="mt-4 pt-3 border-t border-linen-border/60 dark:border-cypress-border/60">
-          <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary">
-              Bunga yang belum diambil:{' '}
-              <Text className="font-bold text-status-safe">
-                +{formatCurrency(vaultStats.totalPendingInterest, isPrivacyMode)}
-              </Text>
-            </Text>
-          </View>
-          <Pressable
-            onPress={onAccrue}
-            className="py-2.5 px-4 rounded-xl bg-accent-brass dark:bg-accent-champagne items-center justify-center active:opacity-80"
-          >
-            <Text className="text-xs font-bold text-[#0C1513]">
-              Ambil Bunga Tabungan Sekarang
-            </Text>
-          </Pressable>
-        </View>
-      )}
     </View>
   );
 }

@@ -47,8 +47,10 @@ export function calculateVaultAccrual(
   }
 
   const dailyGross = (wallet.balance * wallet.interestRate) / 365;
-  const isTaxable = wallet.balance > 7500000 && wallet.autoTax;
-  const dailyTax = isTaxable ? dailyGross * 0.2 : 0;
+  const threshold = wallet.taxThreshold !== undefined ? wallet.taxThreshold : 7500000;
+  const rate = wallet.taxRate !== undefined ? wallet.taxRate : 0.2;
+  const isTaxable = wallet.balance > threshold && Boolean(wallet.autoTax);
+  const dailyTax = isTaxable ? dailyGross * rate : 0;
   const dailyNet = dailyGross - dailyTax;
 
   const totalGrossInterest = Math.round(dailyGross * missedDays * 100) / 100;

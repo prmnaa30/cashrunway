@@ -7,6 +7,8 @@ export interface EngineWallet {
   interestRate: number;
   interestPeriod: 'daily' | 'monthly' | 'none';
   autoTax: boolean;
+  taxRate?: number;
+  taxThreshold?: number;
   lastAccruedDate?: string | null;
 }
 
