@@ -65,6 +65,8 @@ export const settings = sqliteTable('settings', {
   burnWindowDays: integer('burn_window_days').notNull().default(14),
   notificationHour: integer('notification_hour').notNull().default(20),
   language: text('language').notNull().default('auto'),
+  currency: text('currency').notNull().default('IDR'),
+  themeMode: text('theme_mode').notNull().default('system'),
   isPrivacyMode: integer('is_privacy_mode').notNull().default(0),
   dualRunwayMode: integer('dual_runway_mode').notNull().default(1),
 });
@@ -176,6 +178,8 @@ export const CREATE_TABLES_SQL_STATEMENTS = [
     burn_window_days INTEGER NOT NULL DEFAULT 14,
     notification_hour INTEGER NOT NULL DEFAULT 20,
     language TEXT NOT NULL DEFAULT 'auto',
+    currency TEXT NOT NULL DEFAULT 'IDR',
+    theme_mode TEXT NOT NULL DEFAULT 'system',
     is_privacy_mode INTEGER NOT NULL DEFAULT 0,
     dual_runway_mode INTEGER NOT NULL DEFAULT 1
   );`,

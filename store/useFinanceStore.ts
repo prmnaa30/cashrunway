@@ -10,6 +10,9 @@ import {
   getRecurringBills,
   getTransactionsWithDetails,
   getSettings,
+  updateSettings as updateSettingsDb,
+  resetToDemoData as resetDemoDb,
+  clearAllTransactions as clearTxDb,
   deleteTransaction as deleteTxDb,
   insertTransaction,
   updateWallet,
@@ -18,6 +21,9 @@ import {
   updateWalletBalance,
   seedDemoTransactions as seedDemoDb,
   ensureDatabaseInitialized,
+  createCategory,
+  updateCategory as updateCategoryDb,
+  deleteCategory as deleteCategoryDb,
 } from '@/lib/db';
 import {
   calculateRollingBurnRate,
@@ -105,7 +111,18 @@ export interface FinanceState {
   ) => Promise<void>;
   adjustBalance: (walletId: string, newBalance: number) => Promise<void>;
   removeWallet: (walletId: string) => Promise<void>;
+  addCategory: (categoryData: {
+    name: string;
+    type: 'income' | 'expense';
+    icon: string;
+    isFixed?: number;
+  }) => Promise<Category>;
+  updateCategory: (id: string, updates: { name?: string; icon?: string }) => Promise<void>;
+  deleteCategory: (id: string) => Promise<void>;
   seedDemoData: () => Promise<void>;
+  updateSettings: (data: Partial<Omit<Settings, 'id'>>) => Promise<void>;
+  resetToDemo: () => Promise<void>;
+  clearTransactions: () => Promise<void>;
 }
 
 const DEFAULT_BURN_RATE: BurnRateResult = {
@@ -319,6 +336,22 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
         pendingAccruals,
       };
 
+      if (settings) {
+        try {
+          const { useSettingsStore } = require('@/store/useSettingStore');
+          const savedTheme = (settings.themeMode as any) || 'system';
+          useSettingsStore.setState({
+            currency: settings.currency || 'IDR',
+            isPrivacyMode: Boolean(settings.isPrivacyMode),
+            themeMode: savedTheme,
+          });
+          try {
+            const { colorScheme } = require('nativewind');
+            colorScheme.set(savedTheme);
+          } catch (_) {}
+        } catch (_) {}
+      }
+
       set({
         wallets,
         transactions,
@@ -514,14 +547,93 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
     }
   },
 
+  addCategory: async (categoryData) => {
+    try {
+      const newCategory = await createCategory(categoryData);
+      set((state) => ({
+        categories: [...state.categories, newCategory],
+      }));
+      return newCategory;
+    } catch (error) {
+      console.error('Failed to add category:', error);
+      throw error;
+    }
+  },
+
+  updateCategory: async (id, updates) => {
+    try {
+      await updateCategoryDb(id, updates);
+      set((state) => ({
+        categories: state.categories.map((c) =>
+          c.id === id
+            ? {
+                ...c,
+                ...(updates.name !== undefined ? { name: updates.name.trim() } : {}),
+                ...(updates.icon !== undefined ? { icon: updates.icon } : {}),
+              }
+            : c
+        ),
+      }));
+    } catch (error) {
+      console.error('Failed to update category:', error);
+      throw error;
+    }
+  },
+
+  deleteCategory: async (id) => {
+    try {
+      await deleteCategoryDb(id);
+      set((state) => ({
+        categories: state.categories.filter((c) => c.id !== id),
+      }));
+      await get().loadAllData({ force: true, showLoading: false });
+    } catch (error) {
+      console.error('Failed to delete category:', error);
+      throw error;
+    }
+  },
+
   seedDemoData: async () => {
     try {
       set({ isLoading: true });
-      await seedDemoDb();
-      await get().loadAllData({ force: true, showLoading: false });
+      await get().resetToDemo();
     } catch (error) {
       console.error('Failed to seed demo data:', error);
       set({ isLoading: false });
+    }
+  },
+
+  updateSettings: async (data) => {
+    try {
+      await updateSettingsDb(data);
+      await get().loadAllData({ force: true, showLoading: false });
+    } catch (error) {
+      console.error('Failed to update settings:', error);
+      throw error;
+    }
+  },
+
+  resetToDemo: async () => {
+    try {
+      set({ isLoading: true });
+      await resetDemoDb();
+      await get().loadAllData({ force: true, showLoading: false });
+    } catch (error) {
+      console.error('Failed to reset to demo data:', error);
+      set({ isLoading: false });
+      throw error;
+    }
+  },
+
+  clearTransactions: async () => {
+    try {
+      set({ isLoading: true });
+      await clearTxDb();
+      await get().loadAllData({ force: true, showLoading: false });
+    } catch (error) {
+      console.error('Failed to clear transactions:', error);
+      set({ isLoading: false });
+      throw error;
     }
   },
 }));

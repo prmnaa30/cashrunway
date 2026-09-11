@@ -89,6 +89,8 @@ export const DEFAULT_SETTINGS: NewSettings = {
   burnWindowDays: 14,
   notificationHour: 20,
   language: 'auto',
+  currency: 'IDR',
+  themeMode: 'system',
   isPrivacyMode: 0,
   dualRunwayMode: 1,
 };

@@ -1,9 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Modal, StyleSheet } from 'react-native';
-import { Check, X } from 'lucide-react-native';
+import { Check, X, Plus } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Category } from '@/lib/db';
 import { TransactionMode } from './types';
 import Colors from '@/constants/Colors';
+import { CategoryFormModal } from '../categories/CategoryFormModal';
 
 export interface CategoryPickerModalProps {
   visible: boolean;
@@ -28,6 +30,8 @@ function CategoryPickerModalComponent({
   colorScheme,
 }: CategoryPickerModalProps) {
   const colors = Colors[colorScheme];
+  const insets = useSafeAreaInsets();
+  const [isFormModalVisible, setIsFormModalVisible] = useState(false);
   const filteredCategories = useMemo(
     () => categories.filter((c) => c.type === mode),
     [categories, mode]
@@ -41,7 +45,13 @@ function CategoryPickerModalComponent({
       statusBarTranslucent
       onRequestClose={onClose}
     >
-      <View className="flex-1 justify-center items-center px-5 bg-black/65">
+      <View
+        className="flex-1 justify-center items-center px-5 bg-black/65"
+        style={{
+          paddingTop: Math.max(insets.top, 24) + 16,
+          paddingBottom: Math.max(insets.bottom, 16) + 12,
+        }}
+      >
         <TouchableOpacity
           onPress={onClose}
           activeOpacity={1}
@@ -89,11 +99,11 @@ function CategoryPickerModalComponent({
                   borderClass =
                     colorScheme === 'dark'
                       ? 'bg-accent-champagne/15 border-accent-champagne'
-                      : 'bg-accent-brass/15 border-accent-brass';
+                      : 'bg-emerald-500/10 border-emerald-600';
                   textClass =
                     colorScheme === 'dark'
                       ? 'text-accent-champagne font-bold'
-                      : 'text-accent-brass font-bold';
+                      : 'text-emerald-800 font-bold';
                 }
               }
 
@@ -129,19 +139,55 @@ function CategoryPickerModalComponent({
                           ? 'bg-status-safe'
                           : colorScheme === 'dark'
                           ? 'bg-accent-champagne'
-                          : 'bg-accent-brass'
+                          : 'bg-emerald-600'
                       }`}
                     >
-                      <Check size={10} color="#0C1513" strokeWidth={3} />
+                      <Check
+                        size={10}
+                        color={colorScheme === 'dark' && mode !== 'income' ? '#0C1513' : '#FFFFFF'}
+                        strokeWidth={3}
+                      />
                     </View>
                   )}
                 </TouchableOpacity>
               );
             })}
+
+            {/* Add Custom Category Action Card */}
+            <TouchableOpacity
+              activeOpacity={0.75}
+              onPress={() => setIsFormModalVisible(true)}
+              className="w-[48%] flex-row items-center p-3 mb-2.5 rounded-2xl border border-dashed border-linen-border dark:border-cypress-border bg-linen-surface/50 dark:bg-cypress-card/40"
+            >
+              <View className="w-7 h-7 rounded-full bg-linen-border/40 dark:bg-cypress-border/40 items-center justify-center mr-2">
+                <Plus size={15} color={colors.textSecondary} />
+              </View>
+              <View className="flex-1">
+                <Text
+                  className="text-xs font-bold text-linen-text-secondary dark:text-cypress-text-secondary"
+                  numberOfLines={1}
+                >
+                  + Tambah Baru
+                </Text>
+              </View>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </View>
     </View>
+
+    {/* Universal Category Form Modal */}
+    <CategoryFormModal
+      visible={isFormModalVisible}
+      initialType={mode === 'income' ? 'income' : 'expense'}
+      onSave={(newCat) => {
+        onSelectCategory(newCat.id);
+        setIsFormModalVisible(false);
+        onClose();
+      }}
+      onClose={() => setIsFormModalVisible(false)}
+      colorScheme={colorScheme}
+    />
   </Modal>
 );
 }

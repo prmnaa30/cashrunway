@@ -14,6 +14,7 @@ import {
   Transaction,
   NewTransaction,
   Settings,
+  NewSettings,
   generateId,
   CategoryType,
 } from './types';
@@ -78,6 +79,13 @@ export async function initDatabase(dbInstance?: SQLite.SQLiteDatabase): Promise<
     try {
       await targetDb.execAsync('ALTER TABLE wallets ADD COLUMN tax_threshold REAL NOT NULL DEFAULT 7500000;');
     } catch (_) {}
+    // Safe migration for settings: add currency and theme_mode if missing
+    try {
+      await targetDb.execAsync("ALTER TABLE settings ADD COLUMN currency TEXT NOT NULL DEFAULT 'IDR';");
+    } catch (_) {}
+    try {
+      await targetDb.execAsync("ALTER TABLE settings ADD COLUMN theme_mode TEXT NOT NULL DEFAULT 'system';");
+    } catch (_) {}
 
     const drizzleClient = dbInstance ? drizzle(dbInstance, { schema }) : db;
     await seedInitialData(drizzleClient);
@@ -114,6 +122,65 @@ export async function getCategories(type?: CategoryType): Promise<Category[]> {
   return await db.query.categories.findMany({
     orderBy: [asc(schema.categories.type), asc(schema.categories.isFixed), asc(schema.categories.name)],
   });
+}
+
+export async function createCategory(data: {
+  name: string;
+  type: CategoryType;
+  icon: string;
+  isFixed?: number;
+}): Promise<Category> {
+  await ensureDatabaseInitialized();
+  const trimmedName = data.name.trim();
+  if (!trimmedName) {
+    throw new Error('Nama kategori tidak boleh kosong');
+  }
+
+  const id = generateId('cat');
+  const newCat: Category = {
+    id,
+    name: trimmedName,
+    type: data.type,
+    icon: data.icon || (data.type === 'income' ? '💰' : '💸'),
+    isFixed: data.isFixed ?? 0,
+    isDefault: 0,
+  };
+
+  await db.insert(schema.categories).values(newCat);
+  return newCat;
+}
+
+export async function updateCategory(
+  id: string,
+  updates: { name?: string; icon?: string }
+): Promise<void> {
+  await ensureDatabaseInitialized();
+  const updateData: Partial<Category> = {};
+  if (updates.name !== undefined) {
+    const trimmed = updates.name.trim();
+    if (!trimmed) throw new Error('Nama kategori tidak boleh kosong');
+    updateData.name = trimmed;
+  }
+  if (updates.icon !== undefined) {
+    updateData.icon = updates.icon;
+  }
+
+  if (Object.keys(updateData).length > 0) {
+    await db.update(schema.categories).set(updateData).where(eq(schema.categories.id, id));
+  }
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  await ensureDatabaseInitialized();
+  const existing = await db.query.categories.findFirst({
+    where: eq(schema.categories.id, id),
+  });
+  if (!existing) return;
+  if (existing.isDefault === 1) {
+    throw new Error('Kategori bawaan sistem tidak dapat dihapus');
+  }
+
+  await db.delete(schema.categories).where(eq(schema.categories.id, id));
 }
 
 export async function getRecurringBills(): Promise<RecurringBill[]> {
@@ -157,6 +224,17 @@ export async function getSettings(): Promise<Settings | null> {
     where: eq(schema.settings.id, 1),
   });
   return result ?? null;
+}
+
+export async function updateSettings(
+  data: Partial<Omit<NewSettings, 'id'>>
+): Promise<Settings | null> {
+  await ensureDatabaseInitialized();
+  await db
+    .update(schema.settings)
+    .set(data)
+    .where(eq(schema.settings.id, 1));
+  return await getSettings();
 }
 
 export async function insertTransaction(
@@ -396,3 +474,43 @@ export async function seedDemoTransactions(): Promise<void> {
     ]);
   }
 }
+
+/**
+ * Reset demo data:
+ * Safely clears all transactions and resets default wallets to their clean demo states
+ * without trigger side-effects corrupting wallet balances.
+ */
+export async function resetToDemoData(): Promise<void> {
+  await ensureDatabaseInitialized();
+  // 1. Delete all transactions
+  await db.delete(schema.transactions);
+
+  // 2. Reset standard demo wallets to clean initial balances
+  const demoWallets = [
+    { id: 'w_cash', balance: 350000, name: 'Tunai Saku', isDeleted: 0 },
+    { id: 'w_bca', balance: 4250000, name: 'BCA Tahapan', isDeleted: 0 },
+    { id: 'w_gopay', balance: 175000, name: 'GoPay', isDeleted: 0 },
+    { id: 'w_seabank', balance: 15000000, name: 'SeaBank Vault', isDeleted: 0 },
+  ];
+
+  for (const dw of demoWallets) {
+    await db
+      .update(schema.wallets)
+      .set({ balance: dw.balance, isDeleted: 0 })
+      .where(eq(schema.wallets.id, dw.id));
+  }
+
+  // 3. Seed fresh demo transactions
+  await seedDemoTransactions();
+}
+
+/**
+ * Clear all transactions:
+ * Empties all transaction history and zeroes active wallet balances cleanly.
+ */
+export async function clearAllTransactions(): Promise<void> {
+  await ensureDatabaseInitialized();
+  await db.delete(schema.transactions);
+  await db.update(schema.wallets).set({ balance: 0 });
+}
+
