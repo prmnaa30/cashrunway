@@ -1,4 +1,6 @@
-import { create } from "zustand"
+import { create } from "zustand";
+import { updateSettings } from "@/lib/db";
+import { colorScheme as nwColorScheme } from "nativewind";
 
 interface SettingsState {
   currency: string;
@@ -9,11 +11,24 @@ interface SettingsState {
   setThemeMode: (mode: 'system' | 'light' | 'dark') => void;
 }
 
-export const useSettingsStore = create<SettingsState>((set) => ({
+export const useSettingsStore = create<SettingsState>((set, get) => ({
   currency: 'IDR',
   isPrivacyMode: false,
   themeMode: 'system',
-  setCurrency: (currency) => set({ currency }),
-  togglePrivacyMode: () => set((state) => ({ isPrivacyMode: !state.isPrivacyMode })),
-  setThemeMode: (mode) => set({ themeMode: mode }),
+  setCurrency: (currency) => {
+    set({ currency });
+    updateSettings({ currency }).catch(console.error);
+  },
+  togglePrivacyMode: () => {
+    const nextVal = !get().isPrivacyMode;
+    set({ isPrivacyMode: nextVal });
+    updateSettings({ isPrivacyMode: nextVal ? 1 : 0 }).catch(console.error);
+  },
+  setThemeMode: (mode) => {
+    set({ themeMode: mode });
+    try {
+      nwColorScheme.set(mode);
+    } catch (_) {}
+    updateSettings({ themeMode: mode }).catch(console.error);
+  },
 }));
