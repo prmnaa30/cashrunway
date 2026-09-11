@@ -55,7 +55,7 @@ export function LiquidityBar({
   );
 
   const operationalColor = '#10B981';
-  const vaultColor = colorScheme === 'dark' ? '#D4AF37' : '#B8860B';
+  const vaultColor = colorScheme === 'dark' ? '#D4AF37' : '#D97706';
 
   return (
     <Pressable

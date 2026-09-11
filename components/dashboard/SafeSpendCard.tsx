@@ -102,12 +102,12 @@ export function SafeSpendCard({
       </View>
 
       <View className="mt-3 mb-2">
-        <View className="h-1.5 w-full bg-linen-surface dark:bg-cypress-surface rounded-full overflow-hidden">
+        <View className="h-1.5 w-full bg-linen-border/70 dark:bg-cypress-surface rounded-full overflow-hidden">
           <View
             className="h-full rounded-full"
             style={{
               width: `${spendPercent}%`,
-              backgroundColor: safeSpend.isOverspent ? '#EF4444' : colors.tint,
+              backgroundColor: safeSpend.isOverspent ? '#EF4444' : colorScheme === 'dark' ? colors.tint : '#10B981',
             }}
           />
         </View>

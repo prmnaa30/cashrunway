@@ -348,19 +348,19 @@ export function WalletFormSheet({
                 <Text className="text-xs font-bold uppercase tracking-wider text-linen-text-secondary dark:text-cypress-text-secondary mb-2">
                   Kategori Akun
                 </Text>
-                <View className="flex-row p-1 rounded-2xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border">
+                <View className="flex-row p-1 rounded-2xl bg-linen-bg dark:bg-cypress-surface border border-linen-border dark:border-cypress-border">
                   <Pressable
                     onPress={() => {
                       setIsVault(false);
                       setIsInterestEnabled(false);
                     }}
                     className={`flex-1 py-2.5 rounded-xl items-center justify-center ${
-                      !isVault ? 'bg-accent-brass dark:bg-accent-champagne' : ''
+                      !isVault ? 'bg-white dark:bg-accent-champagne shadow-xs border border-linen-border/40 dark:border-transparent' : ''
                     }`}
                   >
                     <Text
                       className={`text-xs font-bold ${
-                        !isVault ? 'text-[#0C1513]' : 'text-linen-text-secondary dark:text-cypress-text-secondary'
+                        !isVault ? 'text-linen-text-primary dark:text-[#0C1513]' : 'text-linen-text-secondary dark:text-cypress-text-secondary'
                       }`}
                     >
                       Uang Harian
@@ -373,12 +373,12 @@ export function WalletFormSheet({
                       setIsInterestEnabled(true);
                     }}
                     className={`flex-1 py-2.5 rounded-xl items-center justify-center ${
-                      isVault ? 'bg-accent-brass dark:bg-accent-champagne' : ''
+                      isVault ? 'bg-white dark:bg-accent-champagne shadow-xs border border-linen-border/40 dark:border-transparent' : ''
                     }`}
                   >
                     <Text
                       className={`text-xs font-bold ${
-                        isVault ? 'text-[#0C1513]' : 'text-linen-text-secondary dark:text-cypress-text-secondary'
+                        isVault ? 'text-linen-text-primary dark:text-[#0C1513]' : 'text-linen-text-secondary dark:text-cypress-text-secondary'
                       }`}
                     >
                       Tabungan
@@ -421,18 +421,24 @@ export function WalletFormSheet({
                       onPress={() => setType(item.key as any)}
                       className={`flex-1 py-3 px-2 rounded-2xl border items-center justify-center ${
                         isSelected
-                          ? 'bg-accent-brass/15 dark:bg-accent-champagne/15 border-accent-brass dark:border-accent-champagne'
+                          ? 'bg-emerald-500/10 dark:bg-accent-champagne/15 border-emerald-600 dark:border-accent-champagne'
                           : 'bg-linen-surface dark:bg-cypress-surface border-linen-border dark:border-cypress-border'
                       }`}
                     >
                       <IconComponent
                         size={18}
-                        color={isSelected ? colors.tint : colors.textSecondary}
+                        color={
+                          isSelected
+                            ? colorScheme === 'dark'
+                              ? '#D4AF37'
+                              : '#059669'
+                            : colors.textSecondary
+                        }
                       />
                       <Text
                         className={`text-xs font-bold mt-1.5 ${
                           isSelected
-                            ? 'text-accent-brass dark:text-accent-champagne'
+                            ? 'text-emerald-800 dark:text-accent-champagne'
                             : 'text-linen-text-secondary dark:text-cypress-text-secondary'
                         }`}
                       >
@@ -529,7 +535,7 @@ export function WalletFormSheet({
                               onPress={() => handleSelectTaxPreset(item.key as any)}
                               className={`flex-1 py-2 px-1 rounded-xl border items-center justify-center ${
                                 isSelected
-                                  ? 'bg-accent-brass/15 dark:bg-accent-champagne/15 border-accent-brass dark:border-accent-champagne'
+                                  ? 'bg-emerald-500/10 dark:bg-accent-champagne/15 border-emerald-600 dark:border-accent-champagne'
                                   : 'bg-linen-card dark:bg-cypress-card border-linen-border dark:border-cypress-border'
                               }`}
                             >
@@ -537,7 +543,7 @@ export function WalletFormSheet({
                                 numberOfLines={1}
                                 className={`text-[10px] font-bold ${
                                   isSelected
-                                    ? 'text-accent-brass dark:text-accent-champagne'
+                                    ? 'text-emerald-800 dark:text-accent-champagne'
                                     : 'text-linen-text-secondary dark:text-cypress-text-secondary'
                                 }`}
                               >
@@ -590,11 +596,11 @@ export function WalletFormSheet({
             <Pressable
               onPress={handleSubmit}
               disabled={isSubmitting}
-              className={`w-full py-4 rounded-2xl bg-accent-brass dark:bg-accent-champagne items-center justify-center mb-6 active:opacity-80 ${
+              className={`w-full py-4 rounded-2xl bg-cypress-surface dark:bg-accent-champagne items-center justify-center mb-6 active:opacity-80 shadow-xs ${
                 isSubmitting ? 'opacity-60' : ''
               }`}
             >
-              <Text className="text-sm font-black text-[#0C1513]">
+              <Text className="text-sm font-black text-white dark:text-[#0C1513]">
                 {isSubmitting
                   ? 'Menyimpan...'
                   : isEditMode

@@ -18,16 +18,16 @@ module.exports = {
           "text-secondary": "#8DA499",
         },
         linen: {
-          bg: "#F2F6F4",
+          bg: "#F0F4F2",
           surface: "#FFFFFF",
-          card: "#E8EFEA",
-          border: "#D0DDD7",
-          "text-primary": "#1A2421",
-          "text-secondary": "#52665E",
+          card: "#FFFFFF",
+          border: "#DCE5E0",
+          "text-primary": "#14201C",
+          "text-secondary": "#4D6359",
         },
         accent: {
           champagne: "#D4AF37",
-          brass: "#B8860B",
+          brass: "#92400E",
           gold: "#F3E5AB",
         },
         status: {

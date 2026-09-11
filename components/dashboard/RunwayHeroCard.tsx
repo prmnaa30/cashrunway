@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -22,6 +22,7 @@ interface RunwayHeroCardProps {
   isPrivacyMode: boolean;
   statusColor: string;
   colorScheme: 'light' | 'dark';
+  defaultMode?: 'operational' | 'total';
 }
 
 export function RunwayHeroCard({
@@ -32,12 +33,21 @@ export function RunwayHeroCard({
   isPrivacyMode,
   statusColor,
   colorScheme,
+  defaultMode = 'operational',
 }: RunwayHeroCardProps) {
   const colors = Colors[colorScheme];
-  const [runwayMode, setRunwayMode] = useState<'operational' | 'total'>('operational');
+  const [runwayMode, setRunwayMode] = useState<'operational' | 'total'>(defaultMode);
   const [isExpanded, setIsExpanded] = useState(false);
   const [tabWidth, setTabWidth] = useState(192);
-  const tabAnim = useSharedValue(0);
+  const tabAnim = useSharedValue(defaultMode === 'operational' ? 0 : 1);
+
+  useEffect(() => {
+    setRunwayMode(defaultMode);
+    tabAnim.value = withTiming(defaultMode === 'operational' ? 0 : 1, {
+      duration: 200,
+      easing: Easing.bezier(0.16, 1, 0.3, 1),
+    });
+  }, [defaultMode]);
 
   const handleSwitchMode = (mode: 'operational' | 'total') => {
     setRunwayMode(mode);
@@ -107,7 +117,7 @@ export function RunwayHeroCard({
 
         <View
           onLayout={(e) => setTabWidth(e.nativeEvent.layout.width)}
-          className="relative flex-row p-0.5 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border w-44 overflow-hidden"
+          className="relative flex-row p-0.5 rounded-xl bg-linen-bg dark:bg-cypress-surface border border-linen-border/80 dark:border-cypress-border w-44 overflow-hidden"
         >
           <Animated.View
             style={[
@@ -121,7 +131,7 @@ export function RunwayHeroCard({
               },
               pillStyle,
             ]}
-            className="bg-accent-brass dark:bg-accent-champagne shadow-sm"
+            className="bg-white dark:bg-accent-champagne shadow-xs border border-linen-border/40 dark:border-transparent"
           />
 
           <Pressable
@@ -134,7 +144,7 @@ export function RunwayHeroCard({
             <Text
               className={`text-[11px] font-bold ${
                 runwayMode === 'operational'
-                  ? 'text-[#0C1513]'
+                  ? 'text-linen-text-primary dark:text-[#0C1513]'
                   : 'text-linen-text-secondary dark:text-cypress-text-secondary'
               }`}
             >
@@ -152,7 +162,7 @@ export function RunwayHeroCard({
             <Text
               className={`text-[11px] font-bold ${
                 runwayMode === 'total'
-                  ? 'text-[#0C1513]'
+                  ? 'text-linen-text-primary dark:text-[#0C1513]'
                   : 'text-linen-text-secondary dark:text-cypress-text-secondary'
               }`}
             >

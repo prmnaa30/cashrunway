@@ -33,6 +33,7 @@ export default function DashboardScreen() {
     runway,
     safeSpend,
     transactions,
+    settings,
     isLoading,
     isInitialized,
     loadAllData,
@@ -126,9 +127,9 @@ export default function DashboardScreen() {
           </Text>
           <Pressable
             onPress={seedDemoData}
-            className="mt-3 py-2 px-4 rounded-xl bg-accent-brass dark:bg-accent-champagne self-start active:opacity-80"
+            className="mt-3 py-2 px-4 rounded-xl bg-cypress-surface dark:bg-accent-champagne self-start active:opacity-80 shadow-xs"
           >
-            <Text className="text-xs font-bold text-[#0C1513]">
+            <Text className="text-xs font-bold text-white dark:text-[#0C1513]">
               Isi Data Contoh
             </Text>
           </Pressable>

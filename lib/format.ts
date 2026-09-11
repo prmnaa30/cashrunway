@@ -21,7 +21,18 @@ export const CURRENCY_PRESETS: Record<string, CurrencyConfig> = {
   JPY: { code: 'JPY', locale: 'ja-JP', decimals: 0, symbol: '¥' },
   GBP: { code: 'GBP', locale: 'en-GB', decimals: 2, symbol: '£' },
   AUD: { code: 'AUD', locale: 'en-AU', decimals: 2, symbol: 'A$' },
-}
+};
+
+export const DEFAULT_FALLBACK_BURNS: Record<string, number> = {
+  IDR: 50000,
+  USD: 25,
+  EUR: 25,
+  SGD: 30,
+  MYR: 50,
+  JPY: 3000,
+  GBP: 20,
+  AUD: 35,
+};
 
 /**
  * Get currency symbol based on currency code

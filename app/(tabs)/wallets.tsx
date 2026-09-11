@@ -199,11 +199,11 @@ export default function WalletsScreen() {
           <Pressable
             onPress={handleOpenCreateWallet}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            className="flex-row items-center px-3 py-2 rounded-xl bg-accent-brass dark:bg-accent-champagne active:opacity-80 shadow-sm"
+            className="flex-row items-center px-3 py-2 rounded-xl bg-cypress-surface dark:bg-accent-champagne active:opacity-80 shadow-xs"
             accessibilityLabel="Tambah Dompet"
           >
-            <Plus size={14} color="#0C1513" strokeWidth={2.5} />
-            <Text className="ml-1 text-xs font-black text-[#0C1513]">Tambah</Text>
+            <Plus size={14} color={colorScheme === 'dark' ? '#0C1513' : '#D4AF37'} strokeWidth={2.5} />
+            <Text className="ml-1 text-xs font-black text-white dark:text-[#0C1513]">Tambah</Text>
           </Pressable>
 
           <Pressable
@@ -254,7 +254,7 @@ export default function WalletsScreen() {
       {/* Segmented Tab Switcher */}
       <View
         onLayout={(e) => setTabWidth(e.nativeEvent.layout.width)}
-        className="relative flex-row p-0.5 rounded-2xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border mb-4 overflow-hidden"
+        className="relative flex-row p-0.5 rounded-2xl bg-linen-bg dark:bg-cypress-surface border border-linen-border dark:border-cypress-border mb-4 overflow-hidden"
       >
         <Animated.View
           style={[
@@ -268,7 +268,7 @@ export default function WalletsScreen() {
             },
             pillStyle,
           ]}
-          className="bg-accent-brass dark:bg-accent-champagne shadow-sm"
+          className="bg-white dark:bg-accent-champagne shadow-xs border border-linen-border/40 dark:border-transparent"
         />
 
         <Pressable
@@ -278,7 +278,7 @@ export default function WalletsScreen() {
           <Text
             className={`text-xs font-bold ${
               activeTab === 'operational'
-                ? 'text-[#0C1513]'
+                ? 'text-linen-text-primary dark:text-[#0C1513]'
                 : 'text-linen-text-secondary dark:text-cypress-text-secondary'
             }`}
           >
@@ -293,7 +293,7 @@ export default function WalletsScreen() {
           <Text
             className={`text-xs font-bold ${
               activeTab === 'vault'
-                ? 'text-[#0C1513]'
+                ? 'text-linen-text-primary dark:text-[#0C1513]'
                 : 'text-linen-text-secondary dark:text-cypress-text-secondary'
             }`}
           >

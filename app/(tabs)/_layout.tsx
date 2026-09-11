@@ -12,10 +12,11 @@ import { useQuickEntryStore } from '@/store/useQuickEntryStore';
 import { QuickEntrySheet } from '@/components/entry';
 
 function AnimatedAddButton({ onPress }: { onPress: () => void }) {
-  const scale = useSharedValue(1)
+  const scale = useSharedValue(1);
+  const colorScheme = useColorScheme() ?? 'dark';
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }]
-  }))
+  }));
 
   const handlePressIn = () => {
     scale.value = withSpring(0.85, { damping: 35, stiffness: 280 });
@@ -32,7 +33,7 @@ function AnimatedAddButton({ onPress }: { onPress: () => void }) {
         <Pressable
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
-          className="items-center justify-center -mt-6 w-16 h-16 rounded-full bg-accent-brass dark:bg-accent-champagne shadow-lg"
+          className="items-center justify-center -mt-6 w-16 h-16 rounded-full bg-cypress-surface dark:bg-accent-champagne shadow-lg border border-black/10 dark:border-transparent"
           style={{
             elevation: 8,
             shadowColor: '#000',
@@ -42,11 +43,27 @@ function AnimatedAddButton({ onPress }: { onPress: () => void }) {
           }}
           accessibilityLabel="Catat Transaksi Cepat"
         >
-          <Plus size={28} color="#0C1513" strokeWidth={2.6} />
+          <Plus
+            size={28}
+            color={colorScheme === 'dark' ? '#0C1513' : '#D4AF37'}
+            strokeWidth={2.6}
+          />
         </Pressable>
       </Animated.View>
     </View>
   );
+}
+
+function TabIcon({
+  Icon,
+  color,
+  focused,
+}: {
+  Icon: any;
+  color: any;
+  focused: boolean;
+}) {
+  return <Icon size={22} color={color} strokeWidth={focused ? 2.5 : 1.7} />;
 }
 
 export default function TabLayout() {
@@ -65,6 +82,10 @@ export default function TabLayout() {
           headerShown: false,
           tabBarActiveTintColor: colors.tint,
           tabBarInactiveTintColor: colors.tabIconDefault,
+          tabBarLabelStyle: {
+            fontSize: 11,
+            fontWeight: '600',
+          },
           tabBarStyle: {
             backgroundColor: colors.surface,
             borderTopColor: colors.border,
@@ -80,7 +101,7 @@ export default function TabLayout() {
           name='index'
           options={{
             title: 'Runway',
-            tabBarIcon: ({ color, size }) => <Home size={22} color={color} />
+            tabBarIcon: ({ color, focused }) => <TabIcon Icon={Home} color={color} focused={focused} />
           }}
         />
 
@@ -88,7 +109,7 @@ export default function TabLayout() {
           name='history'
           options={{
             title: 'Riwayat',
-            tabBarIcon: ({ color, size }) => <History size={22} color={color} />
+            tabBarIcon: ({ color, focused }) => <TabIcon Icon={History} color={color} focused={focused} />
           }}
         />
 
@@ -106,7 +127,7 @@ export default function TabLayout() {
           name='wallets'
           options={{
             title: 'Dompet',
-            tabBarIcon: ({ color, size }) => <Wallet size={22} color={color} />
+            tabBarIcon: ({ color, focused }) => <TabIcon Icon={Wallet} color={color} focused={focused} />
           }}
         />
 
@@ -114,7 +135,7 @@ export default function TabLayout() {
           name='settings'
           options={{
             title: 'Pengaturan',
-            tabBarIcon: ({ color, size }) => <Settings size={22} color={color} />
+            tabBarIcon: ({ color, focused }) => <TabIcon Icon={Settings} color={color} focused={focused} />
           }}
         />
       </Tabs>

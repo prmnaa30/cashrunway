@@ -71,12 +71,12 @@ export function WalletPicker({
             bgClass =
               colorScheme === 'dark'
                 ? 'bg-accent-champagne/15 border-accent-champagne'
-                : 'bg-accent-brass/15 border-accent-brass';
+                : 'bg-emerald-500/10 border-emerald-600';
             textClass =
               colorScheme === 'dark'
                 ? 'text-accent-champagne font-bold'
-                : 'text-accent-brass font-bold';
-            iconColor = colorScheme === 'dark' ? '#D4AF37' : '#B8860B';
+                : 'text-emerald-800 font-bold';
+            iconColor = colorScheme === 'dark' ? '#D4AF37' : '#059669';
           } else if (isExcluded) {
             bgClass = 'opacity-30 border-dashed border-linen-border dark:border-cypress-border';
           }

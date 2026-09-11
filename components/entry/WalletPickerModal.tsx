@@ -93,7 +93,7 @@ function WalletPickerModalComponent({
             const iconColor = isSelected
               ? colorScheme === 'dark'
                 ? '#D4AF37'
-                : '#B8860B'
+                : '#059669'
               : colors.textSecondary;
 
             return (
@@ -108,7 +108,7 @@ function WalletPickerModalComponent({
                   isSelected
                     ? colorScheme === 'dark'
                       ? 'bg-accent-champagne/15 border-accent-champagne'
-                      : 'bg-accent-brass/15 border-accent-brass'
+                      : 'bg-emerald-500/10 border-emerald-600'
                     : 'bg-linen-surface dark:bg-cypress-card border-linen-border/80 dark:border-cypress-border/80'
                 }`}
               >
@@ -118,7 +118,7 @@ function WalletPickerModalComponent({
                       isSelected
                         ? colorScheme === 'dark'
                           ? 'bg-accent-champagne/20'
-                          : 'bg-accent-brass/20'
+                          : 'bg-emerald-500/20'
                         : 'bg-linen-card dark:bg-cypress-surface'
                     }`}
                   >
@@ -130,7 +130,7 @@ function WalletPickerModalComponent({
                         isSelected
                           ? colorScheme === 'dark'
                             ? 'font-bold text-accent-champagne'
-                            : 'font-bold text-accent-brass'
+                            : 'font-bold text-emerald-800'
                           : 'font-semibold text-linen-text-primary dark:text-cypress-text-primary'
                       }`}
                       numberOfLines={1}
@@ -148,10 +148,14 @@ function WalletPickerModalComponent({
                     className={`w-6 h-6 rounded-full items-center justify-center ${
                       colorScheme === 'dark'
                         ? 'bg-accent-champagne'
-                        : 'bg-accent-brass'
+                        : 'bg-emerald-600'
                     }`}
                   >
-                    <Check size={14} color="#0C1513" strokeWidth={3} />
+                    <Check
+                      size={14}
+                      color={colorScheme === 'dark' ? '#0C1513' : '#FFFFFF'}
+                      strokeWidth={3}
+                    />
                   </View>
                 )}
               </TouchableOpacity>

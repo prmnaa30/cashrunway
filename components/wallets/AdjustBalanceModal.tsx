@@ -169,11 +169,11 @@ export function AdjustBalanceModal({
             <Pressable
               onPress={handleConfirm}
               disabled={isSubmitting}
-              className={`flex-1 py-3 rounded-xl bg-accent-brass dark:bg-accent-champagne items-center justify-center active:opacity-80 ${
+              className={`flex-1 py-3 rounded-xl bg-cypress-surface dark:bg-accent-champagne items-center justify-center active:opacity-80 shadow-xs ${
                 isSubmitting ? 'opacity-60' : ''
               }`}
             >
-              <Text className="text-xs font-black text-[#0C1513]">
+              <Text className="text-xs font-black text-white dark:text-[#0C1513]">
                 {isSubmitting ? 'Menyimpan...' : 'Perbarui Saldo'}
               </Text>
             </Pressable>

@@ -57,13 +57,13 @@ export function CategoryPicker({
                 ? 'bg-status-safe/15 border-status-safe'
                 : colorScheme === 'dark'
                 ? 'bg-accent-champagne/15 border-accent-champagne'
-                : 'bg-accent-brass/15 border-accent-brass';
+                : 'bg-emerald-500/10 border-emerald-600';
             textClass =
               mode === 'income'
                 ? 'text-status-safe font-bold'
                 : colorScheme === 'dark'
                 ? 'text-accent-champagne font-bold'
-                : 'text-accent-brass font-bold';
+                : 'text-emerald-800 font-bold';
           }
 
           return (

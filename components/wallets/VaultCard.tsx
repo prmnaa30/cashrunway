@@ -97,16 +97,16 @@ export function VaultCard({
       {hasPendingInterest && pendingAccrual && (
         <Pressable
           onPress={() => onAccrue?.(wallet.id)}
-          className="mt-3 py-2.5 px-3.5 rounded-xl bg-accent-brass dark:bg-accent-champagne flex-row items-center justify-between active:opacity-80"
+          className="mt-3 py-2.5 px-3.5 rounded-xl bg-cypress-surface dark:bg-accent-champagne flex-row items-center justify-between active:opacity-80 shadow-xs"
           accessibilityLabel={`Ambil bunga ${wallet.name}`}
         >
           <View className="flex-row items-center">
-            <Sparkles size={14} color="#0C1513" />
-            <Text className="ml-1.5 text-xs font-bold text-[#0C1513]">
+            <Sparkles size={14} color={colorScheme === 'dark' ? '#0C1513' : '#D4AF37'} />
+            <Text className="ml-1.5 text-xs font-bold text-white dark:text-[#0C1513]">
               Ambil Bunga ({pendingAccrual.missedDays} hari)
             </Text>
           </View>
-          <Text className="text-xs font-black font-mono text-[#0C1513]">
+          <Text className="text-xs font-black font-mono text-accent-champagne dark:text-[#0C1513]">
             +{formatCurrency(pendingAccrual.totalNetInterest, isPrivacyMode)}
           </Text>
         </Pressable>

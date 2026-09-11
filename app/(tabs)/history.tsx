@@ -151,9 +151,9 @@ export default function HistoryScreen() {
             </Text>
             <Pressable
               onPress={seedDemoData}
-              className="mt-4 py-2 px-4 rounded-xl bg-accent-brass dark:bg-accent-champagne active:opacity-80"
+              className="mt-4 py-2 px-4 rounded-xl bg-cypress-surface dark:bg-accent-champagne active:opacity-80 shadow-xs"
             >
-              <Text className="text-xs font-bold text-[#0C1513]">
+              <Text className="text-xs font-bold text-white dark:text-[#0C1513]">
                 Isi Data Sampel
               </Text>
             </Pressable>
