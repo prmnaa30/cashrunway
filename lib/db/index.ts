@@ -86,6 +86,12 @@ export async function initDatabase(dbInstance?: SQLite.SQLiteDatabase): Promise<
     try {
       await targetDb.execAsync("ALTER TABLE settings ADD COLUMN theme_mode TEXT NOT NULL DEFAULT 'system';");
     } catch (_) {}
+    try {
+      await targetDb.execAsync('ALTER TABLE settings ADD COLUMN is_reminder_enabled INTEGER NOT NULL DEFAULT 1;');
+    } catch (_) {}
+    try {
+      await targetDb.execAsync(`ALTER TABLE settings ADD COLUMN reminder_times TEXT NOT NULL DEFAULT '${schema.DEFAULT_REMINDERS_JSON}';`);
+    } catch (_) {}
 
     const drizzleClient = dbInstance ? drizzle(dbInstance, { schema }) : db;
     await seedInitialData(drizzleClient);

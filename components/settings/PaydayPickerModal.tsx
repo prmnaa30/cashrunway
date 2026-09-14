@@ -54,14 +54,15 @@ export function PaydayPickerModal({
               <Pressable
                 key={day}
                 onPress={() => setSelectedDay(day)}
-                className={`w-[13%] aspect-square mb-2.5 items-center justify-center rounded-xl border ${
+                hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                className={`w-[13%] min-w-[40px] min-h-[44px] aspect-square mb-2.5 items-center justify-center rounded-xl border ${
                   isSelected
                     ? 'bg-cypress-surface dark:bg-accent-champagne border-cypress-surface dark:border-accent-champagne shadow-sm'
                     : 'bg-linen-surface dark:bg-cypress-surface border-linen-border dark:border-cypress-border active:opacity-70'
                 }`}
               >
                 <Text
-                  className={`text-xs font-bold ${
+                  className={`text-xs font-bold tabular-nums ${
                     isSelected
                       ? 'text-white dark:text-black'
                       : 'text-linen-text-primary dark:text-cypress-text-secondary'
@@ -76,7 +77,8 @@ export function PaydayPickerModal({
 
         <Pressable
           onPress={handleConfirm}
-          className="mt-3 w-full py-3.5 rounded-xl bg-cypress-surface dark:bg-accent-champagne items-center justify-center active:opacity-80"
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          className="mt-3 w-full min-h-[44px] py-3.5 rounded-xl bg-cypress-surface dark:bg-accent-champagne items-center justify-center active:opacity-80"
         >
           <Text className="text-sm font-bold text-white dark:text-black">
             {t('common.save')}

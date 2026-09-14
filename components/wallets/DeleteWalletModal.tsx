@@ -85,7 +85,7 @@ export function DeleteWalletModal({
                 </Text>
                 <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary mt-0.5 leading-4">
                   Akun ini masih memiliki saldo{' '}
-                  <Text className="font-bold font-mono">
+                  <Text className="font-bold font-mono tabular-nums">
                     {formatCurrency(wallet.balance, isPrivacyMode)}
                   </Text>
                   . Saldo tidak akan lagi dihitung ke kas harian / tabungan aktif setelah diarsipkan.
@@ -109,7 +109,8 @@ export function DeleteWalletModal({
           <View className="flex-row gap-2">
             <Pressable
               onPress={onClose}
-              className="flex-1 py-3 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              className="flex-1 min-h-[44px] py-3 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70"
             >
               <Text className="text-xs font-bold text-linen-text-secondary dark:text-cypress-text-secondary">
                 Batal
@@ -119,7 +120,8 @@ export function DeleteWalletModal({
             <Pressable
               onPress={handleConfirm}
               disabled={isSubmitting}
-              className={`flex-1 py-3 rounded-xl bg-status-danger items-center justify-center active:opacity-80 ${
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              className={`flex-1 min-h-[44px] py-3 rounded-xl bg-status-danger items-center justify-center active:opacity-80 ${
                 isSubmitting ? 'opacity-60' : ''
               }`}
             >

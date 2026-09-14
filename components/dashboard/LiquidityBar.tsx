@@ -78,7 +78,7 @@ export function LiquidityBar({
           </Animated.View>
         </View>
 
-        <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary">
+        <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary tabular-nums">
           Total {formatCurrency(totalBalance, isPrivacyMode)}
         </Text>
       </View>
@@ -105,7 +105,7 @@ export function LiquidityBar({
               className="w-2.5 h-2.5 rounded-sm mr-1.5"
               style={{ backgroundColor: operationalColor }}
             />
-            <Text className="text-xs font-semibold text-linen-text-secondary dark:text-cypress-text-secondary">
+            <Text className="text-xs font-semibold text-linen-text-secondary dark:text-cypress-text-secondary tabular-nums">
               Uang Harian ({operationalRatio}%)
             </Text>
           </View>
@@ -115,7 +115,7 @@ export function LiquidityBar({
               className="w-2.5 h-2.5 rounded-sm mr-1.5"
               style={{ backgroundColor: vaultColor }}
             />
-            <Text className="text-xs font-semibold text-linen-text-secondary dark:text-cypress-text-secondary">
+            <Text className="text-xs font-semibold text-linen-text-secondary dark:text-cypress-text-secondary tabular-nums">
               Tabungan ({100 - operationalRatio}%)
             </Text>
           </View>
@@ -142,7 +142,7 @@ export function LiquidityBar({
                   Uang Harian (Kas Aktif)
                 </Text>
               </View>
-              <Text className="text-xs font-mono font-bold text-status-safe">
+              <Text className="text-xs font-mono font-bold text-status-safe tabular-nums">
                 {formatCurrency(operationalBalance, isPrivacyMode)}
               </Text>
             </View>
@@ -153,7 +153,7 @@ export function LiquidityBar({
                   <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary">
                     • {w.name}
                   </Text>
-                  <Text className="text-[11px] font-mono text-linen-text-secondary dark:text-cypress-text-secondary">
+                  <Text className="text-[11px] font-mono text-linen-text-secondary dark:text-cypress-text-secondary tabular-nums">
                     {formatCurrency(w.balance, isPrivacyMode)}
                   </Text>
                 </View>
@@ -177,7 +177,7 @@ export function LiquidityBar({
                   Tabungan / Vault (Terkunci)
                 </Text>
               </View>
-              <Text className="text-xs font-mono font-bold text-accent-brass dark:text-accent-champagne">
+              <Text className="text-xs font-mono font-bold text-accent-brass dark:text-accent-champagne tabular-nums">
                 {formatCurrency(vaultBalance, isPrivacyMode)}
               </Text>
             </View>
@@ -188,7 +188,7 @@ export function LiquidityBar({
                   <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary">
                     • {w.name}
                   </Text>
-                  <Text className="text-[11px] font-mono text-linen-text-secondary dark:text-cypress-text-secondary">
+                  <Text className="text-[11px] font-mono text-linen-text-secondary dark:text-cypress-text-secondary tabular-nums">
                     {formatCurrency(w.balance, isPrivacyMode)}
                   </Text>
                 </View>

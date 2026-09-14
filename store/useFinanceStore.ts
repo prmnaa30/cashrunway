@@ -161,6 +161,8 @@ const DEFAULT_VAULT_STATS: VaultYieldStats = {
   pendingAccruals: [],
 };
 
+let alarmSyncDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
 export const useFinanceStore = create<FinanceState>((set, get) => ({
   wallets: [],
   transactions: [],
@@ -337,6 +339,13 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       };
 
       if (settings) {
+        let parsedReminders = undefined;
+        if (settings.reminderTimes) {
+          try {
+            parsedReminders = JSON.parse(settings.reminderTimes);
+          } catch (_) {}
+        }
+
         try {
           const { useSettingsStore } = require('@/store/useSettingStore');
           const savedTheme = (settings.themeMode as any) || 'system';
@@ -344,6 +353,8 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
             currency: settings.currency || 'IDR',
             isPrivacyMode: Boolean(settings.isPrivacyMode),
             themeMode: savedTheme,
+            ...(settings.isReminderEnabled !== undefined ? { isReminderEnabled: Boolean(settings.isReminderEnabled) } : {}),
+            ...(parsedReminders ? { reminders: parsedReminders } : {}),
           });
           try {
             const { colorScheme } = require('nativewind');
@@ -368,6 +379,27 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
         isLoading: false,
         isInitialized: true,
       });
+
+      // Synchronize alarms with latest operational runway days (debounced)
+      try {
+        if (alarmSyncDebounceTimer) {
+          clearTimeout(alarmSyncDebounceTimer);
+        }
+        alarmSyncDebounceTimer = setTimeout(async () => {
+          try {
+            const { useSettingsStore } = require('@/store/useSettingStore');
+            const { syncScheduledAlarms } = require('@/lib/services/notifications');
+            const currentSettings = useSettingsStore.getState();
+            await syncScheduledAlarms(
+              currentSettings.reminders,
+              currentSettings.isReminderEnabled,
+              runway.operationalRunwayDays
+            );
+          } catch (err) {
+            console.error('Failed to sync scheduled alarms in useFinanceStore debounce:', err);
+          }
+        }, 300);
+      } catch (_) {}
     } catch (error) {
       console.error('Failed to load finance data:', error);
       set({ isLoading: false });

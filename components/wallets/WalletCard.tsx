@@ -50,7 +50,7 @@ export function WalletCard({
   };
 
   return (
-    <View className="p-4 rounded-2xl bg-linen-card dark:bg-cypress-card border border-linen-border dark:border-cypress-border mb-3 flex-row items-center justify-between">
+    <View className="p-4 min-h-[44px] rounded-2xl bg-linen-card dark:bg-cypress-card border border-linen-border dark:border-cypress-border mb-3 flex-row items-center justify-between">
       <View className="flex-row items-center flex-1 mr-3">
         <View className="w-10 h-10 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center mr-3">
           {getWalletIcon(wallet.type)}
@@ -63,22 +63,22 @@ export function WalletCard({
           >
             {wallet.name}
           </Text>
-          <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary mt-0.5">
+          <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary mt-0.5 tabular-nums">
             {getWalletCategoryLabel(wallet.type)} • {share}% dari uang harian
           </Text>
         </View>
       </View>
 
       <View className="flex-row items-center">
-        <Text className="text-sm font-bold font-mono text-linen-text-primary dark:text-cypress-text-primary mr-2">
+        <Text className="text-sm font-bold font-mono tabular-nums text-linen-text-primary dark:text-cypress-text-primary mr-2">
           {formatCurrency(wallet.balance, isPrivacyMode)}
         </Text>
 
         {onOpenOptions && (
           <Pressable
             onPress={() => onOpenOptions(wallet)}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            className="w-8 h-8 rounded-lg items-center justify-center active:opacity-60"
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            className="min-w-[44px] min-h-[44px] rounded-lg items-center justify-center active:opacity-60"
             accessibilityLabel={`Opsi ${wallet.name}`}
           >
             <MoreVertical size={16} color={colors.textSecondary} />

@@ -68,10 +68,11 @@ function CategoryPickerModalComponent({
           <TouchableOpacity
             onPress={onClose}
             activeOpacity={0.7}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            className="w-7 h-7 rounded-full bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border items-center justify-center"
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            className="min-w-[44px] min-h-[44px] rounded-full bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border items-center justify-center"
+            accessibilityLabel="Tutup"
           >
-            <X size={14} color={colors.textSecondary} />
+            <X size={16} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
 
@@ -115,7 +116,7 @@ function CategoryPickerModalComponent({
                     onSelectCategory(category.id);
                     onClose();
                   }}
-                  className={`w-[48%] flex-row items-center p-3 mb-2.5 rounded-2xl border ${borderClass}`}
+                  className={`w-[48%] min-h-[44px] flex-row items-center p-3 mb-2.5 rounded-2xl border ${borderClass}`}
                 >
                   <Text className="text-2xl mr-2">{category.icon}</Text>
                   <View className="flex-1 mr-1">
@@ -157,7 +158,7 @@ function CategoryPickerModalComponent({
             <TouchableOpacity
               activeOpacity={0.75}
               onPress={() => setIsFormModalVisible(true)}
-              className="w-[48%] flex-row items-center p-3 mb-2.5 rounded-2xl border border-dashed border-linen-border dark:border-cypress-border bg-linen-surface/50 dark:bg-cypress-card/40"
+              className="w-[48%] min-h-[44px] flex-row items-center p-3 mb-2.5 rounded-2xl border border-dashed border-linen-border dark:border-cypress-border bg-linen-surface/50 dark:bg-cypress-card/40"
             >
               <View className="w-7 h-7 rounded-full bg-linen-border/40 dark:bg-cypress-border/40 items-center justify-center mr-2">
                 <Plus size={15} color={colors.textSecondary} />

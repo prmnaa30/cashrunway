@@ -1,5 +1,7 @@
 import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
+import { DEFAULT_REMINDERS_JSON } from './types';
+export { DEFAULT_REMINDERS, DEFAULT_REMINDERS_JSON } from './types';
 
 export const wallets = sqliteTable('wallets', {
   id: text('id').primaryKey(),
@@ -64,6 +66,8 @@ export const settings = sqliteTable('settings', {
   fallbackDailyBurn: real('fallback_daily_burn').notNull().default(50000),
   burnWindowDays: integer('burn_window_days').notNull().default(14),
   notificationHour: integer('notification_hour').notNull().default(20),
+  isReminderEnabled: integer('is_reminder_enabled').notNull().default(1),
+  reminderTimes: text('reminder_times').notNull().default(DEFAULT_REMINDERS_JSON),
   language: text('language').notNull().default('auto'),
   currency: text('currency').notNull().default('IDR'),
   themeMode: text('theme_mode').notNull().default('system'),
@@ -177,6 +181,8 @@ export const CREATE_TABLES_SQL_STATEMENTS = [
     fallback_daily_burn REAL NOT NULL DEFAULT 50000,
     burn_window_days INTEGER NOT NULL DEFAULT 14,
     notification_hour INTEGER NOT NULL DEFAULT 20,
+    is_reminder_enabled INTEGER NOT NULL DEFAULT 1,
+    reminder_times TEXT NOT NULL DEFAULT '${DEFAULT_REMINDERS_JSON}',
     language TEXT NOT NULL DEFAULT 'auto',
     currency TEXT NOT NULL DEFAULT 'IDR',
     theme_mode TEXT NOT NULL DEFAULT 'system',

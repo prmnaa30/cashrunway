@@ -74,10 +74,11 @@ function WalletPickerModalComponent({
           <TouchableOpacity
             onPress={onClose}
             activeOpacity={0.7}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            className="w-7 h-7 rounded-full bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border items-center justify-center"
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            className="min-w-[44px] min-h-[44px] rounded-full bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border items-center justify-center"
+            accessibilityLabel="Tutup"
           >
-            <X size={14} color={colors.textSecondary} />
+            <X size={16} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
 
@@ -104,7 +105,7 @@ function WalletPickerModalComponent({
                   onSelectWallet(wallet.id);
                   onClose();
                 }}
-                className={`flex-row items-center justify-between p-3.5 mb-2 rounded-2xl border ${
+                className={`flex-row items-center justify-between p-3.5 min-h-[44px] mb-2 rounded-2xl border ${
                   isSelected
                     ? colorScheme === 'dark'
                       ? 'bg-accent-champagne/15 border-accent-champagne'
@@ -137,7 +138,7 @@ function WalletPickerModalComponent({
                     >
                       {wallet.name}
                     </Text>
-                    <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary font-mono mt-0.5">
+                    <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary font-mono tabular-nums mt-0.5">
                       {formatCurrency(wallet.balance, isPrivacyMode)}
                     </Text>
                   </View>

@@ -122,8 +122,9 @@ export function ManageCategoriesModal({
             {/* Quick Add Button */}
             <TouchableOpacity
               onPress={handleOpenAdd}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               activeOpacity={0.8}
-              className={`flex-row items-center px-3.5 py-2.5 rounded-xl ${
+              className={`min-h-[44px] flex-row items-center px-3.5 py-2.5 rounded-xl ${
                 isDark ? 'bg-accent-champagne' : 'bg-cypress-surface'
               }`}
             >
@@ -206,19 +207,21 @@ export function ManageCategoriesModal({
                       <TouchableOpacity
                         onPress={() => handleOpenEdit(cat)}
                         activeOpacity={0.7}
-                        hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-                        className="w-8 h-8 rounded-xl bg-linen-bg dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center mr-1"
+                        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                        className="min-w-[44px] min-h-[44px] rounded-xl bg-linen-bg dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center mr-1"
+                        accessibilityLabel={`Ubah ${cat.name}`}
                       >
-                        <Pencil size={14} color={colors.textSecondary} />
+                        <Pencil size={15} color={colors.textSecondary} />
                       </TouchableOpacity>
 
                       <TouchableOpacity
                         onPress={() => setCategoryToDelete(cat)}
                         activeOpacity={0.7}
-                        hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-                        className="w-8 h-8 rounded-xl bg-status-danger/10 border border-status-danger/25 items-center justify-center"
+                        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                        className="min-w-[44px] min-h-[44px] rounded-xl bg-status-danger/10 border border-status-danger/25 items-center justify-center"
+                        accessibilityLabel={`Hapus ${cat.name}`}
                       >
-                        <Trash2 size={14} color="#EF4444" />
+                        <Trash2 size={15} color="#EF4444" />
                       </TouchableOpacity>
                     </>
                   )}

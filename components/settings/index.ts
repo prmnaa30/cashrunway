@@ -7,3 +7,4 @@ export * from './PaydayPickerModal';
 export * from './CurrencyPickerModal';
 export * from './DangerConfirmModal';
 export * from './ManageCategoriesModal';
+export * from './ReminderManagerModal';

@@ -39,7 +39,7 @@ export function TransactionItem({
       : [tx.category?.name, sourceAccount, timeStr].filter(Boolean).join(' • ');
 
   return (
-    <View className="p-3.5 flex-row items-center justify-between active:bg-linen-surface/50 dark:active:bg-cypress-surface/50">
+    <View className="p-3.5 min-h-[48px] flex-row items-center justify-between active:bg-linen-surface/50 dark:active:bg-cypress-surface/50">
       <View className="flex-row items-center flex-1 mr-3">
         <View
           className={`w-10 h-10 rounded-xl items-center justify-center mr-3 ${
@@ -94,7 +94,7 @@ export function TransactionItem({
       <View className="items-end flex-row items-center space-x-2">
         <View className="items-end">
           <Text
-            className={`text-sm font-bold font-mono tracking-tight ${
+            className={`text-sm font-bold font-mono tracking-tight tabular-nums ${
               tx.type === 'expense'
                 ? 'text-status-danger'
                 : tx.type === 'income'
@@ -110,7 +110,7 @@ export function TransactionItem({
           </Text>
 
           {tx.type === 'transfer' && tx.fee > 0 && (
-            <Text className="text-[10px] text-linen-text-secondary dark:text-cypress-text-secondary">
+            <Text className="text-[10px] text-linen-text-secondary dark:text-cypress-text-secondary tabular-nums">
               fee {formatCurrency(tx.fee, isPrivacyMode)}
             </Text>
           )}
@@ -118,11 +118,11 @@ export function TransactionItem({
 
         <Pressable
           onPress={() => onDelete(tx)}
-          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          className="ml-2.5 p-1 rounded-lg active:bg-status-danger/10"
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          className="ml-2.5 min-w-[44px] min-h-[44px] items-center justify-center rounded-lg active:bg-status-danger/10"
           accessibilityLabel="Hapus transaksi"
         >
-          <Trash2 size={14} color={colors.textSecondary} />
+          <Trash2 size={16} color={colors.textSecondary} />
         </Pressable>
       </View>
     </View>

@@ -100,11 +100,11 @@ export function DeleteTransactionModal({
           <View className="items-center mb-3 relative">
             <Pressable
               onPress={onClose}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-              className="absolute right-0 top-0 w-8 h-8 rounded-full bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70 z-10"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              className="absolute right-0 top-0 min-w-[44px] min-h-[44px] rounded-full bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70 z-10"
               accessibilityLabel="Tutup"
             >
-              <X size={14} color={colors.textSecondary} />
+              <X size={16} color={colors.textSecondary} />
             </Pressable>
 
             <View className="w-12 h-12 rounded-2xl bg-status-danger/10 border border-status-danger/25 items-center justify-center mb-2">
@@ -165,7 +165,7 @@ export function DeleteTransactionModal({
             </View>
 
             <Text
-              className={`text-xs font-bold font-mono ${
+              className={`text-xs font-bold font-mono tabular-nums ${
                 transaction.type === 'expense'
                   ? 'text-status-danger'
                   : transaction.type === 'income'
@@ -191,7 +191,8 @@ export function DeleteTransactionModal({
           <View className="flex-row gap-3">
             <Pressable
               onPress={onClose}
-              className="flex-1 py-3 rounded-2xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              className="flex-1 min-h-[44px] py-3 rounded-2xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70"
             >
               <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary">
                 Batal
@@ -200,7 +201,8 @@ export function DeleteTransactionModal({
 
             <Pressable
               onPress={onConfirm}
-              className="flex-1 py-3 rounded-2xl bg-status-danger items-center justify-center active:opacity-80 shadow-sm"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              className="flex-1 min-h-[44px] py-3 rounded-2xl bg-status-danger items-center justify-center active:opacity-80 shadow-sm"
             >
               <Text className="text-xs font-bold text-white">
                 Hapus

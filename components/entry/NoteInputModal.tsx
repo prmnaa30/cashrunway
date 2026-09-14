@@ -84,10 +84,11 @@ function NoteInputModalComponent({
               <TouchableOpacity
                 onPress={handleClose}
                 activeOpacity={0.7}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                className="w-7 h-7 rounded-full bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border items-center justify-center"
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                className="min-w-[44px] min-h-[44px] rounded-full bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border items-center justify-center"
+                accessibilityLabel="Tutup"
               >
-                <X size={14} color={colors.textSecondary} />
+                <X size={16} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
@@ -113,8 +114,9 @@ function NoteInputModalComponent({
                   onSaveNote('');
                   onClose();
                 }}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                 activeOpacity={0.7}
-                className="px-4 py-3 rounded-2xl border border-linen-border dark:border-cypress-border items-center justify-center"
+                className="min-w-[44px] min-h-[44px] px-4 py-3 rounded-2xl border border-linen-border dark:border-cypress-border items-center justify-center"
               >
                 <Text className="text-xs font-bold text-linen-text-secondary dark:text-cypress-text-secondary">
                   Hapus
@@ -123,8 +125,9 @@ function NoteInputModalComponent({
 
               <TouchableOpacity
                 onPress={handleSave}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
                 activeOpacity={0.8}
-                className="flex-1 py-3 rounded-2xl bg-accent-brass dark:bg-accent-champagne items-center justify-center shadow-sm"
+                className="flex-1 min-h-[44px] py-3 rounded-2xl bg-accent-brass dark:bg-accent-champagne items-center justify-center shadow-sm"
               >
                 <Text className="text-xs font-black text-[#0C1513]">
                   Simpan Catatan

@@ -113,10 +113,11 @@ function DatePickerModalComponent({
           <TouchableOpacity
             onPress={onClose}
             activeOpacity={0.7}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            className="w-7 h-7 rounded-full bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border items-center justify-center"
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+            className="min-w-[44px] min-h-[44px] rounded-full bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border items-center justify-center"
+            accessibilityLabel="Tutup"
           >
-            <X size={14} color={colors.textSecondary} />
+            <X size={16} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
 
@@ -125,7 +126,7 @@ function DatePickerModalComponent({
           <TouchableOpacity
             onPress={() => setActiveTab('recent')}
             activeOpacity={0.8}
-            className={`flex-1 py-1.5 rounded-lg items-center ${
+            className={`flex-1 min-h-[44px] py-1.5 rounded-lg items-center justify-center ${
               activeTab === 'recent'
                 ? 'bg-linen-card dark:bg-cypress-surface shadow-xs'
                 : 'opacity-60'
@@ -145,7 +146,7 @@ function DatePickerModalComponent({
           <TouchableOpacity
             onPress={() => setActiveTab('custom')}
             activeOpacity={0.8}
-            className={`flex-1 py-1.5 rounded-lg items-center ${
+            className={`flex-1 min-h-[44px] py-1.5 rounded-lg items-center justify-center ${
               activeTab === 'custom'
                 ? 'bg-linen-card dark:bg-cypress-surface shadow-xs'
                 : 'opacity-60'
@@ -181,7 +182,7 @@ function DatePickerModalComponent({
                     onSelectDate(item.dateStr);
                     onClose();
                   }}
-                  className={`flex-row items-center justify-between p-3 mb-2 rounded-2xl border ${
+                  className={`flex-row items-center justify-between p-3 min-h-[44px] mb-2 rounded-2xl border ${
                     isSelected
                       ? colorScheme === 'dark'
                         ? 'bg-accent-champagne/15 border-accent-champagne'
@@ -212,7 +213,7 @@ function DatePickerModalComponent({
                       </Text>
                     </View>
                     <Text
-                      className={`text-xs font-semibold ${
+                      className={`text-xs font-semibold tabular-nums ${
                         isSelected
                           ? colorScheme === 'dark'
                             ? 'text-accent-champagne font-bold'
@@ -256,20 +257,24 @@ function DatePickerModalComponent({
                 <View className="flex-row items-center rounded-2xl bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border p-1">
                   <TouchableOpacity
                     onPress={() => setCustomDay((prev) => (prev > 1 ? prev - 1 : 31))}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     activeOpacity={0.7}
-                    className="w-8 h-8 rounded-xl items-center justify-center"
+                    className="min-w-[44px] min-h-[44px] rounded-xl items-center justify-center"
+                    accessibilityLabel="Kurangi tanggal"
                   >
-                    <ChevronLeft size={16} color={colors.text} />
+                    <ChevronLeft size={18} color={colors.text} />
                   </TouchableOpacity>
-                  <Text className="w-8 text-center text-base font-black font-mono text-linen-text-primary dark:text-cypress-text-primary">
+                  <Text className="w-8 text-center text-base font-black font-mono tabular-nums text-linen-text-primary dark:text-cypress-text-primary">
                     {customDay}
                   </Text>
                   <TouchableOpacity
                     onPress={() => setCustomDay((prev) => (prev < 31 ? prev + 1 : 1))}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     activeOpacity={0.7}
-                    className="w-8 h-8 rounded-xl items-center justify-center"
+                    className="min-w-[44px] min-h-[44px] rounded-xl items-center justify-center"
+                    accessibilityLabel="Tambah tanggal"
                   >
-                    <ChevronRight size={16} color={colors.text} />
+                    <ChevronRight size={18} color={colors.text} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -282,20 +287,24 @@ function DatePickerModalComponent({
                 <View className="flex-row items-center rounded-2xl bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border p-1">
                   <TouchableOpacity
                     onPress={() => setCustomMonth((prev) => (prev > 1 ? prev - 1 : 12))}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     activeOpacity={0.7}
-                    className="w-8 h-8 rounded-xl items-center justify-center"
+                    className="min-w-[44px] min-h-[44px] rounded-xl items-center justify-center"
+                    accessibilityLabel="Kurangi bulan"
                   >
-                    <ChevronLeft size={16} color={colors.text} />
+                    <ChevronLeft size={18} color={colors.text} />
                   </TouchableOpacity>
                   <Text className="w-12 text-center text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary">
                     {MONTH_NAMES[customMonth - 1].slice(0, 3)}
                   </Text>
                   <TouchableOpacity
                     onPress={() => setCustomMonth((prev) => (prev < 12 ? prev + 1 : 1))}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     activeOpacity={0.7}
-                    className="w-8 h-8 rounded-xl items-center justify-center"
+                    className="min-w-[44px] min-h-[44px] rounded-xl items-center justify-center"
+                    accessibilityLabel="Tambah bulan"
                   >
-                    <ChevronRight size={16} color={colors.text} />
+                    <ChevronRight size={18} color={colors.text} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -308,20 +317,24 @@ function DatePickerModalComponent({
                 <View className="flex-row items-center rounded-2xl bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border p-1">
                   <TouchableOpacity
                     onPress={() => setCustomYear((prev) => prev - 1)}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     activeOpacity={0.7}
-                    className="w-8 h-8 rounded-xl items-center justify-center"
+                    className="min-w-[44px] min-h-[44px] rounded-xl items-center justify-center"
+                    accessibilityLabel="Kurangi tahun"
                   >
-                    <ChevronLeft size={16} color={colors.text} />
+                    <ChevronLeft size={18} color={colors.text} />
                   </TouchableOpacity>
-                  <Text className="w-12 text-center text-xs font-bold font-mono text-linen-text-primary dark:text-cypress-text-primary">
+                  <Text className="w-12 text-center text-xs font-bold font-mono tabular-nums text-linen-text-primary dark:text-cypress-text-primary">
                     {customYear}
                   </Text>
                   <TouchableOpacity
                     onPress={() => setCustomYear((prev) => prev + 1)}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                     activeOpacity={0.7}
-                    className="w-8 h-8 rounded-xl items-center justify-center"
+                    className="min-w-[44px] min-h-[44px] rounded-xl items-center justify-center"
+                    accessibilityLabel="Tambah tahun"
                   >
-                    <ChevronRight size={16} color={colors.text} />
+                    <ChevronRight size={18} color={colors.text} />
                   </TouchableOpacity>
                 </View>
               </View>
@@ -329,8 +342,9 @@ function DatePickerModalComponent({
 
             <TouchableOpacity
               onPress={handleApplyCustom}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               activeOpacity={0.8}
-              className="py-3.5 rounded-2xl bg-accent-brass dark:bg-accent-champagne items-center justify-center shadow-sm"
+              className="min-h-[44px] py-3.5 rounded-2xl bg-accent-brass dark:bg-accent-champagne items-center justify-center shadow-sm"
             >
               <Text className="text-xs font-black text-[#0C1513]">
                 Gunakan Tanggal Ini

@@ -46,7 +46,8 @@ export function DangerConfirmModal({
           <View className="flex-row space-x-3">
             <Pressable
               onPress={onClose}
-              className="flex-1 py-3 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center mr-2 active:opacity-70"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              className="flex-1 min-h-[44px] py-3 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center mr-2 active:opacity-70"
             >
               <Text className="text-xs font-semibold text-linen-text-secondary dark:text-cypress-text-secondary">
                 {t('common.cancel')}
@@ -58,7 +59,8 @@ export function DangerConfirmModal({
                 onConfirm();
                 onClose();
               }}
-              className="flex-1 py-3 rounded-xl bg-status-danger items-center justify-center ml-2 active:opacity-80"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              className="flex-1 min-h-[44px] py-3 rounded-xl bg-status-danger items-center justify-center ml-2 active:opacity-80"
             >
               <Text className="text-xs font-bold text-white">
                 {confirmLabel}

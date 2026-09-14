@@ -192,10 +192,11 @@ export function CategoryFormModal({
             <TouchableOpacity
               onPress={onClose}
               activeOpacity={0.7}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              className="w-7 h-7 rounded-full bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border items-center justify-center"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              className="min-w-[44px] min-h-[44px] rounded-full bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border items-center justify-center"
+              accessibilityLabel="Tutup"
             >
-              <X size={14} color={colors.textSecondary} />
+              <X size={16} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
@@ -215,7 +216,7 @@ export function CategoryFormModal({
                   <TouchableOpacity
                     onPress={() => handleTypeChange('expense')}
                     activeOpacity={0.8}
-                    className={`flex-1 py-2 rounded-lg items-center justify-center ${
+                    className={`flex-1 min-h-[44px] py-2 rounded-lg items-center justify-center ${
                       type === 'expense'
                         ? isDark
                           ? 'bg-accent-champagne'
@@ -239,7 +240,7 @@ export function CategoryFormModal({
                   <TouchableOpacity
                     onPress={() => handleTypeChange('income')}
                     activeOpacity={0.8}
-                    className={`flex-1 py-2 rounded-lg items-center justify-center ${
+                    className={`flex-1 min-h-[44px] py-2 rounded-lg items-center justify-center ${
                       type === 'income'
                         ? isDark
                           ? 'bg-accent-champagne'
@@ -322,8 +323,9 @@ export function CategoryFormModal({
                         setIcon(emojiItem);
                         setErrorMessage(null);
                       }}
+                      hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
                       activeOpacity={0.7}
-                      className={`w-10 h-10 m-1 rounded-xl items-center justify-center border ${
+                      className={`min-w-[44px] min-h-[44px] m-1 rounded-xl items-center justify-center border ${
                         isSelected
                           ? isDark
                             ? 'bg-accent-champagne/20 border-accent-champagne'
@@ -375,8 +377,9 @@ export function CategoryFormModal({
             <TouchableOpacity
               onPress={handleSubmit}
               disabled={isSubmitting || !name.trim() || !icon.trim()}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               activeOpacity={0.8}
-              className={`w-full py-3.5 rounded-xl items-center justify-center mt-1 mb-2 ${
+              className={`w-full min-h-[44px] py-3.5 rounded-xl items-center justify-center mt-1 mb-2 ${
                 !name.trim() || !icon.trim()
                   ? 'bg-linen-border/60 dark:bg-cypress-border/40 opacity-50'
                   : isDark

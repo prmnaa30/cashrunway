@@ -34,7 +34,7 @@ export function VaultYieldCard({
 
         {vaultStats.totalPendingInterest > 0 ? (
           <View className="px-2 py-0.5 rounded-full bg-status-safe/15 border border-status-safe/30">
-            <Text className="text-[10px] font-bold text-status-safe font-mono">
+            <Text className="text-[10px] font-bold text-status-safe font-mono tabular-nums">
               +{formatCurrency(vaultStats.totalPendingInterest, isPrivacyMode)} siap diambil
             </Text>
           </View>
@@ -49,7 +49,7 @@ export function VaultYieldCard({
 
       <View className="my-1">
         <View className="flex-row items-baseline">
-          <Text className="text-4xl font-black tracking-tight text-status-safe">
+          <Text className="text-4xl font-black tracking-tight text-status-safe tabular-nums">
             +{formatCurrency(vaultStats.estimatedDailyNet, isPrivacyMode)}
           </Text>
           <Text className="ml-1.5 text-xs font-semibold text-linen-text-secondary dark:text-cypress-text-secondary">
@@ -66,7 +66,7 @@ export function VaultYieldCard({
           <Text className="text-[10px] uppercase font-semibold text-linen-text-secondary dark:text-cypress-text-secondary tracking-wider">
             Perkiraan 1 Bulan
           </Text>
-          <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary mt-0.5">
+          <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary mt-0.5 tabular-nums">
             +{formatCurrency(vaultStats.projectedMonthlyYield, isPrivacyMode)}
           </Text>
         </View>
@@ -75,7 +75,7 @@ export function VaultYieldCard({
           <Text className="text-[10px] uppercase font-semibold text-linen-text-secondary dark:text-cypress-text-secondary tracking-wider">
             Perkiraan 1 Tahun
           </Text>
-          <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary mt-0.5">
+          <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary mt-0.5 tabular-nums">
             +{formatCurrency(vaultStats.projectedAnnualYield, isPrivacyMode)}
           </Text>
         </View>

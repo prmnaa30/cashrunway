@@ -85,10 +85,11 @@ export function AdjustBalanceModal({
 
             <Pressable
               onPress={onClose}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              className="w-7 h-7 rounded-full items-center justify-center bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              className="min-w-[44px] min-h-[44px] rounded-full items-center justify-center bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border"
+              accessibilityLabel="Tutup"
             >
-              <X size={14} color={colors.textSecondary} />
+              <X size={16} color={colors.textSecondary} />
             </Pressable>
           </View>
 
@@ -102,7 +103,7 @@ export function AdjustBalanceModal({
               <Text className="text-[11px] font-semibold text-linen-text-secondary dark:text-cypress-text-secondary">
                 Saldo Tercatat di Aplikasi:
               </Text>
-              <Text className="text-xs font-bold font-mono text-linen-text-primary dark:text-cypress-text-primary">
+              <Text className="text-xs font-bold font-mono tabular-nums text-linen-text-primary dark:text-cypress-text-primary">
                 {formatCurrency(currentBalance, isPrivacyMode)}
               </Text>
             </View>
@@ -117,7 +118,7 @@ export function AdjustBalanceModal({
                 keyboardType="numeric"
                 placeholder="0"
                 placeholderTextColor={colors.textSecondary}
-                className="w-full px-3 py-2 rounded-xl bg-linen-card dark:bg-cypress-card border border-linen-border dark:border-cypress-border text-base font-black font-mono text-linen-text-primary dark:text-cypress-text-primary"
+                className="w-full min-h-[44px] px-3 py-2 rounded-xl bg-linen-card dark:bg-cypress-card border border-linen-border dark:border-cypress-border text-base font-black font-mono tabular-nums text-linen-text-primary dark:text-cypress-text-primary"
               />
             </View>
 
@@ -128,7 +129,7 @@ export function AdjustBalanceModal({
                   Selisih Penyesuaian:
                 </Text>
                 <Text
-                  className={`text-xs font-black font-mono ${
+                  className={`text-xs font-black font-mono tabular-nums ${
                     delta > 0
                       ? 'text-status-safe'
                       : delta < 0
@@ -159,7 +160,8 @@ export function AdjustBalanceModal({
           <View className="flex-row gap-2">
             <Pressable
               onPress={onClose}
-              className="flex-1 py-3 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70"
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              className="flex-1 min-h-[44px] py-3 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70"
             >
               <Text className="text-xs font-bold text-linen-text-secondary dark:text-cypress-text-secondary">
                 Batal
@@ -169,7 +171,8 @@ export function AdjustBalanceModal({
             <Pressable
               onPress={handleConfirm}
               disabled={isSubmitting}
-              className={`flex-1 py-3 rounded-xl bg-cypress-surface dark:bg-accent-champagne items-center justify-center active:opacity-80 shadow-xs ${
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              className={`flex-1 min-h-[44px] py-3 rounded-xl bg-cypress-surface dark:bg-accent-champagne items-center justify-center active:opacity-80 shadow-xs ${
                 isSubmitting ? 'opacity-60' : ''
               }`}
             >

@@ -126,14 +126,14 @@ function CalculatorKeypadComponent({
   const numBtnClass =
     'bg-linen-surface dark:bg-cypress-card border-linen-border dark:border-cypress-border';
   const numTextClass =
-    'text-2xl font-bold font-mono text-linen-text-primary dark:text-cypress-text-primary';
+    'text-2xl font-bold font-mono tabular-nums text-linen-text-primary dark:text-cypress-text-primary';
 
   const opBtnClass =
     'bg-linen-card dark:bg-cypress-surface border-linen-border dark:border-cypress-border';
   const opTextClass =
     'text-xl font-bold text-linen-text-secondary dark:text-cypress-text-secondary';
   const shortcutTextClass =
-    'text-base font-extrabold font-mono text-linen-text-secondary dark:text-cypress-text-secondary';
+    'text-base font-extrabold font-mono tabular-nums text-linen-text-secondary dark:text-cypress-text-secondary';
 
   const submitBtnClass = isValid
     ? 'bg-accent-brass dark:bg-accent-champagne border-accent-brass dark:border-accent-champagne'

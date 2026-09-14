@@ -98,10 +98,11 @@ function FeePickerModalComponent({
               <TouchableOpacity
                 onPress={handleClose}
                 activeOpacity={0.7}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                className="w-7 h-7 rounded-full bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border items-center justify-center"
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                className="min-w-[44px] min-h-[44px] rounded-full bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border items-center justify-center"
+                accessibilityLabel="Tutup"
               >
-                <X size={14} color={colors.textSecondary} />
+                <X size={16} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
 
@@ -118,7 +119,7 @@ function FeePickerModalComponent({
                     key={preset.value}
                     activeOpacity={0.75}
                     onPress={() => handleSelectPreset(preset.value)}
-                    className={`w-[48%] py-2.5 px-3 mb-2 rounded-xl border flex-row items-center justify-between ${
+                    className={`w-[48%] min-h-[44px] py-2.5 px-3 mb-2 rounded-xl border flex-row items-center justify-between ${
                       isSelected
                         ? colorScheme === 'dark'
                           ? 'bg-accent-champagne/15 border-accent-champagne'
@@ -127,7 +128,7 @@ function FeePickerModalComponent({
                     }`}
                   >
                     <Text
-                      className={`text-xs font-mono ${
+                      className={`text-xs font-mono tabular-nums ${
                         isSelected
                           ? colorScheme === 'dark'
                             ? 'text-accent-champagne font-bold'
@@ -154,7 +155,7 @@ function FeePickerModalComponent({
               Atau Masukkan Nominal Kustom
             </Text>
 
-            <View className="flex-row items-center px-3.5 py-2.5 rounded-2xl bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border mb-4">
+            <View className="flex-row items-center px-3.5 py-2.5 min-h-[44px] rounded-2xl bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border mb-4">
               <Text className="text-xs font-bold text-linen-text-secondary dark:text-cypress-text-secondary mr-2">
                 Rp
               </Text>
@@ -164,14 +165,15 @@ function FeePickerModalComponent({
                 keyboardType="numeric"
                 placeholder="0"
                 placeholderTextColor={colors.textSecondary}
-                className="flex-1 text-sm font-mono font-bold text-linen-text-primary dark:text-cypress-text-primary py-0"
+                className="flex-1 text-sm font-mono tabular-nums font-bold text-linen-text-primary dark:text-cypress-text-primary py-0"
               />
             </View>
 
             <TouchableOpacity
               onPress={handleApplyCustom}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               activeOpacity={0.8}
-              className="py-3 rounded-2xl bg-accent-brass dark:bg-accent-champagne items-center justify-center shadow-sm"
+              className="min-h-[44px] py-3 rounded-2xl bg-accent-brass dark:bg-accent-champagne items-center justify-center shadow-sm"
             >
               <Text className="text-xs font-black text-[#0C1513]">
                 Terapkan Biaya

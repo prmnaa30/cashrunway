@@ -90,7 +90,7 @@ function AmountDisplayComponent({
       <View className="h-6 items-center justify-center mb-1">
         {hasCalculation ? (
           <View className="px-3 py-0.5 rounded-full bg-linen-card dark:bg-cypress-surface border border-linen-border dark:border-cypress-border">
-            <Text className="text-xs font-mono font-medium text-linen-text-secondary dark:text-cypress-text-secondary">
+            <Text className="text-xs font-mono font-medium text-linen-text-secondary dark:text-cypress-text-secondary tabular-nums">
               {expression}
             </Text>
           </View>
@@ -99,7 +99,7 @@ function AmountDisplayComponent({
 
       <View className="flex-row items-center justify-center min-h-[44px]">
         <Text
-          className={`text-3xl sm:text-4xl font-black font-mono tracking-tight ${modeColorClass}`}
+          className={`text-3xl sm:text-4xl font-black font-mono tracking-tight tabular-nums ${modeColorClass}`}
         >
           {mode === 'expense' && amount > 0 ? '-' : mode === 'income' && amount > 0 ? '+' : ''}
           {formattedAmount}

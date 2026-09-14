@@ -179,8 +179,9 @@ export function SettingsBottomSheet({
 
               <Pressable
                 onPress={() => closeWithAnimation()}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                className="w-8 h-8 rounded-full bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70"
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                className="min-w-[44px] min-h-[44px] rounded-full bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70"
+                accessibilityLabel="Tutup"
               >
                 <X size={16} color={colors.textSecondary} />
               </Pressable>

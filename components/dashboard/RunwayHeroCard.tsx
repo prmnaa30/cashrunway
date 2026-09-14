@@ -174,7 +174,7 @@ export function RunwayHeroCard({
 
       <View className="my-2">
         <View className="flex-row items-baseline">
-          <Text className="text-6xl font-black tracking-tight text-linen-text-primary dark:text-cypress-text-primary">
+          <Text className="text-6xl font-black tracking-tight text-linen-text-primary dark:text-cypress-text-primary tabular-nums">
             {runway.isInfinite ? '∞' : runway.isDepleted ? '0' : activeDays}
           </Text>
           {!runway.isInfinite && (
@@ -254,7 +254,7 @@ export function RunwayHeroCard({
           <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary uppercase tracking-wider font-semibold">
             {runwayMode === 'operational' ? 'Kas Harian' : 'Total Kas (+Tabungan)'}
           </Text>
-          <Text className="text-sm font-black text-linen-text-primary dark:text-cypress-text-primary mt-0.5">
+          <Text className="text-sm font-black text-linen-text-primary dark:text-cypress-text-primary mt-0.5 tabular-nums">
             {formatCurrency(activeBalance, isPrivacyMode)}
           </Text>
         </View>
@@ -265,7 +265,7 @@ export function RunwayHeroCard({
           <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary uppercase tracking-wider font-semibold">
             Rata-Rata Keluar
           </Text>
-          <Text className="text-sm font-black text-linen-text-primary dark:text-cypress-text-primary mt-0.5">
+          <Text className="text-sm font-black text-linen-text-primary dark:text-cypress-text-primary mt-0.5 tabular-nums">
             {formatCurrency(burnRate.dailyBurnRate, isPrivacyMode)}
             <Text className="text-xs font-normal text-linen-text-secondary dark:text-cypress-text-secondary">
               /hari
@@ -295,7 +295,7 @@ export function RunwayHeroCard({
               <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary">
                 {runwayMode === 'operational' ? 'Saldo Kas Operasional' : 'Total Saldo (Kas + Tabungan)'}
               </Text>
-              <Text className="text-xs font-mono font-bold text-linen-text-primary dark:text-cypress-text-primary">
+              <Text className="text-xs font-mono font-bold text-linen-text-primary dark:text-cypress-text-primary tabular-nums">
                 {formatCurrency(activeBalance, isPrivacyMode)}
               </Text>
             </View>
@@ -305,7 +305,7 @@ export function RunwayHeroCard({
               <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary">
                 Rata-Rata Pengeluaran Harian
               </Text>
-              <Text className="text-xs font-mono font-semibold text-linen-text-secondary dark:text-cypress-text-secondary">
+              <Text className="text-xs font-mono font-semibold text-linen-text-secondary dark:text-cypress-text-secondary tabular-nums">
                 ÷ {formatCurrency(burnRate.dailyBurnRate, isPrivacyMode)}/hari
               </Text>
             </View>
@@ -317,7 +317,7 @@ export function RunwayHeroCard({
               <Text className="text-xs font-medium text-linen-text-primary dark:text-cypress-text-primary">
                 Estimasi Kasar Saldo ÷ Burn Rate
               </Text>
-              <Text className="text-xs font-mono font-bold text-accent-brass dark:text-accent-champagne">
+              <Text className="text-xs font-mono font-bold text-accent-brass dark:text-accent-champagne tabular-nums">
                 ≈ {estimatedDaysRatio} hari
               </Text>
             </View>
@@ -327,7 +327,7 @@ export function RunwayHeroCard({
               <Text className="text-xs font-black text-linen-text-primary dark:text-cypress-text-primary">
                 Ketahanan Hasil Simulasi
               </Text>
-              <Text className="text-xs font-mono font-black text-status-safe">
+              <Text className="text-xs font-mono font-black text-status-safe tabular-nums">
                 = {runway.isInfinite ? '∞' : `${activeDays} hari`}
               </Text>
             </View>

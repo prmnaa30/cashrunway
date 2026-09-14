@@ -57,7 +57,7 @@ export function CurrencyPickerModal({
                 onSelect(c.code);
                 onClose();
               }}
-              className={`flex-row items-center justify-between py-3 px-4 rounded-xl mb-2 border ${
+              className={`flex-row items-center justify-between min-h-[44px] py-3 px-4 rounded-xl mb-2 border ${
                 isSelected
                   ? 'bg-white dark:bg-accent-champagne/15 border-linen-border dark:border-accent-champagne shadow-xs'
                   : 'bg-linen-surface dark:bg-cypress-surface border-linen-border dark:border-cypress-border active:opacity-70'

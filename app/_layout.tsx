@@ -12,6 +12,14 @@ import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { useColorScheme } from '@/components/useColorScheme';
 import { DATABASE_NAME, initDatabase } from '@/lib/db';
 
+import { setupQuickActions } from '@/lib/services/quickActions';
+import {
+  setupNotificationChannelAsync,
+  setupNotificationResponseListeners,
+} from '@/lib/services/notifications';
+import { useQuickEntryStore } from '@/store/useQuickEntryStore';
+import { useQuickActionCallback } from 'expo-quick-actions/hooks';
+
 export { ErrorBoundary } from 'expo-router';
 
 export const unstable_settings = {
@@ -53,6 +61,26 @@ export default function RootLayout() {
 function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
+  useEffect(() => {
+    setupQuickActions();
+    setupNotificationChannelAsync();
+
+    const cleanupListeners = setupNotificationResponseListeners(() => {
+      useQuickEntryStore.getState().open('expense');
+    });
+
+    return () => {
+      cleanupListeners();
+    };
+  }, []);
+
+  useQuickActionCallback((action) => {
+    const mode = action.params?.mode;
+    if (mode === 'expense' || mode === 'income') {
+      useQuickEntryStore.getState().open(mode);
+    }
+  });
+
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
@@ -62,3 +90,4 @@ function RootLayoutNav() {
     </ThemeProvider>
   );
 }
+

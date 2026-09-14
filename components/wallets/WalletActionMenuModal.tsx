@@ -188,10 +188,11 @@ export function WalletActionMenuModal({
 
               <Pressable
                 onPress={() => closeWithAnimation()}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                className="w-7 h-7 rounded-full bg-linen-surface dark:bg-cypress-surface items-center justify-center border border-linen-border dark:border-cypress-border active:opacity-70"
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                className="min-w-[44px] min-h-[44px] rounded-full bg-linen-surface dark:bg-cypress-surface items-center justify-center border border-linen-border dark:border-cypress-border active:opacity-70"
+                accessibilityLabel="Tutup menu"
               >
-                <X size={14} color={colors.textSecondary} />
+                <X size={16} color={colors.textSecondary} />
               </Pressable>
             </View>
 
@@ -199,7 +200,8 @@ export function WalletActionMenuModal({
               {/* Edit Details / Settings */}
               <Pressable
                 onPress={() => closeWithAnimation(() => onEdit(currentWallet))}
-                className="p-3.5 rounded-2xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border flex-row items-center active:opacity-70 mb-2"
+                hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                className="p-3.5 min-h-[48px] rounded-2xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border flex-row items-center active:opacity-70 mb-2"
               >
                 <Edit3 size={16} color={colors.tint} />
                 <View className="ml-3 flex-1">
@@ -215,7 +217,8 @@ export function WalletActionMenuModal({
               {/* Balance Reconciliation */}
               <Pressable
                 onPress={() => closeWithAnimation(() => onAdjustBalance(currentWallet))}
-                className="p-3.5 rounded-2xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border flex-row items-center active:opacity-70 mb-2"
+                hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                className="p-3.5 min-h-[48px] rounded-2xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border flex-row items-center active:opacity-70 mb-2"
               >
                 <SlidersHorizontal size={16} color={colors.tint} />
                 <View className="ml-3 flex-1">
@@ -231,7 +234,8 @@ export function WalletActionMenuModal({
               {/* Delete / Archive */}
               <Pressable
                 onPress={() => closeWithAnimation(() => onDelete(currentWallet))}
-                className="p-3.5 rounded-2xl bg-status-danger/10 border border-status-danger/25 flex-row items-center active:opacity-70"
+                hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                className="p-3.5 min-h-[48px] rounded-2xl bg-status-danger/10 border border-status-danger/25 flex-row items-center active:opacity-70"
               >
                 <Trash2 size={16} color="#EF4444" />
                 <View className="ml-3 flex-1">
