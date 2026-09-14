@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "cashrunway",
+    "name": "CashRunway",
     "slug": "cashrunway",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,16 +8,21 @@
     "scheme": "cashrunway",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.creez.cashrunway",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.creez.cashrunway"
     },
     "web": {
       "bundler": "metro",
@@ -34,10 +39,26 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-notifications",
+        {
+          "sounds": [
+            "./assets/sounds/reminder.wav"
+          ],
+          "defaultChannel": "cashrunway-reminders"
+        }
+      ],
+      "expo-quick-actions"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "2b764167-4838-4d98-9a96-56b2e67f05e0"
+      }
     }
   }
 }
