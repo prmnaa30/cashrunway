@@ -49,7 +49,7 @@ export default function DashboardScreen() {
     (runway.status === 'critical' || runway.operationalRunwayDays < 7);
 
   const isDemoPromptVisible =
-    isInitialized && totalBalance === 0 && transactions.length === 0;
+    __DEV__ && isInitialized && totalBalance === 0 && transactions.length === 0;
 
   const statusColor =
     runway.status === 'healthy'

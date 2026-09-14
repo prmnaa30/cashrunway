@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Switch, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Switch, Pressable, ActivityIndicator, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   HelpCircle,
@@ -15,6 +15,8 @@ import {
   Info,
   SunMoon,
   Tag,
+  Bell,
+  BellRing,
 } from 'lucide-react-native';
 
 import Colors from '@/constants/Colors';
@@ -33,12 +35,14 @@ import {
   CurrencyPickerModal,
   DangerConfirmModal,
   ManageCategoriesModal,
+  ReminderManagerModal,
 } from '@/components/settings';
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
+  const isDark = colorScheme === 'dark';
 
   const { t: translate } = useTranslation();
 
@@ -49,7 +53,16 @@ export default function SettingsScreen() {
   const resetToDemo = useFinanceStore((s) => s.resetToDemo);
   const clearTransactions = useFinanceStore((s) => s.clearTransactions);
 
-  const { currency, setCurrency, themeMode, setThemeMode } = useSettingsStore();
+  const {
+    currency,
+    setCurrency,
+    themeMode,
+    setThemeMode,
+    isReminderEnabled,
+    reminders,
+    toggleReminderEnabled,
+    testNotification,
+  } = useSettingsStore();
 
   // Modals / Sheets state
   const [isExplainerOpen, setIsExplainerOpen] = useState(false);
@@ -57,10 +70,14 @@ export default function SettingsScreen() {
   const [isPaydayOpen, setIsPaydayOpen] = useState(false);
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
   const [isManageCategoriesOpen, setIsManageCategoriesOpen] = useState(false);
+  const [isReminderModalVisible, setIsReminderModalVisible] = useState(false);
   const [dangerModal, setDangerModal] = useState<{
     visible: boolean;
     type: 'reset' | 'clear';
   }>({ visible: false, type: 'reset' });
+
+  const [isTestingNotification, setIsTestingNotification] = useState(false);
+  const [reminderTestFeedback, setReminderTestFeedback] = useState<string | null>(null);
 
   const [isExporting, setIsExporting] = useState(false);
   const [exportFeedback, setExportFeedback] = useState<string | null>(null);
@@ -236,15 +253,15 @@ export default function SettingsScreen() {
           />
 
           <SettingRow
-            label="Kelola Kategori"
-            description="Tambah, ubah, atau hapus kategori transaksi"
+            label={translate('settings.categories.title')}
+            description={translate('settings.categories.desc')}
             icon={<Tag size={18} color={colors.tint} />}
             isLast
             onPress={() => setIsManageCategoriesOpen(true)}
             action={
               <View className="px-3 py-1 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border">
                 <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary">
-                  {categories.length} Kategori
+                  {translate('settings.categories.countBadge', { count: categories.length })}
                 </Text>
               </View>
             }
@@ -354,7 +371,121 @@ export default function SettingsScreen() {
           </View>
         </SettingSection>
 
-        {/* 3. DATA & BACKUP */}
+        {/* 3. NOTIFIKASI & PENGINGAT */}
+        <SettingSection title={translate('settings.sections.notifications')}>
+          <SettingRow
+            label={translate('settings.reminders.dailyTitle')}
+            description={translate('settings.reminders.dailyDesc')}
+            icon={<Bell size={18} color={colors.tint} />}
+            isLast={!isReminderEnabled}
+            action={
+              <Switch
+                value={isReminderEnabled}
+                onValueChange={toggleReminderEnabled}
+                trackColor={{ false: isDark ? '#374151' : '#DCE5E0', true: colors.tint }}
+                thumbColor={Platform.OS === 'ios' ? undefined : '#FFFFFF'}
+              />
+            }
+          />
+
+          {isReminderEnabled && (
+            <View className="py-3 px-4 border-b border-linen-border/70 dark:border-cypress-border/70">
+              <Text className="text-[11px] font-semibold text-linen-text-secondary dark:text-cypress-text-secondary mb-2">
+                {translate('settings.reminders.activeSchedule')}
+              </Text>
+
+              {reminders.filter((r) => r.isEnabled).length === 0 ? (
+                <Text className="text-xs italic text-linen-text-secondary dark:text-cypress-text-secondary mb-3">
+                  {translate('settings.reminders.noSchedule')}
+                </Text>
+              ) : (
+                <View className="flex-row flex-wrap gap-1.5 mb-3">
+                  {reminders
+                    .filter((r) => r.isEnabled)
+                    .map((item) => {
+                      const isPreadded =
+                        item.id === 'rem_morning' ||
+                        item.id === 'rem_lunch' ||
+                        item.id === 'rem_evening';
+                      const labelText =
+                        !isPreadded && item.label?.trim()
+                          ? `${item.time} - ${item.label}`
+                          : item.time;
+
+                      return (
+                        <View
+                          key={item.id}
+                          className="px-2.5 py-1 rounded-full bg-emerald-500/10 dark:bg-accent-champagne/15 border border-emerald-600/30 dark:border-accent-champagne/30"
+                        >
+                          <Text className="text-xs font-semibold text-emerald-800 dark:text-accent-champagne tabular-nums">
+                            {labelText}
+                          </Text>
+                        </View>
+                      );
+                    })}
+                </View>
+              )}
+
+              <View className="flex-row gap-2">
+                <Pressable
+                  onPress={() => setIsReminderModalVisible(true)}
+                  className="flex-1 min-h-[44px] py-2.5 px-3 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70"
+                >
+                  <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary">
+                    {translate('settings.reminders.manageButton')}
+                  </Text>
+                </Pressable>
+
+                <Pressable
+                  onPress={async () => {
+                    if (isTestingNotification) return;
+                    setIsTestingNotification(true);
+                    setReminderTestFeedback(null);
+                    try {
+                      await testNotification();
+                      setReminderTestFeedback(translate('settings.reminders.testSuccess'));
+                    } catch (err) {
+                      console.error(err);
+                      setReminderTestFeedback(translate('settings.reminders.testError'));
+                    } finally {
+                      setIsTestingNotification(false);
+                      setTimeout(() => setReminderTestFeedback(null), 4000);
+                    }
+                  }}
+                  disabled={isTestingNotification}
+                  className="flex-1 min-h-[44px] py-2.5 px-3 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-emerald-500/30 dark:border-accent-champagne/40 flex-row items-center justify-center active:opacity-70"
+                >
+                  {isTestingNotification ? (
+                    <ActivityIndicator size="small" color={isDark ? '#D4AF37' : '#059669'} />
+                  ) : (
+                    <>
+                      <BellRing size={14} color={isDark ? '#D4AF37' : '#059669'} />
+                      <Text
+                        className={`text-xs font-bold ml-1.5 ${
+                          isDark ? 'text-accent-champagne' : 'text-emerald-700'
+                        }`}
+                      >
+                        {translate('settings.reminders.testButton')}
+                      </Text>
+                    </>
+                  )}
+                </Pressable>
+              </View>
+
+              {reminderTestFeedback && (
+                <Text
+                  className={`text-[11px] mt-2 text-center font-medium ${
+                    isDark ? 'text-accent-champagne' : 'text-emerald-600'
+                  }`}
+                >
+                  {reminderTestFeedback}
+                </Text>
+              )}
+            </View>
+          )}
+        </SettingSection>
+
+        {/* 4. DATA & BACKUP */}
         <SettingSection title={translate('settings.sections.data')}>
           <SettingRow
             label={translate('settings.exportCsv.title')}
@@ -504,6 +635,11 @@ export default function SettingsScreen() {
       <ManageCategoriesModal
         visible={isManageCategoriesOpen}
         onClose={() => setIsManageCategoriesOpen(false)}
+      />
+
+      <ReminderManagerModal
+        visible={isReminderModalVisible}
+        onClose={() => setIsReminderModalVisible(false)}
       />
     </View>
   );
