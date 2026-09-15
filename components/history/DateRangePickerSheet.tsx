@@ -106,7 +106,7 @@ export function DateRangePickerSheet({
       title={t("history.rangePickerTitle")}
       subtitle={t("history.rangePickerSubtitle")}
     >
-      <View className="mb-6">
+      <View className="px-5 pt-4 pb-6">
         <View className="flex-row gap-2 mb-4">
           {(["thisMonth", "lastMonth", "custom"] as const).map((m) => (
             <Pressable

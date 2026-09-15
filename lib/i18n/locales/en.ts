@@ -142,7 +142,7 @@ export default {
     vaultTaxFree: 'Tax Free',
     vaultLastClaimed: 'Last claimed:',
     vaultNeverClaimed: 'Never',
-    vaultPerDay: '/day',
+    vaultDailyNet: '/day',
     vaultNetLabel: '(net{taxSuffix})',
     vaultNetAfterTax: ' after tax',
     vaultClaimButton: 'Claim Interest ({days} days)',
