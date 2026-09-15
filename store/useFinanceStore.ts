@@ -14,6 +14,7 @@ import {
   resetToDemoData as resetDemoDb,
   clearAllTransactions as clearTxDb,
   deleteTransaction as deleteTxDb,
+  updateTransaction as updateTxDb,
   insertTransaction,
   updateWallet,
   insertWallet,
@@ -91,6 +92,21 @@ export interface FinanceState {
     localDate: string;
     note?: string | null;
   }) => Promise<string>;
+  editTransaction: (
+    id: string,
+    tx: {
+      type: 'expense' | 'income' | 'transfer';
+      amount: number;
+      fee?: number;
+      walletId: string;
+      targetWalletId?: string | null;
+      categoryId?: string | null;
+      isOutlier?: number;
+      date: string;
+      localDate: string;
+      note?: string | null;
+    }
+  ) => Promise<void>;
   deleteTx: (id: string) => Promise<void>;
   applyVaultAccrual: () => Promise<void>;
   applyVaultAccrualForWallet: (walletId: string) => Promise<void>;
@@ -427,6 +443,31 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       return id;
     } catch (error) {
       console.error('Failed to add transaction:', error);
+      set({ isLoading: false });
+      throw error;
+    }
+  },
+
+  editTransaction: async (id, tx) => {
+    try {
+      set({ isLoading: true });
+      await updateTxDb(id, {
+        type: tx.type,
+        amount: tx.amount,
+        fee: tx.fee ?? 0,
+        walletId: tx.walletId,
+        targetWalletId: tx.targetWalletId ?? null,
+        categoryId: tx.categoryId ?? null,
+        recurringBillId: null,
+        isOutlier: tx.isOutlier ?? 0,
+        date: tx.date,
+        localDate: tx.localDate,
+        note: tx.note ?? null,
+      });
+
+      await get().loadAllData({ force: true, showLoading: false });
+    } catch (error) {
+      console.error('Failed to edit transaction:', error);
       set({ isLoading: false });
       throw error;
     }

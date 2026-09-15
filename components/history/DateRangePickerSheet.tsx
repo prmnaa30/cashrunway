@@ -1,46 +1,25 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, Pressable } from "react-native";
-import { ChevronLeft, ChevronRight } from "lucide-react-native";
+import { View, Text, Pressable, ScrollView } from "react-native";
+import { ChevronLeft, ChevronRight, Check } from "lucide-react-native";
 import { AppBottomSheet } from "@/components/ui/AppBottomSheet";
 import { useTranslation } from "@/lib/i18n";
 import { useColorScheme } from "@/components/useColorScheme";
 import Colors from "@/constants/Colors";
 
-export function getMonthRange(year: number, month: number): { start: string; end: string } {
-  // month is 0-indexed here for Date
-  const start = new Date(year, month, 1);
-  const end = new Date(year, month + 1, 0); // last day of month
-
-  const startStr = `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, "0")}-01`;
-  const endStr = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, "0")}-${String(end.getDate()).padStart(2, "0")}`;
-
-  return { start: startStr, end: endStr };
-}
-
-export function getCurrentMonthRange(): { start: string; end: string } {
-  const now = new Date();
-  return getMonthRange(now.getFullYear(), now.getMonth());
-}
-
-export function getLastMonthRange(): { start: string; end: string } {
-  const now = new Date();
-  return getMonthRange(now.getFullYear(), now.getMonth() - 1);
-}
-
-export function detectRangeMode(
-  range: { start: string; end: string }
-): "thisMonth" | "lastMonth" | "custom" {
-  const current = getCurrentMonthRange();
-  const last = getLastMonthRange();
-
-  if (range.start === current.start && range.end === current.end) {
-    return "thisMonth";
-  }
-  if (range.start === last.start && range.end === last.end) {
-    return "lastMonth";
-  }
-  return "custom";
-}
+export {
+  type QuickRangeKey,
+  getMonthRange,
+  getCurrentMonthRange,
+  getLastMonthRange,
+  getQuickDateRange,
+  detectRangeMode,
+} from "@/lib/utils/dateRange";
+import {
+  type QuickRangeKey,
+  getMonthRange,
+  getQuickDateRange,
+  detectRangeMode,
+} from "@/lib/utils/dateRange";
 
 interface DateRangePickerSheetProps {
   visible: boolean;
@@ -59,19 +38,24 @@ export function DateRangePickerSheet({
   const colorScheme = useColorScheme() ?? "dark";
   const colors = Colors[colorScheme];
 
-  const [mode, setMode] = useState<"thisMonth" | "lastMonth" | "custom">("thisMonth");
+  const [selectedPreset, setSelectedPreset] = useState<QuickRangeKey>("thisMonth");
   const [localRange, setLocalRange] = useState(currentRange);
 
   useEffect(() => {
     if (visible) {
       setLocalRange(currentRange);
-      setMode(detectRangeMode(currentRange));
+      setSelectedPreset(detectRangeMode(currentRange));
     }
   }, [visible, currentRange]);
 
   const handleApply = () => {
     onSelectRange(localRange);
     onClose();
+  };
+
+  const handleSelectPreset = (key: QuickRangeKey) => {
+    setSelectedPreset(key);
+    setLocalRange(getQuickDateRange(key));
   };
 
   const getMonthLabel = (dateStr: string) => {
@@ -88,16 +72,33 @@ export function DateRangePickerSheet({
   };
 
   const setStartMonthOffset = (offset: number) => {
+    setSelectedPreset("custom");
     const newStart = adjustDate(localRange.start, offset, true);
     if (newStart > localRange.end) return; // Prevent start > end
     setLocalRange({ ...localRange, start: newStart });
   };
 
   const setEndMonthOffset = (offset: number) => {
+    setSelectedPreset("custom");
     const newEnd = adjustDate(localRange.end, offset, false);
     if (localRange.start > newEnd) return; // Prevent start > end
     setLocalRange({ ...localRange, end: newEnd });
   };
+
+  const quickOptions: Array<{ key: QuickRangeKey; label: string }> = [
+    { key: "all", label: t("history.quickAll") },
+    { key: "today", label: t("history.quickToday") },
+    { key: "yesterday", label: t("history.quickYesterday") },
+    { key: "thisWeek", label: t("history.quickThisWeek") },
+    { key: "lastWeek", label: t("history.quickLastWeek") },
+    { key: "thisMonth", label: t("history.quickThisMonth") },
+    { key: "lastMonth", label: t("history.quickLastMonth") },
+    { key: "thisYear", label: t("history.quickThisYear") },
+    { key: "lastYear", label: t("history.quickLastYear") },
+    { key: "last7Days", label: t("history.quickLast7Days") },
+    { key: "last30Days", label: t("history.quickLast30Days") },
+    { key: "last90Days", label: t("history.quickLast90Days") },
+  ];
 
   return (
     <AppBottomSheet
@@ -105,87 +106,113 @@ export function DateRangePickerSheet({
       onClose={onClose}
       title={t("history.rangePickerTitle")}
       subtitle={t("history.rangePickerSubtitle")}
+      maxHeight="86%"
     >
-      <View className="px-5 pt-4 pb-6">
-        <View className="flex-row gap-2 mb-4">
-          {(["thisMonth", "lastMonth", "custom"] as const).map((m) => (
-            <Pressable
-              key={m}
-              onPress={() => {
-                setMode(m);
-                if (m === "thisMonth") setLocalRange(getCurrentMonthRange());
-                else if (m === "lastMonth") setLocalRange(getLastMonthRange());
-              }}
-              className={`flex-1 py-2 rounded-xl items-center border ${
-                mode === m
-                  ? "bg-linen-text-primary dark:bg-cypress-text-primary border-transparent"
-                  : "bg-linen-surface dark:bg-cypress-surface border-linen-border dark:border-cypress-border"
-              }`}
-            >
-              <Text
-                className={`text-sm font-medium ${
-                  mode === m
-                    ? "text-white dark:text-[#0C1513]"
-                    : "text-linen-text-secondary dark:text-cypress-text-secondary"
+      <ScrollView
+        className="px-5 pt-3 pb-6"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 28 }}
+      >
+        {/* Quick Date Range Section Header */}
+        <Text className="text-[11px] font-bold text-linen-text-secondary dark:text-cypress-text-secondary mb-2 uppercase tracking-wider">
+          {t("history.quickDateRange")}
+        </Text>
+
+        {/* Quick Presets List */}
+        <View className="rounded-2xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border divide-y divide-linen-border/50 dark:divide-cypress-border/50 overflow-hidden mb-5">
+          {quickOptions.map((item) => {
+            const isSelected = selectedPreset === item.key;
+            return (
+              <Pressable
+                key={item.key}
+                onPress={() => handleSelectPreset(item.key)}
+                className={`flex-row items-center justify-between px-4 py-3 active:bg-linen-border/30 dark:active:bg-cypress-border/40 ${
+                  isSelected ? "bg-linen-border/20 dark:bg-cypress-border/25" : ""
                 }`}
               >
-                {m === "thisMonth"
-                  ? t("history.quickThisMonth")
-                  : m === "lastMonth"
-                  ? t("history.quickLastMonth")
-                  : t("history.quickCustom")}
-              </Text>
-            </Pressable>
-          ))}
+                <Text
+                  className={`text-sm ${
+                    isSelected
+                      ? "font-black text-linen-text-primary dark:text-accent-champagne"
+                      : "font-medium text-linen-text-primary dark:text-cypress-text-primary"
+                  }`}
+                >
+                  {item.label}
+                </Text>
+                {isSelected && <Check size={18} color={colorScheme === 'dark' ? '#D4AF37' : colors.tint} />}
+              </Pressable>
+            );
+          })}
         </View>
 
-        {mode === "custom" && (
-          <View className="space-y-4 mb-4">
-            <View>
-              <Text className="text-xs font-bold text-linen-text-secondary dark:text-cypress-text-secondary mb-2 uppercase tracking-widest">
-                {t("history.customFrom")}
-              </Text>
-              <View className="flex-row items-center justify-between p-1 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border">
-                <Pressable onPress={() => setStartMonthOffset(-1)} className="p-3 active:opacity-70">
-                  <ChevronLeft size={20} color={colors.textPrimary} />
-                </Pressable>
-                <Text className="text-sm font-bold text-linen-text-primary dark:text-cypress-text-primary">
-                  {getMonthLabel(localRange.start)}
-                </Text>
-                <Pressable onPress={() => setStartMonthOffset(1)} className="p-3 active:opacity-70">
-                  <ChevronRight size={20} color={colors.textPrimary} />
-                </Pressable>
-              </View>
-            </View>
+        {/* Custom Date Range Section Header */}
+        <Text className="text-[11px] font-bold text-linen-text-secondary dark:text-cypress-text-secondary mb-2 uppercase tracking-wider">
+          {t("history.customDateRange")}
+        </Text>
 
-            <View>
-              <Text className="text-xs font-bold text-linen-text-secondary dark:text-cypress-text-secondary mb-2 uppercase tracking-widest">
-                {t("history.customTo")}
+        {/* Custom Start & End Pickers */}
+        <View className="space-y-3 mb-5">
+          <View>
+            <Text className="text-xs font-semibold text-linen-text-secondary dark:text-cypress-text-secondary mb-1.5">
+              {t("history.startDate")}
+            </Text>
+            <View className="flex-row items-center justify-between px-2 py-1 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border">
+              <Pressable
+                onPress={() => setStartMonthOffset(-1)}
+                className="p-2.5 rounded-lg active:opacity-60"
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <ChevronLeft size={20} color={colors.text} />
+              </Pressable>
+              <Text className="text-sm font-bold text-linen-text-primary dark:text-cypress-text-primary font-mono">
+                {getMonthLabel(localRange.start)}
               </Text>
-              <View className="flex-row items-center justify-between p-1 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border">
-                <Pressable onPress={() => setEndMonthOffset(-1)} className="p-3 active:opacity-70">
-                  <ChevronLeft size={20} color={colors.textPrimary} />
-                </Pressable>
-                <Text className="text-sm font-bold text-linen-text-primary dark:text-cypress-text-primary">
-                  {getMonthLabel(localRange.end)}
-                </Text>
-                <Pressable onPress={() => setEndMonthOffset(1)} className="p-3 active:opacity-70">
-                  <ChevronRight size={20} color={colors.textPrimary} />
-                </Pressable>
-              </View>
+              <Pressable
+                onPress={() => setStartMonthOffset(1)}
+                className="p-2.5 rounded-lg active:opacity-60"
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <ChevronRight size={20} color={colors.text} />
+              </Pressable>
             </View>
           </View>
-        )}
 
+          <View className="mt-3">
+            <Text className="text-xs font-semibold text-linen-text-secondary dark:text-cypress-text-secondary mb-1.5">
+              {t("history.endDate")}
+            </Text>
+            <View className="flex-row items-center justify-between px-2 py-1 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border">
+              <Pressable
+                onPress={() => setEndMonthOffset(-1)}
+                className="p-2.5 rounded-lg active:opacity-60"
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <ChevronLeft size={20} color={colors.text} />
+              </Pressable>
+              <Text className="text-sm font-bold text-linen-text-primary dark:text-cypress-text-primary font-mono">
+                {getMonthLabel(localRange.end)}
+              </Text>
+              <Pressable
+                onPress={() => setEndMonthOffset(1)}
+                className="p-2.5 rounded-lg active:opacity-60"
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+              >
+                <ChevronRight size={20} color={colors.text} />
+              </Pressable>
+            </View>
+          </View>
+        </View>
+
+        {/* OK Button */}
         <Pressable
           onPress={handleApply}
-          className="w-full py-4 rounded-xl items-center mt-2 bg-linen-text-primary dark:bg-accent-champagne active:opacity-80"
+          className="w-full py-3.5 rounded-xl items-center bg-cypress-surface dark:bg-accent-champagne active:opacity-85 shadow-xs mb-4"
         >
-          <Text className="text-base font-bold text-white dark:text-[#0C1513]">
-            {t("history.applyRange")}
+          <Text className="text-base font-black text-white dark:text-[#0C1513]">
+            {t("history.ok")}
           </Text>
         </Pressable>
-      </View>
+      </ScrollView>
     </AppBottomSheet>
   );
 }

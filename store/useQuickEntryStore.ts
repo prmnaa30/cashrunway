@@ -1,13 +1,16 @@
 import { create } from 'zustand';
 import { TransactionMode } from '@/components/entry/types';
 import { KeypadKey, processKeypadInput } from '@/lib/utils/calculator';
+import { TransactionWithDetails } from '@/lib/db';
 
 export interface QuickEntryState {
   isOpen: boolean;
   type: TransactionMode;
   expression: string;
   amount: number;
+  editingTransaction: TransactionWithDetails | null;
   open: (type?: TransactionMode) => void;
+  openEdit: (tx: TransactionWithDetails) => void;
   close: () => void;
   pressKey: (key: KeypadKey) => void;
   resetCalc: () => void;
@@ -19,8 +22,18 @@ export const useQuickEntryStore = create<QuickEntryState>((set, get) => ({
   type: 'expense',
   expression: '0',
   amount: 0,
-  open: (type = 'expense') => set({ isOpen: true, type, expression: '0', amount: 0 }),
-  close: () => set({ isOpen: false }),
+  editingTransaction: null,
+  open: (type = 'expense') =>
+    set({ isOpen: true, type, expression: '0', amount: 0, editingTransaction: null }),
+  openEdit: (tx: TransactionWithDetails) =>
+    set({
+      isOpen: true,
+      type: (tx.type === 'adjustment' ? 'expense' : tx.type) as TransactionMode,
+      expression: String(tx.amount),
+      amount: tx.amount,
+      editingTransaction: tx,
+    }),
+  close: () => set({ isOpen: false, editingTransaction: null }),
   pressKey: (key: KeypadKey) => {
     const currentExpr = get().expression;
     const next = processKeypadInput(currentExpr, key);

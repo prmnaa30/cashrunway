@@ -74,9 +74,11 @@ export function QuickEntrySheet() {
 
   const isQuickEntryOpen = useQuickEntryStore((s) => s.isOpen);
   const quickEntryType = useQuickEntryStore((s) => s.type);
+  const editingTransaction = useQuickEntryStore((s) => s.editingTransaction);
   const closeQuickEntry = useQuickEntryStore((s) => s.close);
 
   const addTransaction = useFinanceStore((s) => s.addTransaction);
+  const editTransaction = useFinanceStore((s) => s.editTransaction);
   const wallets = useFinanceStore((s) => s.wallets);
   const categories = useFinanceStore((s) => s.categories);
 
@@ -143,28 +145,44 @@ export function QuickEntrySheet() {
     if (isQuickEntryOpen) {
       bottomSheetRef.current?.snapToIndex(0);
 
-      const initialMode = quickEntryType ?? 'expense';
-      setMode(initialMode);
-      useQuickEntryStore.getState().resetCalc();
-      setSelectedDate(formatLocalDate(new Date()));
-      setIsOutlier(false);
-      setNote('');
-      setFee(0);
-      setIsSubmitting(false);
+      if (editingTransaction) {
+        const editMode = (editingTransaction.type === 'adjustment'
+          ? 'expense'
+          : editingTransaction.type) as TransactionMode;
+        setMode(editMode);
+        useQuickEntryStore.getState().setCalc(String(editingTransaction.amount), editingTransaction.amount);
+        setSelectedDate(editingTransaction.localDate);
+        setIsOutlier(Boolean(editingTransaction.isOutlier));
+        setNote(editingTransaction.note ?? '');
+        setFee(editingTransaction.fee ?? 0);
+        setSelectedWalletId(editingTransaction.walletId);
+        setTargetWalletId(editingTransaction.targetWalletId ?? '');
+        setSelectedCategoryId(editingTransaction.categoryId ?? null);
+        setIsSubmitting(false);
+      } else {
+        const initialMode = quickEntryType ?? 'expense';
+        setMode(initialMode);
+        useQuickEntryStore.getState().resetCalc();
+        setSelectedDate(formatLocalDate(new Date()));
+        setIsOutlier(false);
+        setNote('');
+        setFee(0);
+        setIsSubmitting(false);
 
-      const opWallet = wallets.find((w) => w.isVault === 0) ?? wallets[0];
-      const defaultWalletId = opWallet ? opWallet.id : '';
-      setSelectedWalletId(defaultWalletId);
+        const opWallet = wallets.find((w) => w.isVault === 0) ?? wallets[0];
+        const defaultWalletId = opWallet ? opWallet.id : '';
+        setSelectedWalletId(defaultWalletId);
 
-      const otherWallet = wallets.find((w) => w.id !== defaultWalletId);
-      setTargetWalletId(otherWallet ? otherWallet.id : '');
+        const otherWallet = wallets.find((w) => w.id !== defaultWalletId);
+        setTargetWalletId(otherWallet ? otherWallet.id : '');
 
-      const defaultCat = categories.find((c) => c.type === initialMode);
-      setSelectedCategoryId(defaultCat ? defaultCat.id : null);
+        const defaultCat = categories.find((c) => c.type === initialMode);
+        setSelectedCategoryId(defaultCat ? defaultCat.id : null);
+      }
     } else {
       bottomSheetRef.current?.close();
     }
-  }, [isQuickEntryOpen, quickEntryType, wallets, categories]);
+  }, [isQuickEntryOpen, quickEntryType, editingTransaction, wallets, categories]);
 
   // Hardware back button support
   useEffect(() => {
@@ -249,18 +267,33 @@ export function QuickEntrySheet() {
       const timeStr = timeNow.toTimeString().split(' ')[0];
       const fullDate = `${selectedDate} ${timeStr}`;
 
-      await addTransaction({
-        type: mode,
-        amount: finalAmount,
-        fee: mode === 'transfer' ? fee : 0,
-        walletId: selectedWalletId,
-        targetWalletId: mode === 'transfer' ? targetWalletId : null,
-        categoryId: mode === 'transfer' ? null : selectedCategoryId,
-        isOutlier: mode === 'expense' && isOutlier ? 1 : 0,
-        date: fullDate,
-        localDate: selectedDate,
-        note: note.trim() ? note.trim() : null,
-      });
+      if (editingTransaction) {
+        await editTransaction(editingTransaction.id, {
+          type: mode,
+          amount: finalAmount,
+          fee: mode === 'transfer' ? fee : 0,
+          walletId: selectedWalletId,
+          targetWalletId: mode === 'transfer' ? targetWalletId : null,
+          categoryId: mode === 'transfer' ? null : selectedCategoryId,
+          isOutlier: mode === 'expense' && isOutlier ? 1 : 0,
+          date: fullDate,
+          localDate: selectedDate,
+          note: note.trim() ? note.trim() : null,
+        });
+      } else {
+        await addTransaction({
+          type: mode,
+          amount: finalAmount,
+          fee: mode === 'transfer' ? fee : 0,
+          walletId: selectedWalletId,
+          targetWalletId: mode === 'transfer' ? targetWalletId : null,
+          categoryId: mode === 'transfer' ? null : selectedCategoryId,
+          isOutlier: mode === 'expense' && isOutlier ? 1 : 0,
+          date: fullDate,
+          localDate: selectedDate,
+          note: note.trim() ? note.trim() : null,
+        });
+      }
 
       // Smoothly close the sheet and reset state
       bottomSheetRef.current?.close();
@@ -325,7 +358,7 @@ export function QuickEntrySheet() {
                 { color: isDark ? Palette.cypressTextPrimary : Palette.linenTextPrimary },
               ]}
             >
-              Catat Transaksi Cepat
+              {editingTransaction ? 'Ubah Transaksi' : 'Catat Transaksi Cepat'}
             </Text>
 
             <TouchableOpacity

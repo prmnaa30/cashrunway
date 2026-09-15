@@ -11,6 +11,7 @@ interface TransactionItemProps {
   isPrivacyMode: boolean;
   colorScheme: 'light' | 'dark';
   onDelete: (tx: TransactionWithDetails) => void;
+  onEdit?: (tx: TransactionWithDetails) => void;
 }
 
 export function TransactionItem({
@@ -18,6 +19,7 @@ export function TransactionItem({
   isPrivacyMode,
   colorScheme,
   onDelete,
+  onEdit,
 }: TransactionItemProps) {
   const colors = Colors[colorScheme];
 
@@ -39,7 +41,10 @@ export function TransactionItem({
       : [tx.category?.name, sourceAccount, timeStr].filter(Boolean).join(' • ');
 
   return (
-    <View className="p-3.5 min-h-[48px] flex-row items-center justify-between active:bg-linen-surface/50 dark:active:bg-cypress-surface/50">
+    <Pressable
+      onPress={() => onEdit?.(tx)}
+      className="p-3.5 min-h-[48px] flex-row items-center justify-between active:bg-linen-surface/60 dark:active:bg-cypress-surface/60"
+    >
       <View className="flex-row items-center flex-1 mr-3">
         <View
           className={`w-10 h-10 rounded-xl items-center justify-center mr-3 ${
@@ -125,6 +130,6 @@ export function TransactionItem({
           <Trash2 size={16} color={colors.textSecondary} />
         </Pressable>
       </View>
-    </View>
+    </Pressable>
   );
 }

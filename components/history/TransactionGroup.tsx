@@ -12,6 +12,7 @@ interface TransactionGroupProps {
   isPrivacyMode: boolean;
   colorScheme: 'light' | 'dark';
   onDelete: (tx: TransactionWithDetails) => void;
+  onEdit?: (tx: TransactionWithDetails) => void;
 }
 
 export function TransactionGroup({
@@ -21,6 +22,7 @@ export function TransactionGroup({
   isPrivacyMode,
   colorScheme,
   onDelete,
+  onEdit,
 }: TransactionGroupProps) {
   return (
     <View className="mb-6">
@@ -51,6 +53,7 @@ export function TransactionGroup({
             isPrivacyMode={isPrivacyMode}
             colorScheme={colorScheme}
             onDelete={onDelete}
+            onEdit={onEdit}
           />
         ))}
       </View>

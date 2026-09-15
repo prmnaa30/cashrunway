@@ -263,6 +263,24 @@ export async function deleteTransaction(id: string): Promise<void> {
   await db.delete(schema.transactions).where(eq(schema.transactions.id, id));
 }
 
+export async function updateTransaction(
+  id: string,
+  tx: Omit<NewTransaction, 'id' | 'localDate'> & { localDate?: string }
+): Promise<void> {
+  await ensureDatabaseInitialized();
+  const localDate =
+    tx.localDate ?? (tx.date.includes('T') ? tx.date.split('T')[0] : tx.date.split(' ')[0]);
+
+  // Deleting activates SQLite reverse trigger (restoring previous wallet balances),
+  // then inserting with the same ID activates the insert trigger (applying new balance changes).
+  await db.delete(schema.transactions).where(eq(schema.transactions.id, id));
+  await db.insert(schema.transactions).values({
+    ...tx,
+    id,
+    localDate,
+  });
+}
+
 export async function updateWalletBalance(walletId: string, newBalance: number): Promise<void> {
   const now = new Date();
   const dateStr = now.toISOString().replace('T', ' ').substring(0, 19);

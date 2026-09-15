@@ -11,6 +11,7 @@ import { Eye, EyeOff, Inbox } from 'lucide-react-native';
 import { formatDate } from '@/lib/format';
 import { useSettingsStore } from '@/store/useSettingStore';
 import { useFinanceStore } from '@/store/useFinanceStore';
+import { useQuickEntryStore } from '@/store/useQuickEntryStore';
 import { useTranslation } from '@/lib/i18n';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
@@ -143,6 +144,10 @@ export default function HistoryScreen() {
     }
   };
 
+  const handleEdit = (tx: TransactionWithDetails) => {
+    useQuickEntryStore.getState().openEdit(tx);
+  };
+
   return (
     <>
       <ScrollView
@@ -227,6 +232,7 @@ export default function HistoryScreen() {
             isPrivacyMode={isPrivacyMode}
             colorScheme={colorScheme}
             onDelete={handleOpenDelete}
+            onEdit={handleEdit}
           />
         ))}
       </ScrollView>
