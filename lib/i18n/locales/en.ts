@@ -71,6 +71,7 @@ export default {
     totalExpense: 'Expense',
     netSurplus: 'Surplus',
     netDeficit: 'Deficit',
+    netBalance: 'Balance',
     rangePickerTitle: 'Select Period',
     rangePickerSubtitle: 'Filter transactions by time period',
     quickThisMonth: 'This Month',
@@ -335,6 +336,10 @@ export default {
       connected: 'Connected',
       disconnect: 'Disconnect',
       notConnected: 'Not connected to Google Drive',
+      errorCancelled: 'Google sign-in was cancelled.',
+      errorConfig: 'Google OAuth credentials not configured in Google Cloud Console.',
+      errorPlayServices: 'Google Play Services is not available on this device.',
+      errorGeneric: 'Failed to connect to Google Drive. Please try again.',
     },
     cloudBackup: {
       title: 'Backup to Cloud',
@@ -372,12 +377,12 @@ export default {
       confirmButton: 'Yes, Reload Demo'
     },
     clearData: {
-      title: 'Clear All Transactions',
-      desc: 'Wipe all transaction history and start fresh from zero',
-      button: 'Clear History',
-      confirmTitle: 'Clear All Transactions?',
-      confirmDesc: 'This action is permanent. All transaction mutations will be removed and wallet balances zeroed out.',
-      confirmButton: 'Permanently Clear'
+      title: 'Wipe All Application Data',
+      desc: 'Clear all transaction history, bills, and wallets to start fresh from zero',
+      button: 'Wipe All Data',
+      confirmTitle: 'Wipe Entire Database?',
+      confirmDesc: 'This action is permanent. All transactions, recurring bills, and wallets will be completely wiped.',
+      confirmButton: 'Permanently Wipe'
     },
     aboutInfo: {
       version: 'App Version',

@@ -34,11 +34,26 @@ export function TransactionPeriodHeader({
   const colors = Colors[colorScheme];
 
   const startDate = new Date(selectedRange.start + "T00:00:00");
-  const month = startDate.getMonth() + 1;
-  const year = startDate.getFullYear();
+  const endDate = new Date(selectedRange.end + "T00:00:00");
+  const startMonth = startDate.getMonth() + 1;
+  const startYear = startDate.getFullYear();
+  const endMonth = endDate.getMonth() + 1;
+  const endYear = endDate.getFullYear();
+
+  const isSameMonth = startMonth === endMonth && startYear === endYear;
+  const periodText = isSameMonth
+    ? t("history.periodLabel", { month: startMonth.toString(), year: startYear.toString() })
+    : `${startMonth}/${startYear} - ${endMonth}/${endYear}`;
 
   const netAmount = totalIncome - totalExpense;
-  const isSurplus = netAmount >= 0;
+  const isZero = netAmount === 0;
+  const isSurplus = netAmount > 0;
+
+  const netLabel = isZero
+    ? t("history.netBalance")
+    : isSurplus
+    ? t("history.netSurplus")
+    : t("history.netDeficit");
 
   return (
     <View className="mb-4 rounded-3xl bg-linen-card dark:bg-[#13221E] border border-accent-brass/35 dark:border-accent-champagne/25 p-4 shadow-xs">
@@ -59,7 +74,7 @@ export function TransactionPeriodHeader({
           accessibilityLabel={t("history.rangePickerTitle")}
         >
           <Text className="text-sm font-black text-linen-text-primary dark:text-cypress-text-primary mr-1.5 tracking-tight">
-            {t("history.periodLabel", { month: month.toString(), year: year.toString() })}
+            {periodText}
           </Text>
           <ChevronDown size={14} color={colorScheme === 'dark' ? '#D4AF37' : colors.textSecondary} />
         </Pressable>
@@ -104,24 +119,36 @@ export function TransactionPeriodHeader({
       {/* Net Outcome Pill Banner */}
       <View
         className={`flex-row justify-between items-center px-3 py-2 rounded-xl ${
-          isSurplus
+          isZero
+            ? "bg-linen-surface/80 dark:bg-[#1A2E28]/80 border border-linen-border/80 dark:border-cypress-border/80"
+            : isSurplus
             ? "bg-status-safe/10 border border-status-safe/25"
             : "bg-status-danger/10 border border-status-danger/25"
         }`}
       >
         <Text
           className={`text-[11px] font-bold ${
-            isSurplus ? "text-status-safe" : "text-status-danger"
+            isZero
+              ? "text-linen-text-secondary dark:text-cypress-text-secondary"
+              : isSurplus
+              ? "text-status-safe"
+              : "text-status-danger"
           }`}
         >
-          Net: {isSurplus ? t("history.netSurplus") : t("history.netDeficit")}
+          Net: {netLabel}
         </Text>
         <Text
           className={`text-sm font-black font-mono tabular-nums ${
-            isSurplus ? "text-status-safe" : "text-status-danger"
+            isZero
+              ? "text-linen-text-primary dark:text-cypress-text-primary"
+              : isSurplus
+              ? "text-status-safe"
+              : "text-status-danger"
           }`}
         >
-          {isSurplus ? "+" : "-"}{formatCurrency(Math.abs(netAmount), isPrivacyMode)}
+          {isZero
+            ? formatCurrency(0, isPrivacyMode)
+            : `${isSurplus ? "+" : "-"}${formatCurrency(Math.abs(netAmount), isPrivacyMode)}`}
         </Text>
       </View>
     </View>

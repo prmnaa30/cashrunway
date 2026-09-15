@@ -78,6 +78,7 @@ describe('i18n Localization Engine', () => {
       'history.startDate',
       'history.endDate',
       'history.ok',
+      'history.netBalance',
     ];
 
     for (const key of keys) {

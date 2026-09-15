@@ -71,6 +71,7 @@ export default {
     totalExpense: 'Pengeluaran',
     netSurplus: 'Surplus',
     netDeficit: 'Defisit',
+    netBalance: 'Seimbang',
     rangePickerTitle: 'Pilih Periode',
     rangePickerSubtitle: 'Filter transaksi berdasarkan rentang waktu',
     quickThisMonth: 'Bulan Ini',
@@ -335,6 +336,10 @@ export default {
       connected: 'Terhubung',
       disconnect: 'Putuskan',
       notConnected: 'Belum terhubung ke Google Drive',
+      errorCancelled: 'Proses masuk Google dibatalkan.',
+      errorConfig: 'Kredensial OAuth Google belum dikonfigurasi di Google Cloud Console.',
+      errorPlayServices: 'Layanan Google Play tidak tersedia pada perangkat.',
+      errorGeneric: 'Gagal terhubung ke Google Drive. Silakan coba lagi.',
     },
     cloudBackup: {
       title: 'Cadangkan ke Cloud',
@@ -372,11 +377,11 @@ export default {
       confirmButton: 'Ya, Muat Contoh'
     },
     clearData: {
-      title: 'Hapus Seluruh Catatan Mutasi',
-      desc: 'Bersihkan seluruh riwayat transaksi untuk memulai dari nol',
-      button: 'Kosongkan Riwayat',
-      confirmTitle: 'Kosongkan Seluruh Mutasi?',
-      confirmDesc: 'Tindakan ini permanen. Semua riwayat mutasi akan dihapus dan saldo dompet dinolkan.',
+      title: 'Hapus Seluruh Data Aplikasi',
+      desc: 'Bersihkan seluruh riwayat transaksi, tagihan, dan dompet untuk memulai dari awal',
+      button: 'Hapus Semua Data',
+      confirmTitle: 'Hapus Seluruh Data?',
+      confirmDesc: 'Tindakan ini permanen. Semua riwayat mutasi transaksi, tagihan rutin, dan dompet akan dihapus bersih.',
       confirmButton: 'Hapus Permanen'
     },
     aboutInfo: {
