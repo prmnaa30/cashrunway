@@ -533,7 +533,7 @@ export default function SettingsScreen() {
                 action={
                   <View className="px-3 py-1 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border">
                     <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary">
-                      {backups.length} file
+                      {translate('settings.cloudBackup.filesCount', { count: backups.length })}
                     </Text>
                   </View>
                 }

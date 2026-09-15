@@ -62,7 +62,7 @@ export function ImportCsvSheet({ visible, onClose }: ImportCsvSheetProps) {
       }
 
       if (!textContent) {
-        throw new Error('Gagal membaca isi berkas CSV.');
+        throw new Error('Failed to read CSV file contents.');
       }
 
       setFileContent(textContent);
@@ -74,7 +74,7 @@ export function ImportCsvSheet({ visible, onClose }: ImportCsvSheetProps) {
       }
     } catch (err: any) {
       console.error('[ImportCsvSheet] Document picking error:', err);
-      setErrorMessage(err.message || 'Gagal membuka berkas CSV.');
+      setErrorMessage(err.message || t('backupModals.csv.openError'));
     }
   };
 
@@ -106,7 +106,7 @@ export function ImportCsvSheet({ visible, onClose }: ImportCsvSheetProps) {
       const res = await importCsvContent(fileContent, strategy);
       setSuccessResult({ imported: res.imported, skipped: res.skipped });
     } catch (err: any) {
-      setErrorMessage(err.message || 'Gagal mengimpor data.');
+      setErrorMessage(err.message || t('backupModals.csv.importError'));
     }
   };
 
@@ -144,7 +144,7 @@ export function ImportCsvSheet({ visible, onClose }: ImportCsvSheetProps) {
                 : t('backupModals.csv.selectFile')}
             </Text>
             <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary">
-              Mendukung berkas format .csv (RFC 4180)
+              {t('backupModals.csv.supportedFormats')}
             </Text>
           </Pressable>
         </View>
@@ -184,8 +184,8 @@ export function ImportCsvSheet({ visible, onClose }: ImportCsvSheetProps) {
                 value={strategy}
                 onChange={setStrategy}
                 options={[
-                  { key: 'append', label: 'Tambahkan (Aman)' },
-                  { key: 'replace', label: 'Ganti Semua' },
+                  { key: 'append', label: t('backupModals.csv.strategyAppendLabel') },
+                  { key: 'replace', label: t('backupModals.csv.strategyReplaceLabel') },
                 ]}
               />
             </View>
@@ -214,10 +214,13 @@ export function ImportCsvSheet({ visible, onClose }: ImportCsvSheetProps) {
             <CheckCircle2 size={20} color={isDark ? '#34D399' : '#059669'} className="mr-2" />
             <View className="flex-1 ml-2">
               <Text className="text-xs font-bold text-emerald-800 dark:text-accent-champagne">
-                Impor Selesai!
+                {t('backupModals.csv.successTitle')}
               </Text>
               <Text className="text-[11px] text-emerald-700/90 dark:text-accent-champagne/80 mt-0.5">
-                {successResult.imported} mutasi berhasil dimasukkan ({successResult.skipped} dilewati).
+                {t('backupModals.csv.successDesc', {
+                  imported: successResult.imported,
+                  skipped: successResult.skipped,
+                })}
               </Text>
             </View>
           </View>

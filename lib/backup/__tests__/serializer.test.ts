@@ -125,7 +125,7 @@ describe('Backup Serializer', () => {
 
     const result = validateBackupPayload(payload);
     expect(result.valid).toBe(false);
-    expect(result.errors.some((e) => e.includes('checksum'))).toBe(true);
+    expect(result.errors.some((e) => e.toLowerCase().includes('checksum'))).toBe(true);
   });
 
   it('rejects unsupported future schema versions', () => {
@@ -136,12 +136,12 @@ describe('Backup Serializer', () => {
 
     const result = validateBackupPayload(payload);
     expect(result.valid).toBe(false);
-    expect(result.errors.some((e) => e.includes('Versi skema'))).toBe(true);
+    expect(result.errors.some((e) => e.includes('Unsupported backup schema version'))).toBe(true);
   });
 
   it('rejects malformed json strings', () => {
     const result = validateBackupPayload('{ invalid json content');
     expect(result.valid).toBe(false);
-    expect(result.errors[0]).toContain('tidak valid');
+    expect(result.errors[0]).toContain('Invalid JSON format');
   });
 });

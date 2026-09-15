@@ -126,7 +126,7 @@ export const useBackupStore = create<BackupState>((set, get) => ({
         googleUser: user,
         isSignedIn: true,
         isSigningIn: false,
-        feedbackMessage: `Terhubung sebagai ${user.email}`,
+        feedbackMessage: `Connected as ${user.email}`,
       });
 
       await updateSettings({ googleEmail: user.email });
@@ -134,7 +134,7 @@ export const useBackupStore = create<BackupState>((set, get) => ({
     } catch (err: any) {
       set({
         isSigningIn: false,
-        error: err.message || 'Gagal masuk dengan Google.',
+        error: err.message || 'Failed to sign in with Google.',
       });
       throw err;
     }
@@ -147,11 +147,11 @@ export const useBackupStore = create<BackupState>((set, get) => ({
         googleUser: null,
         isSignedIn: false,
         backups: [],
-        feedbackMessage: 'Google Drive berhasil diputuskan.',
+        feedbackMessage: 'Google Drive disconnected successfully.',
       });
       await updateSettings({ googleEmail: null });
     } catch (err: any) {
-      set({ error: err.message || 'Gagal keluar.' });
+      set({ error: err.message || 'Failed to sign out.' });
     }
   },
 
@@ -164,7 +164,7 @@ export const useBackupStore = create<BackupState>((set, get) => ({
       const files = await listBackupFiles(token);
       set({ backups: files, isLoadingBackups: false });
     } catch (err: any) {
-      set({ isLoadingBackups: false, error: err.message || 'Gagal memuat daftar cadangan.' });
+      set({ isLoadingBackups: false, error: err.message || 'Failed to load backup list.' });
     }
   },
 
@@ -174,7 +174,7 @@ export const useBackupStore = create<BackupState>((set, get) => ({
 
     const token = await getValidAccessToken();
     if (!token) {
-      if (!silent) set({ error: 'Harap hubungkan akun Google Drive terlebih dahulu.' });
+      if (!silent) set({ error: 'Please connect your Google Drive account first.' });
       return false;
     }
 
@@ -182,7 +182,7 @@ export const useBackupStore = create<BackupState>((set, get) => ({
       set({
         isBackingUp: true,
         error: null,
-        backupProgress: { stage: 'Menyiapkan data cadangan...', percent: 25 },
+        backupProgress: { stage: 'Preparing backup payload...', percent: 25 },
       });
 
       // 1. Serialize DB
@@ -190,12 +190,12 @@ export const useBackupStore = create<BackupState>((set, get) => ({
       const payload = serializeBackup(tables);
       const jsonString = JSON.stringify(payload, null, 2);
 
-      set({ backupProgress: { stage: 'Mengunggah ke Google Drive...', percent: 60 } });
+      set({ backupProgress: { stage: 'Uploading to Google Drive...', percent: 60 } });
 
       // 2. Upload to Drive
       const uploadedFile = await uploadBackupFile(token, jsonString);
 
-      set({ backupProgress: { stage: 'Menerapkan kebijakan retensi...', percent: 90 } });
+      set({ backupProgress: { stage: 'Enforcing retention policy...', percent: 90 } });
 
       // 3. Enforce retention (keep max 5)
       await enforceRetentionPolicy(token, 5);
@@ -208,7 +208,7 @@ export const useBackupStore = create<BackupState>((set, get) => ({
         lastBackupDate: nowIso,
         backupProgress: null,
         backups: [uploadedFile, ...prev.backups.filter((f) => f.id !== uploadedFile.id)],
-        feedbackMessage: silent ? null : 'Cadangan berhasil disimpan ke Google Drive!',
+        feedbackMessage: silent ? null : 'Backup saved to Google Drive successfully!',
       }));
 
       return true;
@@ -217,7 +217,7 @@ export const useBackupStore = create<BackupState>((set, get) => ({
       set({
         isBackingUp: false,
         backupProgress: null,
-        error: err.message || 'Gagal membuat cadangan ke Google Drive.',
+        error: err.message || 'Failed to create Google Drive backup.',
       });
       return false;
     }
@@ -226,7 +226,7 @@ export const useBackupStore = create<BackupState>((set, get) => ({
   restoreBackup: async (fileId: string) => {
     const token = await getValidAccessToken();
     if (!token) {
-      set({ error: 'Sesi Google Drive berakhir. Harap hubungkan ulang.' });
+      set({ error: 'Google Drive session expired. Please reconnect.' });
       return false;
     }
 
@@ -234,13 +234,13 @@ export const useBackupStore = create<BackupState>((set, get) => ({
       set({
         isRestoring: true,
         error: null,
-        backupProgress: { stage: 'Mengunduh berkas cadangan...', percent: 30 },
+        backupProgress: { stage: 'Downloading backup file...', percent: 30 },
       });
 
       // 1. Download
       const rawJson = await downloadBackupFile(token, fileId);
 
-      set({ backupProgress: { stage: 'Memvalidasi integritas data...', percent: 60 } });
+      set({ backupProgress: { stage: 'Verifying data integrity...', percent: 60 } });
 
       // 2. Validate
       const validation = validateBackupPayload(rawJson);
@@ -248,7 +248,7 @@ export const useBackupStore = create<BackupState>((set, get) => ({
         throw new Error(validation.errors.join(' '));
       }
 
-      set({ backupProgress: { stage: 'Menerapkan data ke database...', percent: 85 } });
+      set({ backupProgress: { stage: 'Restoring database...', percent: 85 } });
 
       // 3. Restore to SQLite
       await restoreFromBackup(validation.payload.data);
@@ -262,7 +262,7 @@ export const useBackupStore = create<BackupState>((set, get) => ({
       set({
         isRestoring: false,
         backupProgress: null,
-        feedbackMessage: 'Data berhasil dipulihkan dari cadangan Google Drive!',
+        feedbackMessage: 'Database restored from Google Drive backup successfully!',
       });
 
       return true;
@@ -271,7 +271,7 @@ export const useBackupStore = create<BackupState>((set, get) => ({
       set({
         isRestoring: false,
         backupProgress: null,
-        error: err.message || 'Gagal memulihkan cadangan.',
+        error: err.message || 'Failed to restore backup.',
       });
       return false;
     }
@@ -285,11 +285,11 @@ export const useBackupStore = create<BackupState>((set, get) => ({
       await deleteBackupFile(token, fileId);
       set((prev) => ({
         backups: prev.backups.filter((f) => f.id !== fileId),
-        feedbackMessage: 'Cadangan berhasil dihapus.',
+        feedbackMessage: 'Backup deleted successfully.',
       }));
       return true;
     } catch (err: any) {
-      set({ error: err.message || 'Gagal menghapus berkas cadangan.' });
+      set({ error: err.message || 'Failed to delete backup file.' });
       return false;
     }
   },
@@ -327,12 +327,12 @@ export const useBackupStore = create<BackupState>((set, get) => ({
 
       const parsed = parseCsvContent(rawCsv);
       if (parsed.rows.length === 0) {
-        throw new Error('File CSV kosong atau tidak memiliki data.');
+        throw new Error('CSV file is empty or has no data.');
       }
 
       const mappedTransactions = mapCashRunwayCsvRows(parsed.rows);
       if (mappedTransactions.length === 0) {
-        throw new Error('Tidak ditemukan transaksi valid di dalam berkas CSV.');
+        throw new Error('No valid transactions found in CSV file.');
       }
 
       const result = await importTransactionsBatch(mappedTransactions, strategy);
@@ -345,14 +345,14 @@ export const useBackupStore = create<BackupState>((set, get) => ({
 
       set({
         isImporting: false,
-        feedbackMessage: `Berhasil mengimpor ${result.imported} transaksi (${result.skipped} dilewati).`,
+        feedbackMessage: `Successfully imported ${result.imported} transactions (${result.skipped} skipped).`,
       });
 
       return result;
     } catch (err: any) {
       set({
         isImporting: false,
-        error: err.message || 'Gagal mengimpor data CSV.',
+        error: err.message || 'Failed to import CSV data.',
       });
       throw err;
     }

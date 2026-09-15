@@ -18,13 +18,13 @@ let isConfigured = false;
 /**
  * Configure Google Sign-In SDK with Drive appdata scope.
  */
-export function configureGoogleSignIn(webClientId?: string): void {
+export function configureGoogleSignIn(): void {
   if (isConfigured) return;
 
   try {
     GoogleSignin.configure({
       scopes: [GOOGLE_DRIVE_APPDATA_SCOPE],
-      webClientId: webClientId || undefined,
+      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || undefined,
       offlineAccess: false,
     });
     isConfigured = true;
@@ -69,14 +69,14 @@ export async function signInWithGoogle(): Promise<{
     };
   } catch (error: any) {
     if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-      throw new Error('Proses masuk Google dibatalkan.');
+      throw new Error('Sign-in was cancelled.');
     } else if (error.code === statusCodes.IN_PROGRESS) {
-      throw new Error('Proses masuk sedang berjalan.');
+      throw new Error('Sign-in is already in progress.');
     } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
-      throw new Error('Google Play Services tidak tersedia pada perangkat.');
+      throw new Error('Google Play Services is not available on your device.');
     }
     console.error('[GoogleAuth] Sign-in error:', error);
-    throw new Error(error.message || 'Gagal masuk dengan Google.');
+    throw new Error(error.message || 'Failed to sign in with Google.');
   }
 }
 

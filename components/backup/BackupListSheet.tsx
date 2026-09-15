@@ -107,7 +107,7 @@ export function BackupListSheet({ visible, onClose }: BackupListSheetProps) {
               <>
                 <RefreshCw size={13} color={colors.textSecondary} />
                 <Text className="text-xs font-semibold text-linen-text-secondary dark:text-cypress-text-secondary ml-1.5">
-                  Muat Ulang
+                  {t('common.refresh')}
                 </Text>
               </>
             )}

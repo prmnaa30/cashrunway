@@ -80,33 +80,33 @@ export function validateBackupPayload(raw: unknown): ValidationResult {
     try {
       obj = JSON.parse(raw);
     } catch {
-      return { valid: false, errors: ['Format JSON tidak valid atau berkas korup.'] };
+      return { valid: false, errors: ['Invalid JSON format or corrupted file.'] };
     }
   }
 
   if (!obj || typeof obj !== 'object') {
-    return { valid: false, errors: ['Format berkas cadangan tidak valid.'] };
+    return { valid: false, errors: ['Invalid backup file format.'] };
   }
 
   if (typeof obj.version !== 'number' || obj.version > CURRENT_BACKUP_SCHEMA_VERSION) {
-    errors.push(`Versi skema cadangan tidak didukung (versi: ${obj.version}).`);
+    errors.push(`Unsupported backup schema version: ${obj.version}.`);
   }
 
   if (!obj.data || typeof obj.data !== 'object') {
-    errors.push('Data cadangan tidak ditemukan.');
+    errors.push('Backup data not found.');
   } else {
-    if (!Array.isArray(obj.data.wallets)) errors.push('Tabel dompet (wallets) hilang atau bukan array.');
-    if (!Array.isArray(obj.data.categories)) errors.push('Tabel kategori hilang atau bukan array.');
-    if (!Array.isArray(obj.data.transactions)) errors.push('Tabel transaksi hilang atau bukan array.');
+    if (!Array.isArray(obj.data.wallets)) errors.push('Wallets table missing or not an array.');
+    if (!Array.isArray(obj.data.categories)) errors.push('Categories table missing or not an array.');
+    if (!Array.isArray(obj.data.transactions)) errors.push('Transactions table missing or not an array.');
   }
 
   if (typeof obj.checksum !== 'string' || !obj.checksum) {
-    errors.push('Checksum verifikasi integritas cadangan tidak ditemukan.');
+    errors.push('Backup integrity verification checksum not found.');
   } else if (obj.data) {
     const dataString = JSON.stringify(obj.data);
     const expectedChecksum = calculateChecksum(dataString);
     if (obj.checksum !== expectedChecksum) {
-      errors.push('Integritas data tidak cocok (checksum mismatch). Berkas cadangan mungkin telah dimodifikasi.');
+      errors.push('Checksum mismatch. The backup file may have been modified or corrupted.');
     }
   }
 

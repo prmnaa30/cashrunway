@@ -26,7 +26,7 @@ export async function listBackupFiles(accessToken: string): Promise<GoogleDriveF
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Gagal membaca daftar cadangan Google Drive (${response.status}): ${errorText}`);
+    throw new Error(`Failed to list Google Drive backups (${response.status}): ${errorText}`);
   }
 
   const data = await response.json();
@@ -78,7 +78,7 @@ export async function uploadBackupFile(
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Gagal mengunggah cadangan ke Google Drive (${response.status}): ${errorText}`);
+    throw new Error(`Failed to upload backup to Google Drive (${response.status}): ${errorText}`);
   }
 
   const uploadedFile: GoogleDriveFile = await response.json();
@@ -103,7 +103,7 @@ export async function downloadBackupFile(
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Gagal mengunduh cadangan dari Google Drive (${response.status}): ${errorText}`);
+    throw new Error(`Failed to download backup from Google Drive (${response.status}): ${errorText}`);
   }
 
   return await response.text();
@@ -127,7 +127,7 @@ export async function deleteBackupFile(
 
   if (!response.ok && response.status !== 404) {
     const errorText = await response.text();
-    throw new Error(`Gagal menghapus berkas cadangan (${response.status}): ${errorText}`);
+    throw new Error(`Failed to delete backup file (${response.status}): ${errorText}`);
   }
 }
 
@@ -153,7 +153,7 @@ export async function enforceRetentionPolicy(
         await deleteBackupFile(accessToken, file.id);
         deletedCount++;
       } catch (err) {
-        console.warn(`[GoogleDrive] Gagal menghapus cadangan lama ${file.id}:`, err);
+        console.warn(`[GoogleDrive] Failed to prune old backup ${file.id}:`, err);
       }
     }
 

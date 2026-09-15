@@ -1,4 +1,14 @@
 export default {
+  quickActions: {
+    expense: {
+      title: 'Catat Pengeluaran',
+      subtitle: 'Input pengeluaran baru'
+    },
+    income: {
+      title: 'Catat Pemasukan',
+      subtitle: 'Input pemasukan baru'
+    }
+  },  
   tabs: {
     dashboard: 'Runway',
     history: 'Riwayat',
@@ -334,6 +344,7 @@ export default {
       lastBackup: 'Terakhir dicadangkan: {time}',
       never: 'Belum pernah dicadangkan',
       historyButton: 'Daftar Cadangan',
+      filesCount: '{count} berkas',
     },
     autoBackup: {
       title: 'Cadangan Otomatis',
@@ -430,6 +441,14 @@ export default {
       importBtn: 'Mulai Impor Data',
       importing: 'Sedang mengimpor...',
       noDataError: 'File CSV tidak memiliki baris transaksi yang dapat diimpor.',
+      supportedFormats: 'Mendukung berkas format .csv (RFC 4180)',
+      strategyAppendLabel: 'Tambahkan (Aman)',
+      strategyReplaceLabel: 'Ganti Semua',
+      successTitle: 'Impor Selesai!',
+      successDesc: '{imported} mutasi berhasil dimasukkan ({skipped} dilewati).',
+      readError: 'Gagal membaca isi berkas CSV.',
+      importError: 'Gagal mengimpor data.',
+      openError: 'Gagal membuka berkas CSV.',
     }
   },
   common: {
@@ -438,6 +457,7 @@ export default {
     confirm: 'Konfirmasi',
     close: 'Tutup',
     loading: 'Memuat...',
-    search: 'Cari...'
+    search: 'Cari...',
+    refresh: 'Muat Ulang'
   }
 };

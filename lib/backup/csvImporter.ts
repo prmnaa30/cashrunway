@@ -182,7 +182,7 @@ export async function importTransactionsBatch(
   let skipped = 0;
 
   if (transactions.length === 0) {
-    return { imported: 0, skipped: 0, errors: ['Tidak ada transaksi valid untuk diimpor.'] };
+    return { imported: 0, skipped: 0, errors: ['No valid transactions to import.'] };
   }
 
   const {
@@ -206,7 +206,7 @@ export async function importTransactionsBatch(
 
   const fallbackWallet = existingWallets.find((w: Wallet) => w.isVault === 0) || existingWallets[0];
   if (!fallbackWallet) {
-    return { imported: 0, skipped: 0, errors: ['Tidak ditemukan akun dompet aktif di sistem.'] };
+    return { imported: 0, skipped: 0, errors: ['No active wallet found in the system.'] };
   }
 
   if (strategy === 'replace') {
@@ -246,7 +246,7 @@ export async function importTransactionsBatch(
       imported++;
     } catch (err: any) {
       skipped++;
-      errors.push(`Gagal mengimpor transaksi pada ${item.date}: ${err.message || String(err)}`);
+      errors.push(`Failed to import transaction on ${item.date}: ${err.message || String(err)}`);
     }
   }
 

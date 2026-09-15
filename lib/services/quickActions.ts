@@ -1,5 +1,6 @@
 import * as QuickActions from 'expo-quick-actions';
 import { Platform } from 'react-native';
+import { translate } from '../i18n';
 
 /**
  * Return static quick action shortcuts definition
@@ -8,8 +9,8 @@ export function getQuickActionItems(): QuickActions.Action[] {
   return [
     {
       id: 'action_expense',
-      title: 'Catat Pengeluaran',
-      subtitle: 'Input pengeluaran baru',
+      title: translate('quickActions.expense.title'),
+      subtitle: translate('quickActions.expense.subtitle'),
       icon: Platform.select({
         ios: 'symbol:minus.circle.fill',
         android: 'ic_quick_expense',
@@ -18,8 +19,8 @@ export function getQuickActionItems(): QuickActions.Action[] {
     },
     {
       id: 'action_income',
-      title: 'Catat Pemasukan',
-      subtitle: 'Input pemasukan baru',
+      title: translate('quickActions.income.title'),
+      subtitle: translate('quickActions.income.subtitle'),
       icon: Platform.select({
         ios: 'symbol:plus.circle.fill',
         android: 'ic_quick_income',

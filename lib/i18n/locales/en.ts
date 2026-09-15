@@ -1,4 +1,14 @@
 export default {
+  quickActions: {
+    expense: {
+      title: 'Record Expenses',
+      subtitle: 'Record a new expense'
+    },
+    income: {
+      title: 'Record Incomes',
+      subtitle: 'Record a new income'
+    }
+  },
   tabs: {
     dashboard: 'Home',
     history: 'Transactions',
@@ -334,6 +344,7 @@ export default {
       lastBackup: 'Last backed up: {time}',
       never: 'Never backed up',
       historyButton: 'Backup List',
+      filesCount: '{count} files',
     },
     autoBackup: {
       title: 'Auto-Backup',
@@ -430,6 +441,14 @@ export default {
       importBtn: 'Start Data Import',
       importing: 'Importing...',
       noDataError: 'The CSV file does not contain valid transaction rows to import.',
+      supportedFormats: 'Supports .csv file format (RFC 4180)',
+      strategyAppendLabel: 'Append (Safe)',
+      strategyReplaceLabel: 'Replace All',
+      successTitle: 'Import Complete!',
+      successDesc: '{imported} transactions imported ({skipped} skipped).',
+      readError: 'Failed to read CSV file contents.',
+      importError: 'Failed to import data.',
+      openError: 'Failed to open CSV file.',
     }
   },
   common: {
@@ -438,6 +457,7 @@ export default {
     confirm: 'Confirm',
     close: 'Close',
     loading: 'Loading...',
-    search: 'Search...'
+    search: 'Search...',
+    refresh: 'Refresh'
   }
 };
