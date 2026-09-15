@@ -1,15 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as Notifications from 'expo-notifications';
-import {
-  parseTimeString,
-  generateReminderMessage,
-  setupNotificationChannelAsync,
-  requestNotificationPermissionsAsync,
-  syncScheduledAlarms,
-  triggerTestNotification,
-  setupNotificationResponseListeners,
-} from '../notifications';
-import { ReminderItem } from '@/lib/db/types';
+
+// Mock expo-localization
+vi.mock('expo-localization', () => ({
+  getLocales: () => [{ languageCode: 'id', regionCode: 'ID' }],
+}));
+
+// Mock useFinanceStore to prevent loading native SQLite in node
+vi.mock('@/store/useFinanceStore', () => ({
+  useFinanceStore: {
+    getState: () => ({
+      settings: { language: 'id' },
+    }),
+  },
+}));
 
 // Mock expo-notifications
 vi.mock('expo-notifications', () => {
@@ -49,6 +52,18 @@ vi.mock('expo-notifications', () => {
   };
 });
 
+import * as Notifications from 'expo-notifications';
+import {
+  parseTimeString,
+  generateReminderMessage,
+  setupNotificationChannelAsync,
+  requestNotificationPermissionsAsync,
+  syncScheduledAlarms,
+  triggerTestNotification,
+  setupNotificationResponseListeners,
+} from '../notifications';
+import { ReminderItem } from '@/lib/db/types';
+
 describe('Notification Helpers & Business Logic', () => {
   describe('parseTimeString', () => {
     it('should parse valid HH:mm correctly', () => {
@@ -67,27 +82,40 @@ describe('Notification Helpers & Business Logic', () => {
   });
 
   describe('generateReminderMessage', () => {
-    it('should generate appropriate message for finite runway', () => {
-      const msg = generateReminderMessage(42);
-      expect(msg.title).toBe('CashRunway');
-      expect(msg.body).toContain('42 hari');
-      expect(msg.body.toLowerCase()).toContain('catat');
+    it('should generate appropriate message for finite runway in both locales', () => {
+      const msgId = generateReminderMessage(42, undefined, 'id');
+      expect(msgId.title).toBe('CashRunway');
+      expect(msgId.body).toContain('42 hari');
+      expect(msgId.body.toLowerCase()).toContain('catat');
+
+      const msgEn = generateReminderMessage(42, undefined, 'en');
+      expect(msgEn.title).toBe('CashRunway');
+      expect(msgEn.body).toContain('42');
+      expect(msgEn.body.toLowerCase()).toContain('log');
     });
 
-    it('should generate warning message for 0 or depleted runway', () => {
-      const msg0 = generateReminderMessage(0);
-      expect(msg0.title).toBe('CashRunway');
-      expect(msg0.body).toContain('habis');
+    it('should generate warning message for 0 or depleted runway in both locales', () => {
+      const msg0Id = generateReminderMessage(0, undefined, 'id');
+      expect(msg0Id.title).toBe('CashRunway');
+      expect(msg0Id.body).toContain('habis');
 
-      const msgNegative = generateReminderMessage(-5);
+      const msg0En = generateReminderMessage(0, undefined, 'en');
+      expect(msg0En.title).toBe('CashRunway');
+      expect(msg0En.body.toLowerCase()).toContain('run out');
+
+      const msgNegative = generateReminderMessage(-5, undefined, 'id');
       expect(msgNegative.title).toBe('CashRunway');
       expect(msgNegative.body).toContain('habis');
     });
 
-    it('should generate healthy message for very long runway (> 365 days)', () => {
-      const msg = generateReminderMessage(500);
-      expect(msg.title).toBe('CashRunway');
-      expect(msg.body).toContain('sehat');
+    it('should generate healthy message for very long runway (> 365 days) in both locales', () => {
+      const msgId = generateReminderMessage(500, undefined, 'id');
+      expect(msgId.title).toBe('CashRunway');
+      expect(msgId.body).toContain('sehat');
+
+      const msgEn = generateReminderMessage(500, undefined, 'en');
+      expect(msgEn.title).toBe('CashRunway');
+      expect(msgEn.body.toLowerCase()).toContain('healthy');
     });
   });
 });

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import {
-  Modal,
   View,
   Text,
   Pressable,
 } from 'react-native';
-import { Archive, X, AlertTriangle } from 'lucide-react-native';
+import { Archive } from 'lucide-react-native';
 import { Wallet } from '@/lib/db';
-import { formatCurrency } from '@/lib/format';
+import { AppModal } from '@/components/ui/AppModal';
+import { useTranslation } from '@/lib/i18n';
 import Colors from '@/constants/Colors';
 
 export interface DeleteWalletModalProps {
@@ -27,13 +27,12 @@ export function DeleteWalletModal({
   onClose,
   onConfirm,
 }: DeleteWalletModalProps) {
+  const { t, locale } = useTranslation();
   const colors = Colors[colorScheme];
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   if (!wallet) return null;
-
-  const hasRemainingBalance = (wallet.balance || 0) > 0;
 
   const handleConfirm = async () => {
     try {
@@ -42,96 +41,59 @@ export function DeleteWalletModal({
       await onConfirm(wallet.id);
       onClose();
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Gagal menghapus dompet');
+      setErrorMsg(err?.message || (locale === 'en' ? 'Failed to delete account' : 'Gagal menghapus dompet'));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Modal
+    <AppModal
       visible={visible}
-      transparent
-      animationType="fade"
-      statusBarTranslucent
-      onRequestClose={onClose}
+      onClose={onClose}
+      showCloseButton={true}
+      maxWidth={380}
     >
-      <View className="flex-1 justify-center items-center px-6 bg-black/65">
-        <Pressable className="absolute inset-0" onPress={onClose} />
-
-        <View className="w-full max-w-sm rounded-3xl bg-linen-card dark:bg-cypress-card border border-linen-border dark:border-cypress-border p-5 shadow-2xl z-10">
-          <View className="items-center mb-3">
-            <View className="w-12 h-12 rounded-full bg-status-danger/15 border border-status-danger/30 items-center justify-center mb-2">
-              <Archive size={22} color="#EF4444" />
-            </View>
-            <Text className="text-base font-black text-linen-text-primary dark:text-cypress-text-primary text-center">
-              Hapus / Arsipkan Dompet
-            </Text>
-            <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary text-center mt-1">
-              Apakah Anda yakin ingin menghapus akun{' '}
-              <Text className="font-bold text-linen-text-primary dark:text-cypress-text-primary">
-                "{wallet.name}"
-              </Text>
-              ?
-            </Text>
-          </View>
-
-          {hasRemainingBalance && (
-            <View className="mb-4 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex-row items-start">
-              <AlertTriangle size={16} color="#F59E0B" className="mt-0.5" />
-              <View className="ml-2 flex-1">
-                <Text className="text-xs font-bold text-amber-600 dark:text-amber-400">
-                  Saldo Masih Tersisa
-                </Text>
-                <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary mt-0.5 leading-4">
-                  Akun ini masih memiliki saldo{' '}
-                  <Text className="font-bold font-mono tabular-nums">
-                    {formatCurrency(wallet.balance, isPrivacyMode)}
-                  </Text>
-                  . Saldo tidak akan lagi dihitung ke kas harian / tabungan aktif setelah diarsipkan.
-                </Text>
-              </View>
-            </View>
-          )}
-
-          <View className="p-3 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border/60 dark:border-cypress-border/60 mb-4">
-            <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary leading-4">
-              🛡️ <Text className="font-bold text-linen-text-primary dark:text-cypress-text-primary">Aman:</Text> Seluruh mutasi & riwayat transaksi historis yang pernah menggunakan akun ini tetap tersimpan utuh di laporan keuangan.
-            </Text>
-          </View>
-
-          {errorMsg ? (
-            <Text className="text-xs text-status-danger mb-3 font-semibold text-center">
-              {errorMsg}
-            </Text>
-          ) : null}
-
-          <View className="flex-row gap-2">
-            <Pressable
-              onPress={onClose}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              className="flex-1 min-h-[44px] py-3 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70"
-            >
-              <Text className="text-xs font-bold text-linen-text-secondary dark:text-cypress-text-secondary">
-                Batal
-              </Text>
-            </Pressable>
-
-            <Pressable
-              onPress={handleConfirm}
-              disabled={isSubmitting}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              className={`flex-1 min-h-[44px] py-3 rounded-xl bg-status-danger items-center justify-center active:opacity-80 ${
-                isSubmitting ? 'opacity-60' : ''
-              }`}
-            >
-              <Text className="text-xs font-black text-white">
-                {isSubmitting ? 'Memproses...' : 'Ya, Hapus'}
-              </Text>
-            </Pressable>
-          </View>
+      <View className="items-center mb-3">
+        <View className="w-12 h-12 rounded-full bg-status-danger/15 border border-status-danger/30 items-center justify-center mb-2">
+          <Archive size={22} color="#EF4444" />
         </View>
+        <Text className="text-base font-black text-linen-text-primary dark:text-cypress-text-primary text-center">
+          {t('wallets.deleteModalTitle')}
+        </Text>
+        <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary text-center mt-1">
+          {t('wallets.deleteModalDesc', { wallet: wallet.name })}
+        </Text>
       </View>
-    </Modal>
+
+      {errorMsg ? (
+        <Text className="text-xs text-status-danger text-center mb-3">
+          {errorMsg}
+        </Text>
+      ) : null}
+
+      <View className="flex-row gap-3 mt-2">
+        <Pressable
+          onPress={onClose}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          className="flex-1 min-h-[44px] py-3 rounded-2xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70"
+        >
+          <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary">
+            {t('wallets.cancel')}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={handleConfirm}
+          disabled={isSubmitting}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          className="flex-1 min-h-[44px] py-3 rounded-2xl bg-status-danger items-center justify-center active:opacity-80 shadow-sm"
+        >
+          <Text className="text-xs font-bold text-white">
+            {t('wallets.confirmDelete')}
+          </Text>
+        </Pressable>
+      </View>
+    </AppModal>
   );
 }

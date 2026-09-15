@@ -49,7 +49,24 @@
           "defaultChannel": "cashrunway-reminders"
         }
       ],
-      "expo-quick-actions"
+      [
+        "expo-quick-actions",
+        {
+          "androidIcons": {
+            "ic_quick_expense": {
+              "foregroundImage": "./assets/images/quick-expense.png",
+              "backgroundColor": "#FFFFFF"
+            },
+            "ic_quick_income": {
+              "foregroundImage": "./assets/images/quick-income.png",
+              "backgroundColor": "#FFFFFF"
+            }
+          }
+        }
+      ],
+      "expo-localization",
+      "expo-sharing",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

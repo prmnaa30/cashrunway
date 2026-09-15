@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Pressable } from 'react-native';
 import Animated, {
-  useSharedValue,
   useAnimatedStyle,
   withTiming,
-  Easing,
   FadeIn,
   FadeOut,
   LinearTransition,
@@ -12,6 +10,8 @@ import Animated, {
 import { Compass, ChevronDown, Calculator } from 'lucide-react-native';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { RunwayResult, BurnRateResult } from '@/lib/engine';
+import { useTranslation } from '@/lib/i18n';
+import { AppSegmentedTabs } from '@/components/ui/AppSegmentedTabs';
 import Colors from '@/constants/Colors';
 
 interface RunwayHeroCardProps {
@@ -35,41 +35,19 @@ export function RunwayHeroCard({
   colorScheme,
   defaultMode = 'operational',
 }: RunwayHeroCardProps) {
+  const { t, locale } = useTranslation();
   const colors = Colors[colorScheme];
   const [runwayMode, setRunwayMode] = useState<'operational' | 'total'>(defaultMode);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [tabWidth, setTabWidth] = useState(192);
-  const tabAnim = useSharedValue(defaultMode === 'operational' ? 0 : 1);
 
   useEffect(() => {
     setRunwayMode(defaultMode);
-    tabAnim.value = withTiming(defaultMode === 'operational' ? 0 : 1, {
-      duration: 200,
-      easing: Easing.bezier(0.16, 1, 0.3, 1),
-    });
   }, [defaultMode]);
-
-  const handleSwitchMode = (mode: 'operational' | 'total') => {
-    setRunwayMode(mode);
-    // Smooth sliding pill indicator without bouncy jelly overshoot
-    tabAnim.value = withTiming(mode === 'operational' ? 0 : 1, {
-      duration: 200,
-      easing: Easing.bezier(0.16, 1, 0.3, 1),
-    });
-  };
 
   const chevronStyle = useAnimatedStyle(() => ({
     transform: [
       {
         rotate: withTiming(isExpanded ? '180deg' : '0deg', { duration: 220 }),
-      },
-    ],
-  }));
-
-  const pillStyle = useAnimatedStyle(() => ({
-    transform: [
-      {
-        translateX: tabAnim.value * ((tabWidth - 6) / 2),
       },
     ],
   }));
@@ -105,7 +83,7 @@ export function RunwayHeroCard({
         <View className="flex-row items-center">
           <Compass size={16} color={colors.tint} />
           <Text className="ml-1.5 text-xs font-bold uppercase tracking-wider text-linen-text-secondary dark:text-cypress-text-secondary">
-            Ketahanan Kas
+            {t('dashboard.runwayTitle')}
           </Text>
           <Animated.View
             style={chevronStyle}
@@ -115,60 +93,16 @@ export function RunwayHeroCard({
           </Animated.View>
         </View>
 
-        <View
-          onLayout={(e) => setTabWidth(e.nativeEvent.layout.width)}
-          className="relative flex-row p-0.5 rounded-xl bg-linen-bg dark:bg-cypress-surface border border-linen-border/80 dark:border-cypress-border w-44 overflow-hidden"
-        >
-          <Animated.View
-            style={[
-              {
-                position: 'absolute',
-                top: 2,
-                bottom: 2,
-                left: 2,
-                width: (tabWidth - 6) / 2,
-                borderRadius: 9,
-              },
-              pillStyle,
+        <View style={{ width: 180 }}>
+          <AppSegmentedTabs<'operational' | 'total'>
+            size="sm"
+            value={runwayMode}
+            onChange={(val) => setRunwayMode(val)}
+            options={[
+              { key: 'operational', label: t('dashboard.operationalRunway') },
+              { key: 'total', label: t('dashboard.totalRunway') },
             ]}
-            className="bg-white dark:bg-accent-champagne shadow-xs border border-linen-border/40 dark:border-transparent"
           />
-
-          <Pressable
-            onPress={(e) => {
-              e.stopPropagation?.();
-              handleSwitchMode('operational');
-            }}
-            className="flex-1 py-1.5 items-center justify-center z-10 active:opacity-70"
-          >
-            <Text
-              className={`text-[11px] font-bold ${
-                runwayMode === 'operational'
-                  ? 'text-linen-text-primary dark:text-[#0C1513]'
-                  : 'text-linen-text-secondary dark:text-cypress-text-secondary'
-              }`}
-            >
-              Kas Harian
-            </Text>
-          </Pressable>
-
-          <Pressable
-            onPress={(e) => {
-              e.stopPropagation?.();
-              handleSwitchMode('total');
-            }}
-            className="flex-1 py-1.5 items-center justify-center z-10 active:opacity-70"
-          >
-            <Text
-              className={`text-[11px] font-bold ${
-                runwayMode === 'total'
-                  ? 'text-linen-text-primary dark:text-[#0C1513]'
-                  : 'text-linen-text-secondary dark:text-cypress-text-secondary'
-              }`}
-            >
-              + Tabungan
-            </Text>
-          </Pressable>
         </View>
       </View>
 
@@ -179,25 +113,25 @@ export function RunwayHeroCard({
           </Text>
           {!runway.isInfinite && (
             <Text className="ml-2 text-lg font-bold uppercase tracking-widest text-linen-text-secondary dark:text-cypress-text-secondary">
-              HARI
+              {t('dashboard.days')}
             </Text>
           )}
         </View>
 
         <Text className="mt-1 text-xs text-linen-text-secondary dark:text-cypress-text-secondary">
           {runway.isInfinite ? (
-            'Pengeluaran Rp 0, uangmu sangat aman'
+            locale === 'en' ? 'Expenses $0, funds are safe' : 'Pengeluaran Rp 0, uangmu sangat aman'
           ) : runway.isDepleted ? (
-            'Saldo harian telah habis'
+            t('dashboard.balanceDepleted')
           ) : activeProjectedDate ? (
             <>
-              Diperkirakan cukup sampai{' '}
+              {locale === 'en' ? 'Safe through ' : 'Diperkirakan cukup sampai '}
               <Text className="font-bold text-linen-text-primary dark:text-cypress-text-primary">
-                {formatDate(activeProjectedDate)}
+                {formatDate(activeProjectedDate, locale === 'en' ? 'en-US' : 'id-ID')}
               </Text>
             </>
           ) : (
-            'Kondisi keuangan stabil'
+            locale === 'en' ? 'Stable condition' : 'Kondisi keuangan stabil'
           )}
         </Text>
       </View>
@@ -232,19 +166,19 @@ export function RunwayHeroCard({
 
         <View className="flex-row justify-between mt-1.5">
           <Text className="text-[10px] text-linen-text-secondary/70 dark:text-cypress-text-secondary/70 font-mono">
-            0 hr
+            0 {locale === 'en' ? 'd' : 'hr'}
           </Text>
           <Text className="text-[10px] text-linen-text-secondary/70 dark:text-cypress-text-secondary/70 font-mono">
-            7 hr
+            7 {locale === 'en' ? 'd' : 'hr'}
           </Text>
           <Text className="text-[10px] text-linen-text-secondary/70 dark:text-cypress-text-secondary/70 font-mono">
-            14 hr
+            14 {locale === 'en' ? 'd' : 'hr'}
           </Text>
           <Text className="text-[10px] text-linen-text-secondary/70 dark:text-cypress-text-secondary/70 font-mono">
-            30 hr
+            30 {locale === 'en' ? 'd' : 'hr'}
           </Text>
           <Text className="text-[10px] text-linen-text-secondary/70 dark:text-cypress-text-secondary/70 font-mono">
-            60+ hr
+            60+ {locale === 'en' ? 'd' : 'hr'}
           </Text>
         </View>
       </View>
@@ -252,7 +186,9 @@ export function RunwayHeroCard({
       <View className="mt-3 pt-3 border-t border-linen-border/60 dark:border-cypress-border/60 flex-row">
         <View className="flex-1 pr-2">
           <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary uppercase tracking-wider font-semibold">
-            {runwayMode === 'operational' ? 'Kas Harian' : 'Total Kas (+Tabungan)'}
+            {runwayMode === 'operational'
+              ? t('dashboard.operationalRunway')
+              : `${t('dashboard.total') || 'Total'} (${t('dashboard.totalRunway')})`}
           </Text>
           <Text className="text-sm font-black text-linen-text-primary dark:text-cypress-text-primary mt-0.5 tabular-nums">
             {formatCurrency(activeBalance, isPrivacyMode)}
@@ -263,12 +199,12 @@ export function RunwayHeroCard({
 
         <View className="flex-1 pl-2">
           <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary uppercase tracking-wider font-semibold">
-            Rata-Rata Keluar
+            {t('dashboard.avgDailySpend')}
           </Text>
           <Text className="text-sm font-black text-linen-text-primary dark:text-cypress-text-primary mt-0.5 tabular-nums">
             {formatCurrency(burnRate.dailyBurnRate, isPrivacyMode)}
             <Text className="text-xs font-normal text-linen-text-secondary dark:text-cypress-text-secondary">
-              /hari
+              {t('dashboard.perDay')}
             </Text>
           </Text>
         </View>
@@ -285,7 +221,7 @@ export function RunwayHeroCard({
           <View className="flex-row items-center mb-3">
             <Calculator size={14} color={colors.tint} />
             <Text className="ml-1.5 text-[11px] font-bold uppercase tracking-wider text-linen-text-primary dark:text-cypress-text-primary">
-              Rincian Perhitungan ({runwayMode === 'operational' ? 'Kas Harian' : '+ Tabungan'})
+              {locale === 'en' ? 'CALCULATION BREAKDOWN' : 'RINCIAN PERHITUNGAN'} ({runwayMode === 'operational' ? t('dashboard.operationalRunway') : t('dashboard.totalRunway')})
             </Text>
           </View>
 
@@ -293,7 +229,7 @@ export function RunwayHeroCard({
             {/* Row 1: Cash Balance */}
             <View className="flex-row justify-between items-center py-1">
               <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary">
-                {runwayMode === 'operational' ? 'Saldo Kas Operasional' : 'Total Saldo (Kas + Tabungan)'}
+                {runwayMode === 'operational' ? (locale === 'en' ? 'Active Cash Balance' : 'Saldo Kas Operasional') : (locale === 'en' ? 'Total Balance (Cash + Vault)' : 'Total Saldo (Kas + Tabungan)')}
               </Text>
               <Text className="text-xs font-mono font-bold text-linen-text-primary dark:text-cypress-text-primary tabular-nums">
                 {formatCurrency(activeBalance, isPrivacyMode)}
@@ -303,10 +239,10 @@ export function RunwayHeroCard({
             {/* Row 2: Daily Burn Rate */}
             <View className="flex-row justify-between items-center py-1">
               <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary">
-                Rata-Rata Pengeluaran Harian
+                {locale === 'en' ? 'Daily Average Burn Rate' : 'Rata-Rata Pengeluaran Harian'}
               </Text>
               <Text className="text-xs font-mono font-semibold text-linen-text-secondary dark:text-cypress-text-secondary tabular-nums">
-                ÷ {formatCurrency(burnRate.dailyBurnRate, isPrivacyMode)}/hari
+                ÷ {formatCurrency(burnRate.dailyBurnRate, isPrivacyMode)}{t('dashboard.perDay')}
               </Text>
             </View>
 
@@ -315,26 +251,22 @@ export function RunwayHeroCard({
             {/* Row 3: Rough Estimate */}
             <View className="flex-row justify-between items-center py-1">
               <Text className="text-xs font-medium text-linen-text-primary dark:text-cypress-text-primary">
-                Estimasi Kasar Saldo ÷ Burn Rate
+                {locale === 'en' ? 'Rough Burn Ratio (Balance ÷ Burn)' : 'Estimasi Kasar Saldo ÷ Burn Rate'}
               </Text>
               <Text className="text-xs font-mono font-bold text-accent-brass dark:text-accent-champagne tabular-nums">
-                ≈ {estimatedDaysRatio} hari
+                ≈ {estimatedDaysRatio} {t('dashboard.days').toLowerCase()}
               </Text>
             </View>
 
             {/* Row 4: Calendar Simulation Result */}
             <View className="flex-row justify-between items-center pt-1.5 pb-0.5">
               <Text className="text-xs font-black text-linen-text-primary dark:text-cypress-text-primary">
-                Ketahanan Hasil Simulasi
+                {locale === 'en' ? 'Simulation Discrete Result' : 'Ketahanan Hasil Simulasi'}
               </Text>
               <Text className="text-xs font-mono font-black text-status-safe tabular-nums">
-                = {runway.isInfinite ? '∞' : `${activeDays} hari`}
+                = {runway.isInfinite ? '∞' : `${activeDays} ${t('dashboard.days').toLowerCase()}`}
               </Text>
             </View>
-
-            <Text className="mt-2 text-[10px] text-linen-text-secondary/80 dark:text-cypress-text-secondary/80 leading-3.5 italic">
-              * Simulasi kalender menghitung hari demi hari dengan memperhitungkan tanggal jatuh tempo tagihan rutin aktif hingga dana habis.
-            </Text>
           </View>
         </Animated.View>
       )}

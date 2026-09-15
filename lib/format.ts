@@ -91,9 +91,19 @@ export function formatCurrency(
 /**
  * Format date to shorter locale date string
  */
-export function formatDate(date: string | Date, locale = 'id-ID'): string {
+export function formatDate(date: string | Date, locale?: string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
-  return new Intl.DateTimeFormat(locale, {
+  let resolvedLocale = locale;
+  if (!resolvedLocale) {
+    try {
+      const { useFinanceStore } = require('@/store/useFinanceStore');
+      const lang = useFinanceStore.getState()?.settings?.language;
+      resolvedLocale = lang === 'en' ? 'en-US' : 'id-ID';
+    } catch (_) {
+      resolvedLocale = 'id-ID';
+    }
+  }
+  return new Intl.DateTimeFormat(resolvedLocale, {
     day: 'numeric',
     month: 'short',
     year: 'numeric',

@@ -1,30 +1,20 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  Modal,
   View,
   Text,
   TextInput,
   Pressable,
   ScrollView,
   Switch,
-  Platform,
-  KeyboardAvoidingView,
-  Dimensions,
-  StyleSheet,
-  PanResponder,
 } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-  Easing,
-  runOnJS,
-} from 'react-native-reanimated';
+import Animated, { LinearTransition } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { X, Banknote, Landmark, Smartphone, Percent, AlertCircle, ShieldAlert } from 'lucide-react-native';
+import { Banknote, Landmark, Smartphone, Percent, AlertCircle } from 'lucide-react-native';
 import { Wallet } from '@/lib/db';
 import Colors from '@/constants/Colors';
+import { AppBottomSheet } from '@/components/ui/AppBottomSheet';
+import { AppSegmentedTabs } from '@/components/ui/AppSegmentedTabs';
+import { useTranslation } from '@/lib/i18n';
 
 export interface WalletFormSheetProps {
   visible: boolean;
@@ -45,8 +35,6 @@ export interface WalletFormSheetProps {
   }) => Promise<void>;
 }
 
-const SCREEN_HEIGHT = Dimensions.get('window').height;
-
 export function WalletFormSheet({
   visible,
   walletToEdit,
@@ -55,6 +43,7 @@ export function WalletFormSheet({
   onClose,
   onSubmit,
 }: WalletFormSheetProps) {
+  const { t, locale } = useTranslation();
   const insets = useSafeAreaInsets();
   const colors = Colors[colorScheme];
   const isDark = colorScheme === 'dark';
@@ -137,25 +126,25 @@ export function WalletFormSheet({
 
   const handleSubmit = async () => {
     if (!name.trim()) {
-      setErrorMsg('Nama dompet tidak boleh kosong');
+      setErrorMsg(locale === 'en' ? 'Account name cannot be empty' : 'Nama dompet tidak boleh kosong');
       return;
     }
 
     const parsedInterest = parseFloat(interestRatePercent);
     if (isVault && isInterestEnabled && (isNaN(parsedInterest) || parsedInterest < 0)) {
-      setErrorMsg('Suku bunga tidak valid');
+      setErrorMsg(locale === 'en' ? 'Invalid interest rate' : 'Suku bunga tidak valid');
       return;
     }
 
     const parsedTaxRate = parseFloat(taxRatePercent);
     if (isVault && isInterestEnabled && autoTax && (isNaN(parsedTaxRate) || parsedTaxRate < 0 || parsedTaxRate > 100)) {
-      setErrorMsg('Tarif pajak tidak valid (0 - 100%)');
+      setErrorMsg(locale === 'en' ? 'Invalid tax rate (0 - 100%)' : 'Tarif pajak tidak valid (0 - 100%)');
       return;
     }
 
     const parsedThreshold = parseFloat(taxThresholdStr.replace(/[^0-9.]/g, ''));
     if (isVault && isInterestEnabled && autoTax && (isNaN(parsedThreshold) || parsedThreshold < 0)) {
-      setErrorMsg('Batas saldo bebas pajak tidak valid');
+      setErrorMsg(locale === 'en' ? 'Invalid tax-exempt threshold' : 'Batas saldo bebas pajak tidak valid');
       return;
     }
 
@@ -180,438 +169,201 @@ export function WalletFormSheet({
         taxThreshold: finalTaxThreshold,
       });
 
-      closeWithAnimation();
+      onClose();
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Gagal menyimpan dompet');
+      setErrorMsg(err?.message || (locale === 'en' ? 'Failed to save account' : 'Gagal menyimpan dompet'));
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const [isRendered, setIsRendered] = useState(visible);
-  const isClosingRef = useRef(false);
+  const sheetTitle = isEditMode
+    ? t('wallets.addModalTitleEdit')
+    : isVault
+    ? t('wallets.addModalTitleNewVault')
+    : t('wallets.addModalTitleNewWallet');
 
-  const translateY = useSharedValue(SCREEN_HEIGHT);
-  const backdropOpacity = useSharedValue(0);
-
-  useEffect(() => {
-    if (visible) {
-      isClosingRef.current = false;
-      setIsRendered(true);
-      translateY.value = SCREEN_HEIGHT;
-      backdropOpacity.value = 0;
-      translateY.value = withTiming(0, {
-        duration: 380,
-        easing: Easing.bezier(0.2, 0.9, 0.3, 1),
-      });
-      backdropOpacity.value = withTiming(1, { duration: 320 });
-    } else if (isRendered && !isClosingRef.current) {
-      closeWithAnimation();
-    }
-  }, [visible]);
-
-  const finalizeClose = () => {
-    setIsRendered(false);
-    isClosingRef.current = false;
-    onClose();
-  };
-
-  const closeWithAnimation = () => {
-    if (isClosingRef.current) return;
-    isClosingRef.current = true;
-
-    backdropOpacity.value = withTiming(0, { duration: 280 });
-    translateY.value = withTiming(
-      SCREEN_HEIGHT,
-      {
-        duration: 320,
-        easing: Easing.bezier(0.25, 0.1, 0.25, 1),
-      },
-      (finished) => {
-        if (finished) {
-          runOnJS(finalizeClose)();
-        }
-      }
-    );
-  };
-
-  const panResponder = useMemo(
-    () =>
-      PanResponder.create({
-        onStartShouldSetPanResponder: () => true,
-        onMoveShouldSetPanResponder: (_, gesture) => gesture.dy > 5,
-        onPanResponderMove: (_, gesture) => {
-          if (gesture.dy > 0) {
-            translateY.value = gesture.dy;
-          }
-        },
-        onPanResponderRelease: (_, gesture) => {
-          if (gesture.dy > 70 || gesture.vy > 0.5) {
-            closeWithAnimation();
-          } else {
-            translateY.value = withSpring(0, { damping: 20, stiffness: 200 });
-          }
-        },
-      }),
-    []
-  );
-
-  const backdropAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: backdropOpacity.value,
-  }));
-
-  const sheetAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-  }));
-
-  if (!isRendered) return null;
+  const sheetSubtitle = isVault
+    ? (locale === 'en' ? 'Emergency and savings vault' : 'Akun simpanan/tabungan')
+    : (locale === 'en' ? 'Active daily operational cash' : 'Akun kas harian operasional');
 
   return (
-    <Modal
-      visible={isRendered}
-      transparent
-      animationType="none"
-      statusBarTranslucent
-      onRequestClose={() => closeWithAnimation()}
+    <AppBottomSheet
+      visible={visible}
+      onClose={onClose}
+      title={sheetTitle}
+      subtitle={sheetSubtitle}
+      maxHeight="88%"
     >
-      <View style={StyleSheet.absoluteFill}>
-        {/* Stationary Backdrop - only fades, never slides */}
-        <Animated.View
-          style={[
-            StyleSheet.absoluteFill,
-            { backgroundColor: 'rgba(0, 0, 0, 0.65)' },
-            backdropAnimatedStyle,
-          ]}
-        >
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={() => closeWithAnimation()}
-            accessibilityLabel="Tutup formulir"
+      <ScrollView
+        className="px-5 pt-4"
+        contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 24) }}
+        showsVerticalScrollIndicator={false}
+      >
+        {errorMsg ? (
+          <View className="mb-4 p-3 rounded-xl bg-status-danger/10 border border-status-danger/30 flex-row items-center">
+            <AlertCircle size={16} color="#EF4444" />
+            <Text className="ml-2 text-xs font-semibold text-status-danger flex-1">
+              {errorMsg}
+            </Text>
+          </View>
+        ) : null}
+
+        {/* Segmented Account Category with Reanimated AppSegmentedTabs */}
+        {!isEditMode && (
+          <View className="mb-4">
+            <Text className="text-xs font-bold uppercase tracking-wider text-linen-text-secondary dark:text-cypress-text-secondary mb-2">
+              {t('wallets.accountCategory')}
+            </Text>
+            <AppSegmentedTabs<string>
+              value={isVault ? 'vault' : 'operational'}
+              onChange={(val) => {
+                const willBeVault = val === 'vault';
+                setIsVault(willBeVault);
+                setIsInterestEnabled(willBeVault);
+              }}
+              options={[
+                { key: 'operational', label: t('wallets.accountCategoryOperational') },
+                { key: 'vault', label: t('wallets.accountCategoryVault') },
+              ]}
+            />
+          </View>
+        )}
+
+        {/* Account Name */}
+        <View className="mb-4">
+          <Text className="text-xs font-bold uppercase tracking-wider text-linen-text-secondary dark:text-cypress-text-secondary mb-2">
+            {t('wallets.walletNameLabel')}
+          </Text>
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            placeholder={t('wallets.walletNamePlaceholder')}
+            placeholderTextColor={colors.textSecondary}
+            className="w-full h-12 px-4 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border text-linen-text-primary dark:text-cypress-text-primary text-sm font-semibold"
           />
-        </Animated.View>
+        </View>
 
-        {/* Bottom Sheet Card */}
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          className="flex-1 justify-end"
-          pointerEvents="box-none"
-        >
-          <Animated.View
-            style={[
-              { maxHeight: '88%' },
-              sheetAnimatedStyle,
-            ]}
-            className="bg-linen-card dark:bg-cypress-card rounded-t-3xl border-t border-linen-border dark:border-cypress-border"
-          >
-            {/* Drag Handle Indicator */}
-            <View {...panResponder.panHandlers} className="w-full items-center pb-2 pt-2">
-              <View className="w-11 h-1.5 rounded-full bg-linen-border dark:bg-cypress-border" />
-            </View>
-
-            {/* Header */}
-            <View className="flex-row items-center justify-between px-5 pb-3 border-b border-linen-border/60 dark:border-cypress-border/60">
-              <View>
-                <Text className="text-base font-black text-linen-text-primary dark:text-cypress-text-primary">
-                  {isEditMode ? 'Ubah Dompet / Tabungan' : 'Tambah Dompet Baru'}
-                </Text>
-                <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary">
-                  {isVault ? 'Akun simpanan/tabungan' : 'Akun kas harian operasional'}
-                </Text>
-              </View>
-
-              <Pressable
-                onPress={() => closeWithAnimation()}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                className="w-8 h-8 rounded-full bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70"
-              >
-                <X size={16} color={colors.textSecondary} />
-              </Pressable>
-            </View>
-
-            <ScrollView
-              className="px-5 pt-4"
-              contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 24) }}
-              showsVerticalScrollIndicator={false}
-            >
-          {errorMsg ? (
-            <View className="mb-4 p-3 rounded-xl bg-status-danger/10 border border-status-danger/30 flex-row items-center">
-              <AlertCircle size={16} color="#EF4444" />
-              <Text className="ml-2 text-xs font-semibold text-status-danger flex-1">
-                {errorMsg}
-              </Text>
-            </View>
-          ) : null}
-
-            {/* Segmented: Daily Cash vs Savings */}
-            {!isEditMode && (
-              <View className="mb-4">
-                <Text className="text-xs font-bold uppercase tracking-wider text-linen-text-secondary dark:text-cypress-text-secondary mb-2">
-                  Kategori Akun
-                </Text>
-                <View className="flex-row p-1 rounded-2xl bg-linen-bg dark:bg-cypress-surface border border-linen-border dark:border-cypress-border">
-                  <Pressable
-                    onPress={() => {
-                      setIsVault(false);
-                      setIsInterestEnabled(false);
-                    }}
-                    className={`flex-1 py-2.5 rounded-xl items-center justify-center ${
-                      !isVault ? 'bg-white dark:bg-accent-champagne shadow-xs border border-linen-border/40 dark:border-transparent' : ''
+        {/* Account Type Medium */}
+        <View className="mb-4">
+          <Text className="text-xs font-bold uppercase tracking-wider text-linen-text-secondary dark:text-cypress-text-secondary mb-2">
+            {t('wallets.walletTypeLabel')}
+          </Text>
+          <View className="flex-row gap-2.5">
+            {[
+              { id: 'cash', label: t('wallets.walletTypeCash'), icon: Banknote },
+              { id: 'bank', label: t('wallets.walletTypeBank'), icon: Landmark },
+              { id: 'ewallet', label: t('wallets.walletTypeEwallet'), icon: Smartphone },
+            ].map((item) => {
+              const Icon = item.icon;
+              const isSelected = type === item.id;
+              return (
+                <Pressable
+                  key={item.id}
+                  onPress={() => setType(item.id as any)}
+                  className={`flex-1 py-3 px-2 rounded-2xl items-center justify-center border ${
+                    isSelected
+                      ? 'bg-linen-surface dark:bg-cypress-surface border-accent-brass dark:border-accent-champagne'
+                      : 'bg-linen-surface/50 dark:bg-cypress-surface/40 border-linen-border dark:border-cypress-border'
+                  }`}
+                >
+                  <Icon
+                    size={20}
+                    color={
+                      isSelected
+                        ? isDark
+                          ? '#D4AF37'
+                          : '#B8860B'
+                        : colors.textSecondary
+                    }
+                  />
+                  <Text
+                    className={`text-xs font-bold mt-1.5 ${
+                      isSelected
+                        ? 'text-linen-text-primary dark:text-cypress-text-primary'
+                        : 'text-linen-text-secondary dark:text-cypress-text-secondary'
                     }`}
                   >
-                    <Text
-                      className={`text-xs font-bold ${
-                        !isVault ? 'text-linen-text-primary dark:text-[#0C1513]' : 'text-linen-text-secondary dark:text-cypress-text-secondary'
-                      }`}
-                    >
-                      Uang Harian
-                    </Text>
-                  </Pressable>
+                    {item.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
 
-                  <Pressable
-                    onPress={() => {
-                      setIsVault(true);
-                      setIsInterestEnabled(true);
-                    }}
-                    className={`flex-1 py-2.5 rounded-xl items-center justify-center ${
-                      isVault ? 'bg-white dark:bg-accent-champagne shadow-xs border border-linen-border/40 dark:border-transparent' : ''
-                    }`}
-                  >
-                    <Text
-                      className={`text-xs font-bold ${
-                        isVault ? 'text-linen-text-primary dark:text-[#0C1513]' : 'text-linen-text-secondary dark:text-cypress-text-secondary'
-                      }`}
-                    >
-                      Tabungan
-                    </Text>
-                  </Pressable>
+        {/* Initial Balance */}
+        {!isEditMode && (
+          <View className="mb-4">
+            <Text className="text-xs font-bold uppercase tracking-wider text-linen-text-secondary dark:text-cypress-text-secondary mb-2">
+              {t('wallets.initialBalanceLabel')}
+            </Text>
+            <TextInput
+              value={initialBalance}
+              onChangeText={setInitialBalance}
+              placeholder={t('wallets.initialBalancePlaceholder')}
+              placeholderTextColor={colors.textSecondary}
+              keyboardType="number-pad"
+              className="w-full h-12 px-4 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border text-linen-text-primary dark:text-cypress-text-primary text-sm font-semibold"
+            />
+          </View>
+        )}
+
+        {/* Animated Vault Yield & Tax section using LinearTransition */}
+        <Animated.View layout={LinearTransition.duration(200)}>
+          {isVault && (
+            <View className="mb-4 p-4 rounded-2xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border">
+              <View className="flex-row items-center justify-between mb-2">
+                <View className="flex-1 pr-2">
+                  <Text className="text-sm font-bold text-linen-text-primary dark:text-cypress-text-primary">
+                    {t('wallets.interestToggleLabel')}
+                  </Text>
+                  <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary">
+                    {t('wallets.interestToggleDesc')}
+                  </Text>
                 </View>
-              </View>
-            )}
-
-            {/* Name Input */}
-            <View className="mb-4">
-              <Text className="text-xs font-bold uppercase tracking-wider text-linen-text-secondary dark:text-cypress-text-secondary mb-2">
-                Nama Dompet / Bank
-              </Text>
-              <TextInput
-                value={name}
-                onChangeText={setName}
-                placeholder="contoh: BCA Tahapan, GoPay, SeaBank"
-                placeholderTextColor={colors.textSecondary}
-                className="w-full px-4 py-3 rounded-2xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border text-sm font-semibold text-linen-text-primary dark:text-cypress-text-primary"
-              />
-            </View>
-
-            {/* Wallet Type */}
-            <View className="mb-4">
-              <Text className="text-xs font-bold uppercase tracking-wider text-linen-text-secondary dark:text-cypress-text-secondary mb-2">
-                Bentuk Dompet
-              </Text>
-              <View className="flex-row gap-2">
-                {[
-                  { key: 'bank', label: 'Bank', icon: Landmark },
-                  { key: 'ewallet', label: 'E-Wallet', icon: Smartphone },
-                  { key: 'cash', label: 'Tunai', icon: Banknote },
-                ].map((item) => {
-                  const IconComponent = item.icon;
-                  const isSelected = type === item.key;
-                  return (
-                    <Pressable
-                      key={item.key}
-                      onPress={() => setType(item.key as any)}
-                      className={`flex-1 py-3 px-2 rounded-2xl border items-center justify-center ${
-                        isSelected
-                          ? 'bg-emerald-500/10 dark:bg-accent-champagne/15 border-emerald-600 dark:border-accent-champagne'
-                          : 'bg-linen-surface dark:bg-cypress-surface border-linen-border dark:border-cypress-border'
-                      }`}
-                    >
-                      <IconComponent
-                        size={18}
-                        color={
-                          isSelected
-                            ? colorScheme === 'dark'
-                              ? '#D4AF37'
-                              : '#059669'
-                            : colors.textSecondary
-                        }
-                      />
-                      <Text
-                        className={`text-xs font-bold mt-1.5 ${
-                          isSelected
-                            ? 'text-emerald-800 dark:text-accent-champagne'
-                            : 'text-linen-text-secondary dark:text-cypress-text-secondary'
-                        }`}
-                      >
-                        {item.label}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
-
-            {/* Initial Balance (Create mode only) */}
-            {!isEditMode && (
-              <View className="mb-4">
-                <Text className="text-xs font-bold uppercase tracking-wider text-linen-text-secondary dark:text-cypress-text-secondary mb-2">
-                  Saldo Awal (Opsional)
-                </Text>
-                <TextInput
-                  value={initialBalance}
-                  onChangeText={setInitialBalance}
-                  keyboardType="numeric"
-                  placeholder="Rp 0"
-                  placeholderTextColor={colors.textSecondary}
-                  className="w-full px-4 py-3 rounded-2xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border text-sm font-semibold text-linen-text-primary dark:text-cypress-text-primary"
+                <Switch
+                  value={isInterestEnabled}
+                  onValueChange={setIsInterestEnabled}
+                  trackColor={{ false: '#374151', true: isDark ? '#D4AF37' : '#B8860B' }}
+                  thumbColor="#ffffff"
                 />
               </View>
-            )}
 
-            {/* Savings / Vault Options */}
-            {isVault && (
-              <View className="mb-5 p-4 rounded-2xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border">
-                <View className="flex-row items-center justify-between mb-3">
-                  <View className="flex-row items-center flex-1 mr-2">
-                    <Percent size={16} color={colors.tint} />
-                    <Text className="ml-2 text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary">
-                      Hitung Bunga Tabungan
-                    </Text>
-                  </View>
-                  <Switch
-                    value={isInterestEnabled}
-                    onValueChange={setIsInterestEnabled}
-                    trackColor={{ false: '#374151', true: colors.tint }}
-                    thumbColor={Platform.OS === 'ios' ? undefined : '#FFFFFF'}
+              {isInterestEnabled && (
+                <Animated.View layout={LinearTransition.duration(200)} className="mt-3 pt-3 border-t border-linen-border/60 dark:border-cypress-border/60">
+                  <Text className="text-xs font-bold text-linen-text-secondary dark:text-cypress-text-secondary mb-1.5">
+                    {t('wallets.interestRateLabel')}
+                  </Text>
+                  <TextInput
+                    value={interestRatePercent}
+                    onChangeText={setInterestRatePercent}
+                    placeholder="3.75"
+                    placeholderTextColor={colors.textSecondary}
+                    keyboardType="numeric"
+                    className="w-full h-11 px-3.5 rounded-xl bg-linen-bg dark:bg-cypress-card border border-linen-border dark:border-cypress-border text-linen-text-primary dark:text-cypress-text-primary font-mono text-sm"
                   />
-                </View>
-
-                {isInterestEnabled && (
-                  <View className="pt-2 border-t border-linen-border/60 dark:border-cypress-border/60">
-                    <Text className="text-[11px] font-semibold text-linen-text-secondary dark:text-cypress-text-secondary mb-1.5">
-                      Suku Bunga (% per tahun)
-                    </Text>
-                    <View className="flex-row items-center gap-2 mb-3">
-                      <TextInput
-                        value={interestRatePercent}
-                        onChangeText={setInterestRatePercent}
-                        keyboardType="decimal-pad"
-                        placeholder="3.75"
-                        placeholderTextColor={colors.textSecondary}
-                        className="flex-1 px-4 py-2.5 rounded-xl bg-linen-card dark:bg-cypress-card border border-linen-border dark:border-cypress-border text-sm font-bold text-linen-text-primary dark:text-cypress-text-primary"
-                      />
-                      {['3.75', '5.0', '6.0'].map((preset) => (
-                        <Pressable
-                          key={preset}
-                          onPress={() => setInterestRatePercent(preset)}
-                          className="px-2.5 py-2.5 rounded-xl bg-linen-card dark:bg-cypress-card border border-linen-border dark:border-cypress-border"
-                        >
-                          <Text className="text-xs font-bold text-linen-text-secondary dark:text-cypress-text-secondary">
-                            {preset}%
-                          </Text>
-                        </Pressable>
-                      ))}
-                    </View>
-
-                    {/* Interest Tax Header */}
-                    <View className="pt-3 border-t border-linen-border/60 dark:border-cypress-border/60">
-                      <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary mb-1">
-                        Pajak Bunga / Imbal Hasil
-                      </Text>
-                      <Text className="text-[10px] text-linen-text-secondary dark:text-cypress-text-secondary mb-2.5">
-                        Pilih aturan pajak atau kustomisasikan sesuai jenis produk dan mata uang
-                      </Text>
-
-                      {/* Preset Selector */}
-                      <View className="flex-row gap-1.5 mb-3">
-                        {[
-                          { key: 'id_bank', label: 'Bank ID (20% > 7.5jt)' },
-                          { key: 'zero', label: 'Bebas Pajak (0%)' },
-                          { key: 'custom', label: 'Kustom' },
-                        ].map((item) => {
-                          const isSelected = taxPreset === item.key;
-                          return (
-                            <Pressable
-                              key={item.key}
-                              onPress={() => handleSelectTaxPreset(item.key as any)}
-                              className={`flex-1 py-2 px-1 rounded-xl border items-center justify-center ${
-                                isSelected
-                                  ? 'bg-emerald-500/10 dark:bg-accent-champagne/15 border-emerald-600 dark:border-accent-champagne'
-                                  : 'bg-linen-card dark:bg-cypress-card border-linen-border dark:border-cypress-border'
-                              }`}
-                            >
-                              <Text
-                                numberOfLines={1}
-                                className={`text-[10px] font-bold ${
-                                  isSelected
-                                    ? 'text-emerald-800 dark:text-accent-champagne'
-                                    : 'text-linen-text-secondary dark:text-cypress-text-secondary'
-                                }`}
-                              >
-                                {item.label}
-                              </Text>
-                            </Pressable>
-                          );
-                        })}
-                      </View>
-
-                      {/* Custom Tax Inputs (Shown when Custom is selected) */}
-                      {taxPreset === 'custom' && (
-                        <View className="p-3 rounded-xl bg-linen-card dark:bg-cypress-card border border-linen-border dark:border-cypress-border space-y-2.5">
-                          <View>
-                            <Text className="text-[10px] font-semibold text-linen-text-secondary dark:text-cypress-text-secondary mb-1">
-                              Tarif Pajak (% pemotongan)
-                            </Text>
-                            <TextInput
-                              value={taxRatePercent}
-                              onChangeText={setTaxRatePercent}
-                              keyboardType="decimal-pad"
-                              placeholder="20"
-                              placeholderTextColor={colors.textSecondary}
-                              className="w-full px-3 py-2 rounded-lg bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary"
-                            />
-                          </View>
-
-                          <View>
-                            <Text className="text-[10px] font-semibold text-linen-text-secondary dark:text-cypress-text-secondary mb-1">
-                              Ambang Batas Saldo Kena Pajak (Ketik 0 jika kena pajak dari awal)
-                            </Text>
-                            <TextInput
-                              value={taxThresholdStr}
-                              onChangeText={setTaxThresholdStr}
-                              keyboardType="numeric"
-                              placeholder="7500000"
-                              placeholderTextColor={colors.textSecondary}
-                              className="w-full px-3 py-2 rounded-lg bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary"
-                            />
-                          </View>
-                        </View>
-                      )}
-                    </View>
-                  </View>
-                )}
-              </View>
-            )}
-
-            {/* Submit Button */}
-            <Pressable
-              onPress={handleSubmit}
-              disabled={isSubmitting}
-              className={`w-full py-4 rounded-2xl bg-cypress-surface dark:bg-accent-champagne items-center justify-center mb-6 active:opacity-80 shadow-xs ${
-                isSubmitting ? 'opacity-60' : ''
-              }`}
-            >
-              <Text className="text-sm font-black text-white dark:text-[#0C1513]">
-                {isSubmitting
-                  ? 'Menyimpan...'
-                  : isEditMode
-                  ? 'Simpan Perubahan'
-                  : 'Buat Dompet Sekarang'}
-              </Text>
-            </Pressable>
-          </ScrollView>
+                </Animated.View>
+              )}
+            </View>
+          )}
         </Animated.View>
-      </KeyboardAvoidingView>
-    </View>
-  </Modal>
-);
+
+        {/* Submit Button */}
+        <Pressable
+          onPress={handleSubmit}
+          disabled={isSubmitting}
+          className={`w-full py-3.5 rounded-2xl items-center justify-center mt-2 ${
+            isSubmitting
+              ? 'bg-linen-border dark:bg-cypress-border'
+              : 'bg-cypress-surface dark:bg-accent-champagne'
+          }`}
+        >
+          <Text className="text-sm font-black text-white dark:text-[#0C1513]">
+            {isSubmitting ? t('common.loading') : t('wallets.saveAccount')}
+          </Text>
+        </Pressable>
+      </ScrollView>
+    </AppBottomSheet>
+  );
 }

@@ -1,3 +1,4 @@
+import { StatusBar } from 'expo-status-bar';
 import 'react-native-gesture-handler';
 import "../global.css";
 import { useFonts } from 'expo-font';
@@ -15,6 +16,7 @@ import { DATABASE_NAME, initDatabase } from '@/lib/db';
 import { setupQuickActions } from '@/lib/services/quickActions';
 import {
   setupNotificationChannelAsync,
+  requestNotificationPermissionsAsync,
   setupNotificationResponseListeners,
 } from '@/lib/services/notifications';
 import { useQuickEntryStore } from '@/store/useQuickEntryStore';
@@ -64,6 +66,7 @@ function RootLayoutNav() {
   useEffect(() => {
     setupQuickActions();
     setupNotificationChannelAsync();
+    requestNotificationPermissionsAsync();
 
     const cleanupListeners = setupNotificationResponseListeners(() => {
       useQuickEntryStore.getState().open('expense');
@@ -83,6 +86,7 @@ function RootLayoutNav() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} animated />
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />

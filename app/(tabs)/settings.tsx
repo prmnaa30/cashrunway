@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
 import { View, Text, ScrollView, Switch, Pressable, ActivityIndicator, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -25,6 +26,8 @@ import { useFinanceStore } from '@/store/useFinanceStore';
 import { useSettingsStore } from '@/store/useSettingStore';
 import { formatCurrency, DEFAULT_FALLBACK_BURNS } from '@/lib/format';
 import { useTranslation } from '@/lib/i18n';
+import { AppSegmentedTabs } from '@/components/ui/AppSegmentedTabs';
+import { syncScheduledAlarms } from '@/lib/services/notifications';
 import { exportAndShareTransactionsCsv } from '@/lib/export/csvExport';
 import {
   SettingSection,
@@ -45,6 +48,13 @@ export default function SettingsScreen() {
   const isDark = colorScheme === 'dark';
 
   const { t: translate } = useTranslation();
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+    }, [])
+  );
 
   const settings = useFinanceStore((s) => s.settings);
   const transactions = useFinanceStore((s) => s.transactions);
@@ -108,6 +118,10 @@ export default function SettingsScreen() {
 
   const handleSelectLanguage = async (lang: string) => {
     await updateSettings({ language: lang });
+    try {
+      const runwayDays = useFinanceStore.getState()?.runway?.operationalRunwayDays || 0;
+      await syncScheduledAlarms(reminders, isReminderEnabled, runwayDays);
+    } catch (_) {}
   };
 
   const handleSelectTheme = async (mode: 'system' | 'light' | 'dark') => {
@@ -138,6 +152,7 @@ export default function SettingsScreen() {
   return (
     <View className="flex-1 bg-linen-bg dark:bg-cypress-bg">
       <ScrollView
+        ref={scrollViewRef}
         contentContainerStyle={{
           paddingTop: insets.top + 16,
           paddingBottom: insets.bottom + 80,
@@ -202,31 +217,17 @@ export default function SettingsScreen() {
               </View>
             </View>
 
-            <View className="flex-row p-1 rounded-xl bg-linen-bg dark:bg-cypress-surface border border-linen-border/80 dark:border-cypress-border/80 mb-2">
-              {[7, 14, 30].map((d) => {
-                const isSelected = activeBurnWindow === d;
-                return (
-                  <Pressable
-                    key={d}
-                    onPress={() => handleSelectBurnWindow(d)}
-                    className={`flex-1 py-2 items-center justify-center rounded-lg ${
-                      isSelected
-                        ? 'bg-white dark:bg-accent-champagne shadow-xs border border-linen-border/40 dark:border-transparent'
-                        : 'active:opacity-70'
-                    }`}
-                  >
-                    <Text
-                      className={`text-xs font-bold ${
-                        isSelected
-                          ? 'text-linen-text-primary dark:text-black'
-                          : 'text-linen-text-secondary dark:text-cypress-text-secondary'
-                      }`}
-                    >
-                      {translate('settings.burnWindow.days', { days: d })}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+            <View className="mb-2">
+              <AppSegmentedTabs<number>
+                size="sm"
+                value={activeBurnWindow}
+                onChange={(d) => handleSelectBurnWindow(d)}
+                options={[
+                  { key: 7, label: translate('settings.burnWindow.days', { days: 7 }) },
+                  { key: 14, label: translate('settings.burnWindow.days', { days: 14 }) },
+                  { key: 30, label: translate('settings.burnWindow.days', { days: 30 }) },
+                ]}
+              />
             </View>
 
             <Text className="text-[11px] text-linen-text-secondary/90 dark:text-cypress-text-secondary/90 leading-4">
@@ -279,36 +280,17 @@ export default function SettingsScreen() {
               </Text>
             </View>
 
-            <View className="flex-row p-1 rounded-xl bg-linen-bg dark:bg-cypress-surface border border-linen-border/80 dark:border-cypress-border/80 mb-2">
-              {[
-                { mode: 'system', label: translate('settings.theme.auto') },
-                { mode: 'light', label: translate('settings.theme.light') },
-                { mode: 'dark', label: translate('settings.theme.dark') },
-              ].map((item) => {
-                const isSelected = activeThemeMode === item.mode;
-                return (
-                  <Pressable
-                    key={item.mode}
-                    onPress={() => handleSelectTheme(item.mode as any)}
-                    className={`flex-1 py-2 items-center justify-center rounded-lg ${
-                      isSelected
-                        ? 'bg-white dark:bg-accent-champagne shadow-xs border border-linen-border/40 dark:border-transparent'
-                        : 'active:opacity-70'
-                    }`}
-                  >
-                    <Text
-                      numberOfLines={1}
-                      className={`text-xs font-bold ${
-                        isSelected
-                          ? 'text-linen-text-primary dark:text-black'
-                          : 'text-linen-text-secondary dark:text-cypress-text-secondary'
-                      }`}
-                    >
-                      {item.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+            <View className="mb-2">
+              <AppSegmentedTabs<'system' | 'light' | 'dark'>
+                size="sm"
+                value={activeThemeMode as any}
+                onChange={(mode) => handleSelectTheme(mode)}
+                options={[
+                  { key: 'system', label: translate('settings.theme.auto') },
+                  { key: 'light', label: translate('settings.theme.light') },
+                  { key: 'dark', label: translate('settings.theme.dark') },
+                ]}
+              />
             </View>
 
             <Text className="text-[11px] text-linen-text-secondary/90 dark:text-cypress-text-secondary/90 leading-4">
@@ -329,36 +311,17 @@ export default function SettingsScreen() {
               </Text>
             </View>
 
-            <View className="flex-row p-1 rounded-xl bg-linen-bg dark:bg-cypress-surface border border-linen-border/80 dark:border-cypress-border/80 mb-2">
-              {[
-                { code: 'auto', label: translate('settings.language.auto') },
-                { code: 'id', label: translate('settings.language.id') },
-                { code: 'en', label: translate('settings.language.en') },
-              ].map((lang) => {
-                const isSelected = activeLanguage === lang.code;
-                return (
-                  <Pressable
-                    key={lang.code}
-                    onPress={() => handleSelectLanguage(lang.code)}
-                    className={`flex-1 py-2 items-center justify-center rounded-lg ${
-                      isSelected
-                        ? 'bg-white dark:bg-accent-champagne shadow-xs border border-linen-border/40 dark:border-transparent'
-                        : 'active:opacity-70'
-                    }`}
-                  >
-                    <Text
-                      numberOfLines={1}
-                      className={`text-xs font-bold ${
-                        isSelected
-                          ? 'text-linen-text-primary dark:text-black'
-                          : 'text-linen-text-secondary dark:text-cypress-text-secondary'
-                      }`}
-                    >
-                      {lang.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+            <View className="mb-2">
+              <AppSegmentedTabs<string>
+                size="sm"
+                value={activeLanguage}
+                onChange={(lang) => handleSelectLanguage(lang)}
+                options={[
+                  { key: 'auto', label: translate('settings.language.auto') },
+                  { key: 'id', label: translate('settings.language.id') },
+                  { key: 'en', label: translate('settings.language.en') },
+                ]}
+              />
             </View>
 
             <Text className="text-[11px] text-linen-text-secondary/90 dark:text-cypress-text-secondary/90 leading-4">

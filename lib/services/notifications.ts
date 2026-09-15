@@ -1,6 +1,7 @@
 import * as Notifications from 'expo-notifications';
 import { Platform, Alert } from 'react-native';
 import { ReminderItem } from '@/lib/db/types';
+import { translate, ActiveLocale } from '@/lib/i18n';
 
 export const REMINDER_CHANNEL_ID = 'cashrunway-reminders';
 export const REMINDER_SOUND_NAME = 'reminder.wav';
@@ -47,27 +48,32 @@ export function parseTimeString(timeStr: string): { hour: number; minute: number
  */
 export function generateReminderMessage(
   runwayDays: number,
-  _time?: string
+  _time?: string,
+  localeOverride?: ActiveLocale
 ): { title: string; body: string } {
   const title = 'CashRunway';
 
   if (runwayDays <= 0) {
     return {
       title,
-      body: 'Kas operasionalmu telah habis. Yuk luangkan waktu mencatat pengeluaran hari ini!',
+      body: translate('notifications.reminderDepleted', undefined, localeOverride),
     };
   }
 
   if (runwayDays > 365) {
     return {
       title,
-      body: 'Arus kasmu sehat! Tetap rutin mencatat pengeluaran agar rencana keuanganmu terjaga.',
+      body: translate('notifications.reminderHealthy', undefined, localeOverride),
     };
   }
 
   return {
     title,
-    body: `Uangmu diperkirakan bertahan ${Math.round(runwayDays)} hari lagi. Yuk catat pengeluaran hari ini agar keuangan tetap terkendali!`,
+    body: translate(
+      'notifications.reminderRunway',
+      { days: Math.round(runwayDays) },
+      localeOverride
+    ),
   };
 }
 
@@ -78,7 +84,7 @@ export async function setupNotificationChannelAsync(): Promise<void> {
   try {
     if (Platform.OS === 'android' || Platform.OS === 'web' || process.env.NODE_ENV === 'test') {
       await Notifications.setNotificationChannelAsync(REMINDER_CHANNEL_ID, {
-        name: 'Pengingat Keuangan Harian',
+        name: translate('notifications.channelName'),
         importance: Notifications.AndroidImportance.HIGH,
         sound: REMINDER_SOUND_NAME,
         vibrationPattern: [0, 250, 250, 250],

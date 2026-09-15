@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Modal,
   View,
   Text,
   TextInput,
   Pressable,
 } from 'react-native';
-import { SlidersHorizontal, X } from 'lucide-react-native';
+import { SlidersHorizontal } from 'lucide-react-native';
 import { Wallet } from '@/lib/db';
 import { formatCurrency } from '@/lib/format';
+import { AppModal } from '@/components/ui/AppModal';
+import { useTranslation } from '@/lib/i18n';
 import Colors from '@/constants/Colors';
 
 export interface AdjustBalanceModalProps {
@@ -28,6 +29,7 @@ export function AdjustBalanceModal({
   onClose,
   onConfirm,
 }: AdjustBalanceModalProps) {
+  const { t, locale } = useTranslation();
   const colors = Colors[colorScheme];
 
   const [inputBalance, setInputBalance] = useState('');
@@ -55,135 +57,102 @@ export function AdjustBalanceModal({
       await onConfirm(wallet.id, parsedNewBalance);
       onClose();
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Gagal memperbarui saldo');
+      setErrorMsg(err?.message || (locale === 'en' ? 'Failed to adjust balance' : 'Gagal memperbarui saldo'));
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <Modal
+    <AppModal
       visible={visible}
-      transparent
-      animationType="fade"
-      statusBarTranslucent
-      onRequestClose={onClose}
+      onClose={onClose}
+      showCloseButton={true}
+      maxWidth={380}
     >
-      <View className="flex-1 justify-center items-center px-6 bg-black/65">
-        <Pressable className="absolute inset-0" onPress={onClose} />
+      <View className="items-center mb-3">
+        <View className="w-12 h-12 rounded-2xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center mb-2">
+          <SlidersHorizontal size={20} color={colors.tint} />
+        </View>
 
-        <View className="w-full max-w-sm rounded-3xl bg-linen-card dark:bg-cypress-card border border-linen-border dark:border-cypress-border p-5 shadow-2xl z-10">
-          <View className="flex-row items-center justify-between mb-3">
-            <View className="flex-row items-center">
-              <View className="w-8 h-8 rounded-full bg-accent-brass/15 dark:bg-accent-champagne/15 items-center justify-center mr-2">
-                <SlidersHorizontal size={16} color={colors.tint} />
-              </View>
-              <Text className="text-base font-bold text-linen-text-primary dark:text-cypress-text-primary">
-                Perbarui Saldo
-              </Text>
-            </View>
+        <Text className="text-base font-black text-linen-text-primary dark:text-cypress-text-primary text-center">
+          {t('wallets.adjustModalTitle')}
+        </Text>
+        <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary text-center mt-0.5">
+          {t('wallets.adjustModalDesc', { wallet: wallet.name })}
+        </Text>
+      </View>
 
-            <Pressable
-              onPress={onClose}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              className="min-w-[44px] min-h-[44px] rounded-full items-center justify-center bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border"
-              accessibilityLabel="Tutup"
-            >
-              <X size={16} color={colors.textSecondary} />
-            </Pressable>
-          </View>
-
-          <Text className="text-xs leading-relaxed text-linen-text-secondary dark:text-cypress-text-secondary mb-4">
-            Perbarui saldo akun <Text className="font-bold text-linen-text-primary dark:text-cypress-text-primary">{wallet.name}</Text> agar sesuai dengan jumlah uang fisik atau catatan rekeningmu yang sebenarnya.
+      <View className="my-3 p-3.5 rounded-2xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border space-y-2">
+        <View className="flex-row justify-between items-center py-0.5">
+          <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary">
+            {t('wallets.recordedBalance')}
           </Text>
+          <Text className="text-xs font-mono font-bold text-linen-text-primary dark:text-cypress-text-primary tabular-nums">
+            {formatCurrency(currentBalance, isPrivacyMode)}
+          </Text>
+        </View>
 
-          {/* Recorded vs New Balance Card */}
-          <View className="p-3.5 rounded-2xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border mb-4">
-            <View className="flex-row justify-between items-center mb-2">
-              <Text className="text-[11px] font-semibold text-linen-text-secondary dark:text-cypress-text-secondary">
-                Saldo Tercatat di Aplikasi:
-              </Text>
-              <Text className="text-xs font-bold font-mono tabular-nums text-linen-text-primary dark:text-cypress-text-primary">
-                {formatCurrency(currentBalance, isPrivacyMode)}
-              </Text>
-            </View>
-
-            <View className="pt-2 border-t border-linen-border/60 dark:border-cypress-border/60">
-              <Text className="text-[11px] font-semibold text-linen-text-secondary dark:text-cypress-text-secondary mb-1">
-                Saldo Sebenarnya Saat Ini:
-              </Text>
-              <TextInput
-                value={inputBalance}
-                onChangeText={setInputBalance}
-                keyboardType="numeric"
-                placeholder="0"
-                placeholderTextColor={colors.textSecondary}
-                className="w-full min-h-[44px] px-3 py-2 rounded-xl bg-linen-card dark:bg-cypress-card border border-linen-border dark:border-cypress-border text-base font-black font-mono tabular-nums text-linen-text-primary dark:text-cypress-text-primary"
-              />
-            </View>
-
-            {/* Difference Indicator */}
-            <View className="mt-3 pt-2 border-t border-linen-border/60 dark:border-cypress-border/60">
-              <View className="flex-row justify-between items-center">
-                <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary">
-                  Selisih Penyesuaian:
-                </Text>
-                <Text
-                  className={`text-xs font-black font-mono tabular-nums ${
-                    delta > 0
-                      ? 'text-status-safe'
-                      : delta < 0
-                      ? 'text-status-danger'
-                      : 'text-linen-text-secondary dark:text-cypress-text-secondary'
-                  }`}
-                >
-                  {delta > 0 ? '+' : ''}
-                  {formatCurrency(delta, isPrivacyMode)}
-                </Text>
-              </View>
-
-              {delta !== 0 && (
-                <Text className="text-[10px] text-linen-text-secondary dark:text-cypress-text-secondary mt-1.5">
-                  Sistem akan otomatis mencatat penyesuaian agar pembukuan tetap seimbang.
-                </Text>
-              )}
-            </View>
-          </View>
-
-          {errorMsg ? (
-            <Text className="text-xs text-status-danger mb-3 font-semibold">
-              {errorMsg}
-            </Text>
-          ) : null}
-
-          {/* Action Buttons */}
-          <View className="flex-row gap-2">
-            <Pressable
-              onPress={onClose}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              className="flex-1 min-h-[44px] py-3 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70"
-            >
-              <Text className="text-xs font-bold text-linen-text-secondary dark:text-cypress-text-secondary">
-                Batal
-              </Text>
-            </Pressable>
-
-            <Pressable
-              onPress={handleConfirm}
-              disabled={isSubmitting}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              className={`flex-1 min-h-[44px] py-3 rounded-xl bg-cypress-surface dark:bg-accent-champagne items-center justify-center active:opacity-80 shadow-xs ${
-                isSubmitting ? 'opacity-60' : ''
-              }`}
-            >
-              <Text className="text-xs font-black text-white dark:text-[#0C1513]">
-                {isSubmitting ? 'Menyimpan...' : 'Perbarui Saldo'}
-              </Text>
-            </Pressable>
-          </View>
+        <View className="flex-row justify-between items-center py-0.5">
+          <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary">
+            {t('wallets.difference')}
+          </Text>
+          <Text
+            className={`text-xs font-mono font-bold tabular-nums ${
+              delta > 0
+                ? 'text-status-safe'
+                : delta < 0
+                ? 'text-status-danger'
+                : 'text-linen-text-secondary dark:text-cypress-text-secondary'
+            }`}
+          >
+            {delta > 0 ? `+${formatCurrency(delta, isPrivacyMode)}` : formatCurrency(delta, isPrivacyMode)}
+          </Text>
         </View>
       </View>
-    </Modal>
+
+      <View className="mb-4">
+        <Text className="text-xs font-semibold text-linen-text-secondary dark:text-cypress-text-secondary mb-1.5">
+          {t('wallets.actualBalance')}
+        </Text>
+        <TextInput
+          value={inputBalance}
+          onChangeText={setInputBalance}
+          keyboardType="numeric"
+          placeholder="0"
+          placeholderTextColor={colors.textSecondary}
+          className="w-full h-12 px-4 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border text-linen-text-primary dark:text-cypress-text-primary font-mono text-base font-bold"
+        />
+      </View>
+
+      {errorMsg ? (
+        <Text className="text-xs text-status-danger text-center mb-3">
+          {errorMsg}
+        </Text>
+      ) : null}
+
+      <View className="flex-row gap-3">
+        <Pressable
+          onPress={onClose}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          className="flex-1 min-h-[44px] py-3 rounded-2xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70"
+        >
+          <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary">
+            {t('wallets.cancel')}
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={handleConfirm}
+          disabled={isSubmitting}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+          className="flex-1 min-h-[44px] py-3 rounded-2xl bg-cypress-surface dark:bg-accent-champagne items-center justify-center active:opacity-80 shadow-sm"
+        >
+          <Text className="text-xs font-bold text-white dark:text-[#0C1513]">
+            {t('wallets.saveAdjustment')}
+          </Text>
+        </Pressable>
+      </View>
+    </AppModal>
   );
 }
-

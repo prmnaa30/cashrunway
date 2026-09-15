@@ -11,12 +11,21 @@ import { Eye, EyeOff, Inbox } from 'lucide-react-native';
 import { formatDate } from '@/lib/format';
 import { useSettingsStore } from '@/store/useSettingStore';
 import { useFinanceStore } from '@/store/useFinanceStore';
+import { useTranslation } from '@/lib/i18n';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { TransactionWithDetails } from '@/lib/db';
-import { TransactionGroup, DeleteTransactionModal } from '@/components/history';
+import {
+  TransactionGroup,
+  DeleteTransactionModal,
+  TransactionPeriodHeader,
+  DateRangePickerSheet,
+  getCurrentMonthRange,
+  getMonthRange,
+} from '@/components/history';
 
 export default function HistoryScreen() {
+  const { t, locale } = useTranslation();
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
@@ -29,6 +38,9 @@ export default function HistoryScreen() {
   const seedDemoData = useFinanceStore((s) => s.seedDemoData);
 
   const [txToDelete, setTxToDelete] = useState<TransactionWithDetails | null>(null);
+
+  const [selectedRange, setSelectedRange] = useState<{ start: string; end: string }>(getCurrentMonthRange());
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
 
   useEffect(() => {
     loadAllData();
@@ -44,6 +56,39 @@ export default function HistoryScreen() {
     return d.toISOString().split('T')[0];
   }, []);
 
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter(
+      (tx) => tx.localDate >= selectedRange.start && tx.localDate <= selectedRange.end
+    );
+  }, [transactions, selectedRange]);
+
+  const periodStats = useMemo(() => {
+    let totalIncome = 0;
+    let totalExpense = 0;
+    for (const tx of filteredTransactions) {
+      if (tx.type === 'income') totalIncome += tx.amount;
+      else if (tx.type === 'expense') totalExpense += tx.amount;
+    }
+    return { totalIncome, totalExpense, net: totalIncome - totalExpense };
+  }, [filteredTransactions]);
+
+  const isCurrentMonth = useMemo(() => {
+    const cur = getCurrentMonthRange();
+    return selectedRange.start === cur.start && selectedRange.end === cur.end;
+  }, [selectedRange]);
+
+  const handlePrevMonth = () => {
+    const start = new Date(selectedRange.start + 'T00:00:00');
+    start.setMonth(start.getMonth() - 1);
+    setSelectedRange(getMonthRange(start.getFullYear(), start.getMonth()));
+  };
+
+  const handleNextMonth = () => {
+    const start = new Date(selectedRange.start + 'T00:00:00');
+    start.setMonth(start.getMonth() + 1);
+    setSelectedRange(getMonthRange(start.getFullYear(), start.getMonth()));
+  };
+
   const groupedTransactions = useMemo(() => {
     const groups: {
       [date: string]: {
@@ -52,7 +97,7 @@ export default function HistoryScreen() {
       };
     } = {};
 
-    for (const tx of transactions) {
+    for (const tx of filteredTransactions) {
       const dateKey = tx.localDate;
       if (!groups[dateKey]) {
         groups[dateKey] = { items: [], netAmount: 0 };
@@ -74,16 +119,16 @@ export default function HistoryScreen() {
       items: groups[date].items,
       netAmount: groups[date].netAmount,
     }));
-  }, [transactions]);
+  }, [filteredTransactions]);
 
   const getDateHeaderLabel = (dateStr: string) => {
     if (dateStr === todayStr) {
-      return 'Hari Ini';
+      return t('history.today');
     }
     if (dateStr === yesterdayStr) {
-      return 'Kemarin';
+      return t('history.yesterday');
     }
-    return formatDate(dateStr);
+    return formatDate(dateStr, locale === 'en' ? 'en-US' : 'id-ID');
   };
 
   const handleOpenDelete = (tx: TransactionWithDetails) => {
@@ -117,10 +162,7 @@ export default function HistoryScreen() {
         <View className="flex-row items-center justify-between pb-4 pt-1">
           <View>
             <Text className="text-xl font-black text-linen-text-primary dark:text-cypress-text-primary tracking-tight">
-              Riwayat Transaksi
-            </Text>
-            <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary">
-              {transactions.length} mutasi tercatat
+              {t('history.title')}
             </Text>
           </View>
 
@@ -128,7 +170,7 @@ export default function HistoryScreen() {
             onPress={togglePrivacyMode}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             className="w-9 h-9 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border/80 dark:border-cypress-border/80 items-center justify-center active:opacity-70"
-            accessibilityLabel="Sensor Angka"
+            accessibilityLabel={t('dashboard.privacyToggle')}
           >
             {isPrivacyMode ? (
               <EyeOff size={16} color={colors.textSecondary} />
@@ -138,25 +180,40 @@ export default function HistoryScreen() {
           </Pressable>
         </View>
 
-        {transactions.length === 0 && !isLoading && (
+        <TransactionPeriodHeader
+          selectedRange={selectedRange}
+          totalIncome={periodStats.totalIncome}
+          totalExpense={periodStats.totalExpense}
+          transactionCount={filteredTransactions.length}
+          isPrivacyMode={isPrivacyMode}
+          colorScheme={colorScheme}
+          onOpenPicker={() => setIsPickerOpen(true)}
+          onPrevMonth={handlePrevMonth}
+          onNextMonth={handleNextMonth}
+          isCurrentMonth={isCurrentMonth}
+        />
+
+        {filteredTransactions.length === 0 && !isLoading && (
           <View className="items-center justify-center py-20 px-4">
             <View className="w-14 h-14 rounded-2xl bg-linen-card dark:bg-cypress-card border border-linen-border dark:border-cypress-border items-center justify-center mb-3">
               <Inbox size={26} color={colors.textSecondary} />
             </View>
             <Text className="text-base font-bold text-linen-text-primary dark:text-cypress-text-primary">
-              Belum ada catatan mutasi
+              {t('history.emptyTitle')}
             </Text>
             <Text className="mt-1 text-center text-xs text-linen-text-secondary dark:text-cypress-text-secondary leading-4 max-w-xs">
-              Pengeluaran harian dan pemasukan yang kamu catat akan terorganisir rapi di sini.
+              {t('history.emptyDesc')}
             </Text>
-            <Pressable
-              onPress={seedDemoData}
-              className="mt-4 py-2 px-4 rounded-xl bg-cypress-surface dark:bg-accent-champagne active:opacity-80 shadow-xs"
-            >
-              <Text className="text-xs font-bold text-white dark:text-[#0C1513]">
-                Isi Data Sampel
-              </Text>
-            </Pressable>
+            {__DEV__ && (
+              <Pressable
+                onPress={seedDemoData}
+                className="mt-4 py-2 px-4 rounded-xl bg-cypress-surface dark:bg-accent-champagne active:opacity-80 shadow-xs"
+              >
+                <Text className="text-xs font-bold text-white dark:text-[#0C1513]">
+                  {t('history.seedSampleData')}
+                </Text>
+              </Pressable>
+            )}
           </View>
         )}
 
@@ -181,6 +238,16 @@ export default function HistoryScreen() {
         colorScheme={colorScheme}
         onClose={() => setTxToDelete(null)}
         onConfirm={handleConfirmDelete}
+      />
+
+      <DateRangePickerSheet
+        visible={isPickerOpen}
+        currentRange={selectedRange}
+        onClose={() => setIsPickerOpen(false)}
+        onSelectRange={(r) => {
+          setSelectedRange(r);
+          setIsPickerOpen(false);
+        }}
       />
     </>
   );

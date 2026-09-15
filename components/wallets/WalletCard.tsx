@@ -4,6 +4,7 @@ import { Landmark, Banknote, Smartphone, MoreVertical } from 'lucide-react-nativ
 import { formatCurrency } from '@/lib/format';
 import { Wallet } from '@/lib/db';
 import Colors from '@/constants/Colors';
+import { useTranslation } from '@/lib/i18n';
 
 interface WalletCardProps {
   wallet: Wallet;
@@ -20,6 +21,7 @@ export function WalletCard({
   colorScheme,
   onOpenOptions,
 }: WalletCardProps) {
+  const { t } = useTranslation();
   const colors = Colors[colorScheme];
 
   const share =
@@ -41,11 +43,11 @@ export function WalletCard({
   const getWalletCategoryLabel = (type: string) => {
     switch (type) {
       case 'bank':
-        return 'Rekening Bank';
+        return t('wallets.typeBank');
       case 'ewallet':
-        return 'Dompet Digital';
+        return t('wallets.typeEwallet');
       default:
-        return 'Uang Tunai';
+        return t('wallets.typeCash');
     }
   };
 
@@ -64,7 +66,7 @@ export function WalletCard({
             {wallet.name}
           </Text>
           <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary mt-0.5 tabular-nums">
-            {getWalletCategoryLabel(wallet.type)} • {share}% dari uang harian
+            {getWalletCategoryLabel(wallet.type)} • {t('wallets.shareLabel').replace('{share}', String(share))}
           </Text>
         </View>
       </View>
@@ -79,7 +81,7 @@ export function WalletCard({
             onPress={() => onOpenOptions(wallet)}
             hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             className="min-w-[44px] min-h-[44px] rounded-lg items-center justify-center active:opacity-60"
-            accessibilityLabel={`Opsi ${wallet.name}`}
+            accessibilityLabel={t('wallets.walletOptions').replace('{name}', wallet.name)}
           >
             <MoreVertical size={16} color={colors.textSecondary} />
           </Pressable>
@@ -88,3 +90,4 @@ export function WalletCard({
     </View>
   );
 }
+

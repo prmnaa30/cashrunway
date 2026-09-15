@@ -1,16 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Keyboard,
-  Platform,
-  Modal,
-  KeyboardAvoidingView,
-  StyleSheet,
-} from 'react-native';
-import { DollarSign, Check, X } from 'lucide-react-native';
+import { View, Text, TextInput, TouchableOpacity, Keyboard } from 'react-native';
+import { DollarSign, Check } from 'lucide-react-native';
+import { AppModal } from '@/components/ui/AppModal';
 import Colors from '@/constants/Colors';
 
 export interface FeePickerModalProps {
@@ -28,10 +19,7 @@ const FEE_PRESETS = [
   { label: 'Rp 6.500', value: 6500 },
 ];
 
-/**
- * Overlay picker for transfer admin fee (presets and custom) with keyboard awareness and fade animation.
- */
-function FeePickerModalComponent({
+export function FeePickerModal({
   visible,
   currentFee,
   onSelectFee,
@@ -39,6 +27,7 @@ function FeePickerModalComponent({
   colorScheme,
 }: FeePickerModalProps) {
   const colors = Colors[colorScheme];
+  const isDark = colorScheme === 'dark';
   const [customText, setCustomText] = useState(currentFee > 0 ? String(currentFee) : '');
 
   useEffect(() => {
@@ -60,130 +49,83 @@ function FeePickerModalComponent({
     onClose();
   };
 
-  const handleClose = () => {
-    Keyboard.dismiss();
-    onClose();
-  };
-
   return (
-    <Modal
+    <AppModal
       visible={visible}
-      transparent
-      animationType="fade"
-      statusBarTranslucent
-      onRequestClose={handleClose}
+      onClose={onClose}
+      title="Biaya Transfer / Admin"
+      subtitle="Biaya transaksi antar dompet atau bank"
+      maxWidth={380}
     >
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={{ flex: 1 }}
-      >
-        <View className="flex-1 justify-center items-center px-5 bg-black/65">
-          <TouchableOpacity
-            onPress={handleClose}
-            activeOpacity={1}
-            style={StyleSheet.absoluteFill}
-            accessibilityLabel="Tutup"
-          />
-
-          <View className="w-full max-w-sm rounded-3xl bg-linen-bg dark:bg-cypress-bg border border-linen-border dark:border-cypress-border p-5 shadow-2xl z-10">
-            {/* Header */}
-            <View className="flex-row items-center justify-between pb-3 border-b border-linen-border/60 dark:border-cypress-border/60">
-              <View className="flex-row items-center">
-                <DollarSign size={18} color={colors.tint} />
-                <Text className="text-base font-black text-linen-text-primary dark:text-cypress-text-primary ml-2">
-                  Biaya Admin Transfer
-                </Text>
-              </View>
-
-              <TouchableOpacity
-                onPress={handleClose}
-                activeOpacity={0.7}
-                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                className="min-w-[44px] min-h-[44px] rounded-full bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border items-center justify-center"
-                accessibilityLabel="Tutup"
-              >
-                <X size={16} color={colors.textSecondary} />
-              </TouchableOpacity>
-            </View>
-
-            {/* Quick Presets */}
-            <Text className="text-xs font-bold text-linen-text-secondary dark:text-cypress-text-secondary mt-3 mb-2">
-              Pilihan Cepat
-            </Text>
-
-            <View className="flex-row flex-wrap justify-between mb-4">
-              {FEE_PRESETS.map((preset) => {
-                const isSelected = currentFee === preset.value;
-                return (
-                  <TouchableOpacity
-                    key={preset.value}
-                    activeOpacity={0.75}
-                    onPress={() => handleSelectPreset(preset.value)}
-                    className={`w-[48%] min-h-[44px] py-2.5 px-3 mb-2 rounded-xl border flex-row items-center justify-between ${
+      <View className="pt-1">
+        {/* Preset Options */}
+        <View className="mb-4">
+          <Text className="text-xs font-bold uppercase tracking-wider text-linen-text-secondary dark:text-cypress-text-secondary mb-2">
+            Preset Biaya Populer
+          </Text>
+          <View className="space-y-2">
+            {FEE_PRESETS.map((preset) => {
+              const isSelected = currentFee === preset.value;
+              return (
+                <TouchableOpacity
+                  key={preset.value}
+                  onPress={() => handleSelectPreset(preset.value)}
+                  activeOpacity={0.7}
+                  className={"flex-row items-center justify-between p-3.5 rounded-xl border mb-2 " + (
+                    isSelected
+                      ? 'bg-linen-surface dark:bg-cypress-surface border-accent-brass dark:border-accent-champagne'
+                      : 'bg-linen-card dark:bg-cypress-card border-linen-border dark:border-cypress-border active:opacity-70'
+                  )}
+                >
+                  <Text
+                    className={"text-xs font-bold " + (
                       isSelected
-                        ? colorScheme === 'dark'
-                          ? 'bg-accent-champagne/15 border-accent-champagne'
-                          : 'bg-accent-brass/15 border-accent-brass'
-                        : 'bg-linen-surface dark:bg-cypress-card border-linen-border/80 dark:border-cypress-border/80'
-                    }`}
-                  >
-                    <Text
-                      className={`text-xs font-mono tabular-nums ${
-                        isSelected
-                          ? colorScheme === 'dark'
-                            ? 'text-accent-champagne font-bold'
-                            : 'text-accent-brass font-bold'
-                          : 'text-linen-text-secondary dark:text-cypress-text-secondary'
-                      }`}
-                    >
-                      {preset.label}
-                    </Text>
-                    {isSelected && (
-                      <Check
-                        size={14}
-                        color={colorScheme === 'dark' ? '#D4AF37' : '#B8860B'}
-                        strokeWidth={2.5}
-                      />
+                        ? 'text-accent-brass dark:text-accent-champagne font-extrabold'
+                        : 'text-linen-text-primary dark:text-cypress-text-primary'
                     )}
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-
-            {/* Custom Fee Input */}
-            <Text className="text-xs font-bold text-linen-text-secondary dark:text-cypress-text-secondary mb-2">
-              Atau Masukkan Nominal Kustom
-            </Text>
-
-            <View className="flex-row items-center px-3.5 py-2.5 min-h-[44px] rounded-2xl bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border mb-4">
-              <Text className="text-xs font-bold text-linen-text-secondary dark:text-cypress-text-secondary mr-2">
-                Rp
-              </Text>
-              <TextInput
-                value={customText}
-                onChangeText={setCustomText}
-                keyboardType="numeric"
-                placeholder="0"
-                placeholderTextColor={colors.textSecondary}
-                className="flex-1 text-sm font-mono tabular-nums font-bold text-linen-text-primary dark:text-cypress-text-primary py-0"
-              />
-            </View>
-
-            <TouchableOpacity
-              onPress={handleApplyCustom}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-              activeOpacity={0.8}
-              className="min-h-[44px] py-3 rounded-2xl bg-accent-brass dark:bg-accent-champagne items-center justify-center shadow-sm"
-            >
-              <Text className="text-xs font-black text-[#0C1513]">
-                Terapkan Biaya
-              </Text>
-            </TouchableOpacity>
+                  >
+                    {preset.label}
+                  </Text>
+                  {isSelected && (
+                    <Check size={16} color={isDark ? '#D4AF37' : '#B8860B'} />
+                  )}
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
-      </KeyboardAvoidingView>
-    </Modal>
+
+        {/* Custom Input */}
+        <View className="mb-4">
+          <Text className="text-xs font-bold uppercase tracking-wider text-linen-text-secondary dark:text-cypress-text-secondary mb-2">
+            Nominal Kustom
+          </Text>
+          <View className="flex-row items-center px-3.5 py-2.5 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border">
+            <Text className="text-xs font-bold text-linen-text-secondary dark:text-cypress-text-secondary mr-2">
+              Rp
+            </Text>
+            <TextInput
+              value={customText}
+              onChangeText={setCustomText}
+              placeholder="0"
+              placeholderTextColor={colors.textSecondary}
+              keyboardType="number-pad"
+              className="flex-1 text-sm font-bold text-linen-text-primary dark:text-cypress-text-primary p-0"
+            />
+          </View>
+        </View>
+
+        {/* Action Button */}
+        <TouchableOpacity
+          onPress={handleApplyCustom}
+          activeOpacity={0.8}
+          className="w-full py-3 rounded-xl bg-cypress-surface dark:bg-accent-champagne items-center justify-center shadow-xs"
+        >
+          <Text className="text-xs font-bold text-white dark:text-black">
+            Gunakan Nominal Ini
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </AppModal>
   );
 }
-
-export const FeePickerModal = React.memo(FeePickerModalComponent);

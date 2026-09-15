@@ -30,7 +30,7 @@ export function resolveDeviceLocale(): ActiveLocale {
     if (primary === 'id') return 'id';
     return 'en';
   } catch {
-    return 'id';
+    return 'en';
   }
 }
 
@@ -38,7 +38,7 @@ export function getActiveLanguage(languagePreference?: string | null): ActiveLoc
   if (!languagePreference || languagePreference === 'auto') {
     return resolveDeviceLocale();
   }
-  return languagePreference === 'en' ? 'en' : 'id';
+  return languagePreference === 'id' ? 'id' : 'en';
 }
 
 function getNestedValue(obj: any, path: string): string | undefined {
@@ -62,8 +62,12 @@ export function translate(
   const settingsLang = getLanguagePreference();
   const activeLocale = localeOverride || getActiveLanguage(settingsLang);
   
-  const dict = translations[activeLocale] || translations.id;
+  const dict = translations[activeLocale] || translations.en;
   let text = getNestedValue(dict, key);
+
+  if (text === undefined && activeLocale !== 'en') {
+    text = getNestedValue(translations.en, key);
+  }
 
   if (text === undefined && activeLocale !== 'id') {
     text = getNestedValue(translations.id, key);

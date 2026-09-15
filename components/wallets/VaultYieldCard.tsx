@@ -1,9 +1,10 @@
 import React from 'react';
 import { View, Text } from 'react-native';
-import { Sparkles, Vault } from 'lucide-react-native';
+import { Sparkles } from 'lucide-react-native';
 import { formatCurrency } from '@/lib/format';
 import { VaultYieldStats } from '@/store/useFinanceStore';
 import Colors from '@/constants/Colors';
+import { useTranslation } from '@/lib/i18n';
 
 interface VaultYieldCardProps {
   vaultStats: VaultYieldStats;
@@ -20,6 +21,7 @@ export function VaultYieldCard({
   isPrivacyMode,
   colorScheme,
 }: VaultYieldCardProps) {
+  const { t } = useTranslation();
   const colors = Colors[colorScheme];
 
   return (
@@ -28,20 +30,20 @@ export function VaultYieldCard({
         <View className="flex-row items-center">
           <Sparkles size={16} color={colors.tint} />
           <Text className="ml-1.5 text-xs font-bold uppercase tracking-wider text-accent-brass dark:text-accent-champagne">
-            Portofolio Bunga Tabungan
+            {t('wallets.yieldPortfolioTitle')}
           </Text>
         </View>
 
         {vaultStats.totalPendingInterest > 0 ? (
           <View className="px-2 py-0.5 rounded-full bg-status-safe/15 border border-status-safe/30">
             <Text className="text-[10px] font-bold text-status-safe font-mono tabular-nums">
-              +{formatCurrency(vaultStats.totalPendingInterest, isPrivacyMode)} siap diambil
+              +{formatCurrency(vaultStats.totalPendingInterest, isPrivacyMode)} {t('wallets.yieldReadyBadge')}
             </Text>
           </View>
         ) : (
           <View className="px-2 py-0.5 rounded bg-accent-brass/15 dark:bg-accent-champagne/15 border border-accent-brass/30 dark:border-accent-champagne/30">
             <Text className="text-[10px] font-bold text-accent-brass dark:text-accent-champagne font-mono">
-              Bunga Harian
+              {t('wallets.yieldDailyBadge')}
             </Text>
           </View>
         )}
@@ -53,18 +55,18 @@ export function VaultYieldCard({
             +{formatCurrency(vaultStats.estimatedDailyNet, isPrivacyMode)}
           </Text>
           <Text className="ml-1.5 text-xs font-semibold text-linen-text-secondary dark:text-cypress-text-secondary">
-            /hari
+            {t('wallets.yieldPerDay')}
           </Text>
         </View>
         <Text className="mt-1 text-xs text-linen-text-secondary dark:text-cypress-text-secondary">
-          Akumulasi perkiraan bunga bersih seluruh tabungan (setelah pajak)
+          {t('wallets.yieldSummaryDesc')}
         </Text>
       </View>
 
       <View className="mt-4 pt-3 border-t border-linen-border/60 dark:border-cypress-border/60 flex-row justify-between">
         <View>
           <Text className="text-[10px] uppercase font-semibold text-linen-text-secondary dark:text-cypress-text-secondary tracking-wider">
-            Perkiraan 1 Bulan
+            {t('wallets.yieldMonth')}
           </Text>
           <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary mt-0.5 tabular-nums">
             +{formatCurrency(vaultStats.projectedMonthlyYield, isPrivacyMode)}
@@ -73,7 +75,7 @@ export function VaultYieldCard({
 
         <View className="items-end">
           <Text className="text-[10px] uppercase font-semibold text-linen-text-secondary dark:text-cypress-text-secondary tracking-wider">
-            Perkiraan 1 Tahun
+            {t('wallets.yieldYear')}
           </Text>
           <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary mt-0.5 tabular-nums">
             +{formatCurrency(vaultStats.projectedAnnualYield, isPrivacyMode)}
@@ -83,3 +85,5 @@ export function VaultYieldCard({
     </View>
   );
 }
+
+

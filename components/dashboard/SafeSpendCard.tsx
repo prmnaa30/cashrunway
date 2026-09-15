@@ -10,6 +10,7 @@ import Animated, {
 import { Shield, ChevronDown, Calculator } from 'lucide-react-native';
 import { formatCurrency } from '@/lib/format';
 import { SafeSpendResult } from '@/lib/engine';
+import { useTranslation } from '@/lib/i18n';
 import Colors from '@/constants/Colors';
 
 interface SafeSpendCardProps {
@@ -25,6 +26,7 @@ export function SafeSpendCard({
   isPrivacyMode,
   colorScheme,
 }: SafeSpendCardProps) {
+  const { t, locale } = useTranslation();
   const colors = Colors[colorScheme];
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -46,6 +48,12 @@ export function SafeSpendCard({
 
   const availableCash = Math.max(0, operationalBalance - safeSpend.unpaidBillsTotal);
 
+  const statusLabel = safeSpend.isOverspent
+    ? t('dashboard.safeStatusDanger')
+    : safeSpend.remainingDailyAllowance < safeSpend.baseDailyAllowance * 0.2
+    ? t('dashboard.safeStatusWarning')
+    : t('dashboard.safeStatusSafe');
+
   return (
     <Pressable
       onPress={() => setIsExpanded((prev) => !prev)}
@@ -57,7 +65,7 @@ export function SafeSpendCard({
         <View className="flex-row items-center flex-1 pr-2">
           <Shield size={16} color={colors.tint} />
           <Text className="ml-1.5 text-xs font-bold uppercase tracking-wider text-linen-text-secondary dark:text-cypress-text-secondary">
-            Batas Aman Belanja Hari Ini
+            {t('dashboard.safeSpendTitle')}
           </Text>
         </View>
 
@@ -72,7 +80,7 @@ export function SafeSpendCard({
                 safeSpend.isOverspent ? 'text-status-danger' : 'text-status-safe'
               }`}
             >
-              {safeSpend.isOverspent ? 'Kelewatan' : 'Masih Aman'}
+              {statusLabel}
             </Text>
           </View>
           <Animated.View
@@ -96,52 +104,57 @@ export function SafeSpendCard({
         </Text>
         <Text className="mt-0.5 text-xs text-linen-text-secondary dark:text-cypress-text-secondary">
           {safeSpend.isOverspent
-            ? 'Pengeluaran hari ini sudah melebihi batas yang disarankan'
-            : 'Sisa uang yang aman kamu jajanin sampai nanti malam'}
+            ? (locale === 'en' ? 'Today spending exceeded recommended limit' : 'Pengeluaran hari ini sudah melebihi batas yang disarankan')
+            : t('dashboard.safeSpendSubtitle')}
         </Text>
       </View>
 
       <View className="mt-3 mb-2">
-        <View className="h-1.5 w-full bg-linen-border/70 dark:bg-cypress-surface rounded-full overflow-hidden">
+        <View className="h-2 w-full bg-linen-surface dark:bg-cypress-surface rounded-full overflow-hidden">
           <View
-            className="h-full rounded-full"
-            style={{
-              width: `${spendPercent}%`,
-              backgroundColor: safeSpend.isOverspent ? '#EF4444' : colorScheme === 'dark' ? colors.tint : '#10B981',
-            }}
+            className={`h-full rounded-full ${
+              safeSpend.isOverspent
+                ? 'bg-status-danger'
+                : spendPercent > 80
+                ? 'bg-amber-500'
+                : 'bg-status-safe'
+            }`}
+            style={{ width: `${spendPercent}%` }}
           />
         </View>
-        <View className="flex-row justify-between mt-1">
-          <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary tabular-nums">
-            Sudah keluar: {formatCurrency(safeSpend.todaySpent, isPrivacyMode)}
+        <View className="flex-row justify-between mt-1.5">
+          <Text className="text-[10px] text-linen-text-secondary dark:text-cypress-text-secondary">
+            {t('dashboard.spentToday', { amount: formatCurrency(safeSpend.todaySpent, isPrivacyMode) })}
           </Text>
-          <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary tabular-nums">
-            Jatah: {formatCurrency(safeSpend.baseDailyAllowance, isPrivacyMode)}
+          <Text className="text-[10px] text-linen-text-secondary dark:text-cypress-text-secondary">
+            {t('dashboard.dailyAllowance', { amount: formatCurrency(safeSpend.baseDailyAllowance, isPrivacyMode) })}
           </Text>
         </View>
       </View>
 
-      <View className="mt-3 pt-3 border-t border-linen-border/60 dark:border-cypress-border/60 flex-row justify-between">
-        <View>
-          <Text className="text-[10px] uppercase font-semibold text-linen-text-secondary dark:text-cypress-text-secondary tracking-wider">
-            Alokasi Tagihan Rutin
+      <View className="mt-3 pt-3 border-t border-linen-border/60 dark:border-cypress-border/60 flex-row">
+        <View className="flex-1 pr-2">
+          <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary uppercase tracking-wider font-semibold">
+            {t('dashboard.recurringBillsAllocation')}
           </Text>
-          <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary mt-0.5 tabular-nums">
+          <Text className="text-sm font-black text-linen-text-primary dark:text-cypress-text-primary mt-0.5 tabular-nums">
             {formatCurrency(safeSpend.unpaidBillsTotal, isPrivacyMode)}
           </Text>
         </View>
 
-        <View className="items-end">
-          <Text className="text-[10px] uppercase font-semibold text-linen-text-secondary dark:text-cypress-text-secondary tracking-wider">
-            Menuju Gajian
+        <View className="w-[1px] bg-linen-border dark:bg-cypress-border mx-2" />
+
+        <View className="flex-1 pl-2">
+          <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary uppercase tracking-wider font-semibold">
+            {t('dashboard.daysToPayday')}
           </Text>
-          <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary mt-0.5 tabular-nums">
-            {safeSpend.daysRemaining} hari lagi
+          <Text className="text-sm font-black text-linen-text-primary dark:text-cypress-text-primary mt-0.5">
+            {t('dashboard.daysRemaining', { days: safeSpend.daysRemaining })}
           </Text>
         </View>
       </View>
 
-      {/* Expandable Stepped Calculation Breakdown */}
+      {/* Expandable Safe Spend Math Breakdown */}
       {isExpanded && (
         <Animated.View
           entering={FadeIn.duration(200)}
@@ -152,25 +165,23 @@ export function SafeSpendCard({
           <View className="flex-row items-center mb-3">
             <Calculator size={14} color={colors.tint} />
             <Text className="ml-1.5 text-[11px] font-bold uppercase tracking-wider text-linen-text-primary dark:text-cypress-text-primary">
-              Rincian Perhitungan Bertingkat
+              {locale === 'en' ? 'SAFE SPEND FORMULA' : 'RUMUS BATAS AMAN HARIAN'}
             </Text>
           </View>
 
           <View className="bg-linen-surface/80 dark:bg-cypress-surface/60 rounded-2xl p-3 border border-linen-border/70 dark:border-cypress-border/50">
-            {/* Row 1: Operational Balance */}
             <View className="flex-row justify-between items-center py-1">
               <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary">
-                Saldo Kas Operasional
+                {locale === 'en' ? 'Active Cash Balance' : 'Saldo Kas Operasional'}
               </Text>
               <Text className="text-xs font-mono font-bold text-linen-text-primary dark:text-cypress-text-primary tabular-nums">
                 {formatCurrency(operationalBalance, isPrivacyMode)}
               </Text>
             </View>
 
-            {/* Row 2: Unpaid Bills */}
             <View className="flex-row justify-between items-center py-1">
               <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary">
-                Tagihan Jatuh Tempo
+                {locale === 'en' ? 'Unpaid Bills till Payday' : 'Tagihan Belum Lunas s/d Target'}
               </Text>
               <Text className="text-xs font-mono font-semibold text-status-danger tabular-nums">
                 - {formatCurrency(safeSpend.unpaidBillsTotal, isPrivacyMode)}
@@ -179,61 +190,32 @@ export function SafeSpendCard({
 
             <View className="h-[1px] bg-linen-border/80 dark:border-cypress-border/60 my-1" />
 
-            {/* Row 3: Available Cash */}
             <View className="flex-row justify-between items-center py-1">
               <Text className="text-xs font-medium text-linen-text-primary dark:text-cypress-text-primary">
-                Kas Tersedia Belanja
+                {locale === 'en' ? 'Net Spendable Fund' : 'Sisa Kas Siap Belanja'}
               </Text>
               <Text className="text-xs font-mono font-bold text-linen-text-primary dark:text-cypress-text-primary tabular-nums">
-                {formatCurrency(availableCash, isPrivacyMode)}
+                = {formatCurrency(availableCash, isPrivacyMode)}
               </Text>
             </View>
 
-            {/* Row 4: Divided by Remaining Days */}
             <View className="flex-row justify-between items-center py-1">
               <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary">
-                Hari Menuju Gajian
+                {locale === 'en' ? 'Divided by Days till Payday' : 'Dibagi Hari Tersisa Menuju Target'}
               </Text>
               <Text className="text-xs font-mono font-semibold text-linen-text-secondary dark:text-cypress-text-secondary tabular-nums">
-                ÷ {safeSpend.daysRemaining} hari
+                ÷ {safeSpend.daysRemaining} {t('dashboard.days').toLowerCase()}
               </Text>
             </View>
 
             <View className="h-[1px] bg-linen-border/80 dark:border-cypress-border/60 my-1" />
 
-            {/* Row 5: Base Daily Allowance */}
-            <View className="flex-row justify-between items-center py-1">
-              <Text className="text-xs font-medium text-linen-text-primary dark:text-cypress-text-primary">
-                Jatah Dasar Harian
-              </Text>
-              <Text className="text-xs font-mono font-bold text-accent-brass dark:text-accent-champagne tabular-nums">
-                {formatCurrency(safeSpend.baseDailyAllowance, isPrivacyMode)}
-              </Text>
-            </View>
-
-            {/* Row 6: Today's Expense */}
-            <View className="flex-row justify-between items-center py-1">
-              <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary">
-                Belanja Hari Ini
-              </Text>
-              <Text className="text-xs font-mono font-semibold text-status-danger tabular-nums">
-                - {formatCurrency(safeSpend.todaySpent, isPrivacyMode)}
-              </Text>
-            </View>
-
-            <View className="h-[1px] bg-linen-border/80 dark:border-cypress-border/60 my-1" />
-
-            {/* Row 7: Remaining Safe Spend */}
             <View className="flex-row justify-between items-center pt-1.5 pb-0.5">
               <Text className="text-xs font-black text-linen-text-primary dark:text-cypress-text-primary">
-                Sisa Batas Aman Hari Ini
+                {locale === 'en' ? 'Daily Allowance' : 'Jatah Belanja Murni Harian'}
               </Text>
-              <Text
-                className={`text-xs font-mono font-black tabular-nums ${
-                  safeSpend.isOverspent ? 'text-status-danger' : 'text-status-safe'
-                }`}
-              >
-                = {formatCurrency(safeSpend.remainingDailyAllowance, isPrivacyMode)}
+              <Text className="text-xs font-mono font-black text-accent-brass dark:text-accent-champagne tabular-nums">
+                = {formatCurrency(safeSpend.baseDailyAllowance, isPrivacyMode)}
               </Text>
             </View>
           </View>

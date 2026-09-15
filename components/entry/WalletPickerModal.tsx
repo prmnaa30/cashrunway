@@ -1,8 +1,9 @@
 import React, { useMemo } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Modal, StyleSheet } from 'react-native';
-import { Wallet as WalletIcon, Landmark, Smartphone, Vault, Check, X } from 'lucide-react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { Wallet as WalletIcon, Landmark, Smartphone, Vault, Check } from 'lucide-react-native';
 import { Wallet } from '@/lib/db';
 import { formatCurrency } from '@/lib/format';
+import { AppModal } from '@/components/ui/AppModal';
 import Colors from '@/constants/Colors';
 
 export interface WalletPickerModalProps {
@@ -29,10 +30,7 @@ function getWalletIcon(type: string, isVault: number, size = 18, color?: string)
   }
 }
 
-/**
- * Overlay picker for source or target wallet selection with smooth fade animation.
- */
-function WalletPickerModalComponent({
+export function WalletPickerModal({
   visible,
   wallets,
   selectedWalletId,
@@ -44,129 +42,66 @@ function WalletPickerModalComponent({
   excludeWalletId,
 }: WalletPickerModalProps) {
   const colors = Colors[colorScheme];
+  const isDark = colorScheme === 'dark';
+
   const filteredWallets = useMemo(
     () => (excludeWalletId ? wallets.filter((w) => w.id !== excludeWalletId) : wallets),
     [wallets, excludeWalletId]
   );
 
   return (
-    <Modal
+    <AppModal
       visible={visible}
-      transparent
-      animationType="fade"
-      statusBarTranslucent
-      onRequestClose={onClose}
+      onClose={onClose}
+      title={title}
+      maxWidth={380}
     >
-      <View className="flex-1 justify-center items-center px-5 bg-black/65">
-        <TouchableOpacity
-          onPress={onClose}
-          activeOpacity={1}
-          style={StyleSheet.absoluteFill}
-          accessibilityLabel="Tutup"
-        />
-
-        <View className="w-full max-w-sm rounded-3xl bg-linen-bg dark:bg-cypress-bg border border-linen-border dark:border-cypress-border p-5 shadow-2xl z-10 max-h-[80%]">
-        {/* Header */}
-        <View className="flex-row items-center justify-between pb-3 border-b border-linen-border/60 dark:border-cypress-border/60">
-          <Text className="text-base font-black text-linen-text-primary dark:text-cypress-text-primary">
-            {title}
-          </Text>
-          <TouchableOpacity
-            onPress={onClose}
-            activeOpacity={0.7}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-            className="min-w-[44px] min-h-[44px] rounded-full bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border items-center justify-center"
-            accessibilityLabel="Tutup"
-          >
-            <X size={16} color={colors.textSecondary} />
-          </TouchableOpacity>
-        </View>
-
-        {/* List of Wallets */}
-        <ScrollView
-          className="mt-3 max-h-72"
-          showsVerticalScrollIndicator={false}
-          nestedScrollEnabled={true}
-          keyboardShouldPersistTaps="handled"
-        >
-          {filteredWallets.map((wallet) => {
-            const isSelected = wallet.id === selectedWalletId;
-            const iconColor = isSelected
-              ? colorScheme === 'dark'
-                ? '#D4AF37'
-                : '#059669'
-              : colors.textSecondary;
-
-            return (
-              <TouchableOpacity
-                key={wallet.id}
-                activeOpacity={0.75}
-                onPress={() => {
-                  onSelectWallet(wallet.id);
-                  onClose();
-                }}
-                className={`flex-row items-center justify-between p-3.5 min-h-[44px] mb-2 rounded-2xl border ${
-                  isSelected
-                    ? colorScheme === 'dark'
-                      ? 'bg-accent-champagne/15 border-accent-champagne'
-                      : 'bg-emerald-500/10 border-emerald-600'
-                    : 'bg-linen-surface dark:bg-cypress-card border-linen-border/80 dark:border-cypress-border/80'
-                }`}
-              >
-                <View className="flex-row items-center flex-1 mr-3">
-                  <View
-                    className={`w-10 h-10 rounded-xl items-center justify-center mr-3 ${
-                      isSelected
-                        ? colorScheme === 'dark'
-                          ? 'bg-accent-champagne/20'
-                          : 'bg-emerald-500/20'
-                        : 'bg-linen-card dark:bg-cypress-surface'
-                    }`}
-                  >
-                    {getWalletIcon(wallet.type, wallet.isVault, 18, iconColor)}
-                  </View>
-                  <View className="flex-1">
-                    <Text
-                      className={`text-sm ${
-                        isSelected
-                          ? colorScheme === 'dark'
-                            ? 'font-bold text-accent-champagne'
-                            : 'font-bold text-emerald-800'
-                          : 'font-semibold text-linen-text-primary dark:text-cypress-text-primary'
-                      }`}
-                      numberOfLines={1}
-                    >
-                      {wallet.name}
-                    </Text>
-                    <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary font-mono tabular-nums mt-0.5">
-                      {formatCurrency(wallet.balance, isPrivacyMode)}
-                    </Text>
-                  </View>
+      <ScrollView className="max-h-72" showsVerticalScrollIndicator={false}>
+        {filteredWallets.map((wallet) => {
+          const isSelected = wallet.id === selectedWalletId;
+          return (
+            <TouchableOpacity
+              key={wallet.id}
+              onPress={() => {
+                onSelectWallet(wallet.id);
+                onClose();
+              }}
+              activeOpacity={0.7}
+              className={"flex-row items-center justify-between p-3.5 rounded-2xl mb-2 border " + (
+                isSelected
+                  ? 'bg-linen-surface dark:bg-cypress-surface border-accent-brass dark:border-accent-champagne'
+                  : 'bg-linen-card dark:bg-cypress-card border-linen-border dark:border-cypress-border active:opacity-70'
+              )}
+            >
+              <View className="flex-row items-center flex-1 mr-2">
+                <View className="w-9 h-9 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center mr-3">
+                  {getWalletIcon(wallet.type, wallet.isVault, 18, isSelected ? (isDark ? '#D4AF37' : '#B8860B') : colors.tint)}
                 </View>
+                <View className="flex-1">
+                  <Text className="text-sm font-bold text-linen-text-primary dark:text-cypress-text-primary">
+                    {wallet.name}
+                  </Text>
+                  <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary font-mono mt-0.5">
+                    {formatCurrency(wallet.balance, isPrivacyMode)}
+                  </Text>
+                </View>
+              </View>
 
-                {isSelected && (
-                  <View
-                    className={`w-6 h-6 rounded-full items-center justify-center ${
-                      colorScheme === 'dark'
-                        ? 'bg-accent-champagne'
-                        : 'bg-emerald-600'
-                    }`}
-                  >
-                    <Check
-                      size={14}
-                      color={colorScheme === 'dark' ? '#0C1513' : '#FFFFFF'}
-                      strokeWidth={3}
-                    />
-                  </View>
-                )}
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
-    </View>
-  </Modal>
-);
+              {isSelected && (
+                <Check size={18} color={isDark ? '#D4AF37' : '#B8860B'} />
+              )}
+            </TouchableOpacity>
+          );
+        })}
+
+        {filteredWallets.length === 0 && (
+          <View className="py-8 items-center justify-center">
+            <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary">
+              Tidak ada dompet yang tersedia
+            </Text>
+          </View>
+        )}
+      </ScrollView>
+    </AppModal>
+  );
 }
-
-export const WalletPickerModal = React.memo(WalletPickerModalComponent);

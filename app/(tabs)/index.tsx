@@ -13,6 +13,7 @@ import { useSettingsStore } from '@/store/useSettingStore';
 import { useFinanceStore } from '@/store/useFinanceStore';
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
+import { useTranslation } from '@/lib/i18n';
 import {
   RunwayHeroCard,
   SafeSpendCard,
@@ -20,6 +21,7 @@ import {
 } from '@/components/dashboard';
 
 export default function DashboardScreen() {
+  const { t, locale } = useTranslation();
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
@@ -84,7 +86,7 @@ export default function DashboardScreen() {
               CashRunway
             </Text>
             <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary">
-              {formatDate(new Date())}
+              {formatDate(new Date(), locale === 'en' ? 'en-US' : 'id-ID')}
             </Text>
           </View>
         </View>
@@ -93,7 +95,7 @@ export default function DashboardScreen() {
           onPress={togglePrivacyMode}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           className="w-9 h-9 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border/80 dark:border-cypress-border/80 items-center justify-center active:opacity-70"
-          accessibilityLabel="Sensor Angka"
+          accessibilityLabel={t('dashboard.privacyToggle')}
         >
           {isPrivacyMode ? (
             <EyeOff size={16} color={colors.textSecondary} />
@@ -108,11 +110,11 @@ export default function DashboardScreen() {
           <View className="flex-row items-center">
             <AlertTriangle size={17} color="#EF4444" />
             <Text className="ml-2 text-xs font-bold uppercase tracking-wider text-status-danger">
-              Uang Harian Menipis (&lt; 7 Hari)
+              {t('dashboard.dangerZoneTitle')}
             </Text>
           </View>
           <Text className="mt-1 text-xs text-status-danger/90 leading-5">
-            Sisa uang harianmu diperkirakan tinggal {runway.operationalRunwayDays} hari lagi. Tahan pengeluaran yang belum mendesak atau ambil dana dari tabungan.
+            {t('dashboard.dangerZoneDesc', { days: runway.operationalRunwayDays })}
           </Text>
         </View>
       )}
@@ -120,17 +122,17 @@ export default function DashboardScreen() {
       {isDemoPromptVisible && (
         <View className="mb-4 p-4 rounded-2xl bg-linen-card dark:bg-cypress-card border border-accent-brass/30 dark:border-accent-champagne/30">
           <Text className="text-sm font-bold text-linen-text-primary dark:text-cypress-text-primary">
-            Belum ada catatan keuangan
+            {t('dashboard.noDataTitle')}
           </Text>
           <Text className="mt-1 text-xs text-linen-text-secondary dark:text-cypress-text-secondary leading-4">
-            Muat saldo awal dan transaksi contoh agar kamu bisa langsung mencoba fitur ketahanan uang.
+            {t('dashboard.noDataDesc')}
           </Text>
           <Pressable
             onPress={seedDemoData}
             className="mt-3 py-2 px-4 rounded-xl bg-cypress-surface dark:bg-accent-champagne self-start active:opacity-80 shadow-xs"
           >
             <Text className="text-xs font-bold text-white dark:text-[#0C1513]">
-              Isi Data Contoh
+              {t('dashboard.seedDataButton')}
             </Text>
           </Pressable>
         </View>

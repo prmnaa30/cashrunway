@@ -10,6 +10,7 @@ import Animated, {
 import { PieChart, ChevronDown } from 'lucide-react-native';
 import { formatCurrency } from '@/lib/format';
 import { Wallet } from '@/lib/db';
+import { useTranslation } from '@/lib/i18n';
 import Colors from '@/constants/Colors';
 
 interface LiquidityBarProps {
@@ -27,6 +28,7 @@ export function LiquidityBar({
   isPrivacyMode,
   colorScheme,
 }: LiquidityBarProps) {
+  const { t, locale } = useTranslation();
   const colors = Colors[colorScheme];
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -68,7 +70,7 @@ export function LiquidityBar({
         <View className="flex-row items-center">
           <PieChart size={15} color={colors.tint} />
           <Text className="ml-1.5 text-xs font-bold uppercase tracking-wider text-linen-text-secondary dark:text-cypress-text-secondary">
-            Pembagian Uangmu
+            {t('dashboard.liquidityTitle')}
           </Text>
           <Animated.View
             style={chevronStyle}
@@ -79,7 +81,7 @@ export function LiquidityBar({
         </View>
 
         <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary tabular-nums">
-          Total {formatCurrency(totalBalance, isPrivacyMode)}
+          {t('dashboard.total')} {formatCurrency(totalBalance, isPrivacyMode)}
         </Text>
       </View>
 
@@ -99,14 +101,14 @@ export function LiquidityBar({
           />
         </View>
 
-        <View className="flex-row justify-between">
+        <View className="flex-row justify-between items-center">
           <View className="flex-row items-center">
             <View
               className="w-2.5 h-2.5 rounded-sm mr-1.5"
               style={{ backgroundColor: operationalColor }}
             />
-            <Text className="text-xs font-semibold text-linen-text-secondary dark:text-cypress-text-secondary tabular-nums">
-              Uang Harian ({operationalRatio}%)
+            <Text className="text-xs font-medium text-linen-text-primary dark:text-cypress-text-primary">
+              {t('dashboard.operationalCash')} ({operationalRatio}%)
             </Text>
           </View>
 
@@ -115,8 +117,8 @@ export function LiquidityBar({
               className="w-2.5 h-2.5 rounded-sm mr-1.5"
               style={{ backgroundColor: vaultColor }}
             />
-            <Text className="text-xs font-semibold text-linen-text-secondary dark:text-cypress-text-secondary tabular-nums">
-              Tabungan ({100 - operationalRatio}%)
+            <Text className="text-xs font-medium text-linen-text-primary dark:text-cypress-text-primary">
+              {t('dashboard.savingsVault')} ({100 - operationalRatio}%)
             </Text>
           </View>
         </View>
@@ -128,75 +130,51 @@ export function LiquidityBar({
           entering={FadeIn.duration(200)}
           exiting={FadeOut.duration(150)}
           layout={LinearTransition.duration(200)}
-          className="mt-4 pt-3.5 border-t border-dashed border-linen-border dark:border-cypress-border/80"
+          className="mt-3.5 pt-3 border-t border-dashed border-linen-border dark:border-cypress-border/80"
         >
-          <View className="bg-linen-surface/80 dark:bg-cypress-surface/60 rounded-2xl p-3 border border-linen-border/70 dark:border-cypress-border/50">
-            {/* Operational Section */}
-            <View className="flex-row justify-between items-center mb-1.5">
-              <View className="flex-row items-center">
-                <View
-                  className="w-2 h-2 rounded-full mr-1.5"
-                  style={{ backgroundColor: operationalColor }}
-                />
-                <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary">
-                  Uang Harian (Kas Aktif)
-                </Text>
-              </View>
-              <Text className="text-xs font-mono font-bold text-status-safe tabular-nums">
-                {formatCurrency(operationalBalance, isPrivacyMode)}
+          {/* Operational Group */}
+          <View className="mb-2.5">
+            <Text className="text-[11px] font-bold uppercase tracking-wider text-linen-text-secondary dark:text-cypress-text-secondary mb-1">
+              {t('dashboard.operationalCash')} ({formatCurrency(operationalBalance, isPrivacyMode)})
+            </Text>
+            {operationalWallets.length === 0 ? (
+              <Text className="text-xs text-linen-text-secondary/70 dark:text-cypress-text-secondary/70 italic">
+                {locale === 'en' ? 'No active cash accounts' : 'Belum ada akun kas'}
               </Text>
-            </View>
-
-            {operationalWallets.length > 0 ? (
+            ) : (
               operationalWallets.map((w) => (
-                <View key={w.id} className="flex-row justify-between items-center py-1 pl-3.5 pr-1">
-                  <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary">
-                    • {w.name}
+                <View key={w.id} className="flex-row justify-between py-0.5">
+                  <Text className="text-xs text-linen-text-primary dark:text-cypress-text-primary">
+                    {w.name}
                   </Text>
-                  <Text className="text-[11px] font-mono text-linen-text-secondary dark:text-cypress-text-secondary tabular-nums">
+                  <Text className="text-xs font-mono text-linen-text-secondary dark:text-cypress-text-secondary tabular-nums">
                     {formatCurrency(w.balance, isPrivacyMode)}
                   </Text>
                 </View>
               ))
-            ) : (
-              <Text className="text-[11px] pl-3.5 text-linen-text-secondary/70 italic py-0.5">
-                Tidak ada dompet harian
-              </Text>
             )}
+          </View>
 
-            <View className="h-[1px] bg-linen-border/80 dark:border-cypress-border/60 my-2" />
-
-            {/* Vault Section */}
-            <View className="flex-row justify-between items-center mb-1.5">
-              <View className="flex-row items-center">
-                <View
-                  className="w-2 h-2 rounded-full mr-1.5"
-                  style={{ backgroundColor: vaultColor }}
-                />
-                <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary">
-                  Tabungan / Vault (Terkunci)
-                </Text>
-              </View>
-              <Text className="text-xs font-mono font-bold text-accent-brass dark:text-accent-champagne tabular-nums">
-                {formatCurrency(vaultBalance, isPrivacyMode)}
+          {/* Vault Group */}
+          <View>
+            <Text className="text-[11px] font-bold uppercase tracking-wider text-linen-text-secondary dark:text-cypress-text-secondary mb-1">
+              {t('dashboard.savingsVault')} ({formatCurrency(vaultBalance, isPrivacyMode)})
+            </Text>
+            {vaultWallets.length === 0 ? (
+              <Text className="text-xs text-linen-text-secondary/70 dark:text-cypress-text-secondary/70 italic">
+                {locale === 'en' ? 'No savings vaults' : 'Belum ada brankas tabungan'}
               </Text>
-            </View>
-
-            {vaultWallets.length > 0 ? (
+            ) : (
               vaultWallets.map((w) => (
-                <View key={w.id} className="flex-row justify-between items-center py-1 pl-3.5 pr-1">
-                  <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary">
-                    • {w.name}
+                <View key={w.id} className="flex-row justify-between py-0.5">
+                  <Text className="text-xs text-linen-text-primary dark:text-cypress-text-primary">
+                    {w.name}
                   </Text>
-                  <Text className="text-[11px] font-mono text-linen-text-secondary dark:text-cypress-text-secondary tabular-nums">
+                  <Text className="text-xs font-mono text-linen-text-secondary dark:text-cypress-text-secondary tabular-nums">
                     {formatCurrency(w.balance, isPrivacyMode)}
                   </Text>
                 </View>
               ))
-            ) : (
-              <Text className="text-[11px] pl-3.5 text-linen-text-secondary/70 italic py-0.5">
-                Belum ada dompet tabungan
-              </Text>
             )}
           </View>
         </Animated.View>

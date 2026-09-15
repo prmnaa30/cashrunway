@@ -11,6 +11,8 @@ import { useFinanceStore } from '@/store/useFinanceStore';
 import { useQuickEntryStore } from '@/store/useQuickEntryStore';
 import { QuickEntrySheet } from '@/components/entry';
 
+import { useTranslation } from '@/lib/i18n';
+
 function AnimatedAddButton({ onPress }: { onPress: () => void }) {
   const scale = useSharedValue(1);
   const colorScheme = useColorScheme() ?? 'dark';
@@ -67,13 +69,14 @@ function TabIcon({
 }
 
 export default function TabLayout() {
+  const { t } = useTranslation();
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
   const insets = useSafeAreaInsets();
   const openQuickEntry = useQuickEntryStore((s) => s.open);
 
   const bottomInset = insets.bottom;
-  const tabHeight = Platform.OS === 'ios' ? 60 + bottomInset : 64 + (bottomInset > 0 ? bottomInset : 8);
+  const tabHeight = Platform.OS === 'ios' ? 60 + bottomInset : 64 + (bottomInset > 0 ? bottomInset + 4 : 8);
 
   return (
     <>
@@ -100,7 +103,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name='index'
           options={{
-            title: 'Runway',
+            title: t('tabs.dashboard'),
             tabBarIcon: ({ color, focused }) => <TabIcon Icon={Home} color={color} focused={focused} />
           }}
         />
@@ -108,7 +111,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name='history'
           options={{
-            title: 'Riwayat',
+            title: t('tabs.history'),
             tabBarIcon: ({ color, focused }) => <TabIcon Icon={History} color={color} focused={focused} />
           }}
         />
@@ -126,7 +129,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name='wallets'
           options={{
-            title: 'Dompet',
+            title: t('tabs.wallets'),
             tabBarIcon: ({ color, focused }) => <TabIcon Icon={Wallet} color={color} focused={focused} />
           }}
         />
@@ -134,7 +137,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name='settings'
           options={{
-            title: 'Pengaturan',
+            title: t('tabs.settings'),
             tabBarIcon: ({ color, focused }) => <TabIcon Icon={Settings} color={color} focused={focused} />
           }}
         />
