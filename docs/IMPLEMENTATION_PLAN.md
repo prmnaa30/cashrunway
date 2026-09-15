@@ -23,7 +23,7 @@
 ## 🚦 Status Pengembangan (Development Progress)
 
 ```
-[Fase 1: Done] ──► [Fase 2: Done] ──► [Fase 3: Done] ──► [Fase 4: Done] ──► [Fase 5: Done] ──► [Fase 6: Done] ──► [Fase 7: Done] ──► [Fase 8: Done]
+[Fase 1: Done] ──► [Fase 2: Done] ──► [Fase 3: Done] ──► [Fase 4: Done] ──► [Fase 5: Done] ──► [Fase 6: Done] ──► [Fase 7: Done] ──► [Fase 8: Done] ──► [Fase 9: Done]
 ```
 
 - [x] **Fase 1: Scaffold Proyek & Setup Design System** *(Selesai)*
@@ -34,6 +34,7 @@
 - [x] **Fase 6: Manajemen Rekening & Tabungan (CRUD Dompet, Brankas, Soft Delete, Custom Tax, & Yield Terdesentralisasi)** *(Selesai)*
 - [x] **Fase 7: Pengaturan, Internasionalisasi (i18n), & Ekspor Data** *(Selesai)*
 - [x] **Fase 8: Integrasi Perangkat Keras OS & Polish Aksesibilitas** *(Selesai)*
+- [x] **Fase 9: Auto Google Drive Backup, Import Backup (Google Drive & CSV)** *(Selesai)*
 
 ---
 
@@ -252,3 +253,53 @@
   - `reminderStore.test.ts`: Pengujian aksi CRUD alarm di Zustand store dan sinkronisasi runway.
   - **17 test files (97 unit tests) lolos 100%** dengan `tsc --noEmit` 0 errors.
 
+---
+
+### [COMPLETED] Fase 9: Auto Google Drive Backup, Import Backup (Google Drive & CSV)
+- **Autentikasi Google (`lib/services/googleAuth.ts`)**:
+  - `@react-native-google-signin/google-signin` dengan native One Tap UI (tanpa redirect browser).
+  - Scope terbatas `drive.appdata` — hanya folder tersembunyi khusus aplikasi.
+  - Token management aman via `expo-secure-store` dengan auto-refresh.
+  - Konfigurasi OAuth 2.0: `google-services.json` (Android) + `GoogleService-Info.plist` (iOS).
+- **Google Drive REST API v3 Client (`lib/services/googleDrive.ts`)**:
+  - Klien HTTP langsung (`fetch()`) tanpa SDK tambahan — upload, list, download, delete.
+  - Semua file backup disimpan di `appDataFolder` (tidak terlihat pengguna di Google Drive mereka).
+  - Rolling retention policy: maksimal 5 backup terakhir, otomatis hapus yang lebih lama.
+  - Upload multipart (`uploadType=multipart`) dengan metadata JSON + konten backup.
+- **Serialisasi Database (`lib/backup/serializer.ts`)**:
+  - Ekspor seluruh 5 tabel (wallets, categories, recurringBills, transactions, settings) ke format JSON terstruktur.
+  - Metadata backup: versi skema, versi aplikasi, timestamp ekspor, info perangkat.
+  - Validasi integritas via checksum SHA-256 sebelum restore.
+  - Mekanisme restore aman: drop triggers → clear all → insert all → recreate triggers → `PRAGMA integrity_check`.
+- **CSV Importer (`lib/backup/csvImporter.ts`)**:
+  - Parser RFC 4180 compliant dengan BOM handling dan quoted field support.
+  - Deteksi otomatis format CashRunway (header khas: 'Akun / Dompet', 'Pengeluaran Khusus') vs CSV generik.
+  - Column mapping semi-otomatis untuk format generik.
+  - Dua strategi impor: `append` (tambahkan, skip duplikat) dan `replace` (ganti semua transaksi).
+- **Zustand Backup Store (`store/useBackupStore.ts`)**:
+  - State management autentikasi Google, daftar backup, progress upload/download/restore.
+  - Aksi `signIn`, `signOut`, `createBackup`, `restoreBackup`, `deleteBackup`, `importCsv`.
+  - Mekanisme auto-backup: debounce timer 5 menit setelah perubahan data terakhir.
+  - Integrasi `AppState` listener: backup segera saat app masuk background jika ada perubahan tertunda.
+  - Hook ke `useFinanceStore` — setiap mutasi data (`addTransaction`, `editTransaction`, dll.) memicu `scheduleAutoBackup()`.
+- **Antarmuka Pengaturan — Seksi Cadangan & Sinkronisasi (`app/(tabs)/settings.tsx`)**:
+  - `GoogleAccountCard.tsx`: Kartu status akun Google (avatar, email, tombol Sign In/Out) berikón `CloudUpload`.
+  - `BackupListSheet.tsx`: Bottom sheet Reanimated dengan daftar backup cloud (nama, tanggal, ukuran, tombol Pulihkan/Hapus).
+  - `RestoreConfirmModal.tsx`: Modal konfirmasi destruktif bergaya `DangerConfirmModal` dengan auto pre-backup sebelum restore.
+  - `ImportCsvSheet.tsx`: Bottom sheet impor CSV dengan preview data, deteksi format, column mapping, dan pilihan strategi.
+  - Toggle "Auto-Backup" dengan deskripsi *"Otomatis mencadangkan 5 menit setelah perubahan data"*.
+  - Badge timestamp backup terakhir: *"Terakhir dicadangkan: 15 Sep 2026, 23:00"*.
+- **Migrasi Database (`lib/db/schema.ts` & `lib/db/index.ts`)**:
+  - Kolom baru `settings`: `last_backup_date TEXT`, `google_email TEXT`, `auto_backup_enabled INTEGER NOT NULL DEFAULT 0`.
+  - Fungsi `getAllDataForBackup()` dan `restoreFromBackup(data)` di `lib/db/index.ts`.
+- **Internasionalisasi (`lib/i18n/locales/`)**:
+  - ~40 kunci terjemahan baru untuk seluruh UI backup, restore, impor CSV, progress, dan pesan error dalam Bahasa Indonesia dan English.
+- **Dependensi Baru**:
+  - `@react-native-google-signin/google-signin` (^14.x) — Autentikasi Google native.
+  - `expo-secure-store` (~57.x) — Penyimpanan token aman.
+  - `expo-document-picker` (~57.x) — Pemilih file CSV/JSON lokal.
+- **Unit Tests (`lib/backup/__tests__/` & `lib/services/__tests__/`)**:
+  - `serializer.test.ts`: Serialisasi round-trip, validasi checksum, verifikasi struktur backup.
+  - `csvImporter.test.ts`: Parsing format CashRunway & generik, BOM handling, deteksi duplikat, error handling.
+  - `googleDrive.test.ts`: Mocked REST API calls, multipart construction, error handling (401/403/network), retention policy.
+  - **21 test files (134 unit tests) lolos 100%** dengan `tsc --noEmit` 0 errors.

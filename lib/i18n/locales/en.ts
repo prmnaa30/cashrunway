@@ -202,7 +202,8 @@ export default {
       financial: 'Financial & Engine Preferences',
       appearance: 'Appearance & Language',
       notifications: 'Notifications & Reminders',
-      data: 'Data & Backup',
+      backup: 'Backup & Sync',
+      data: 'Data Management',
       about: 'About App'
     },
     currency: {
@@ -317,6 +318,32 @@ export default {
       deleteTitle: 'Delete Reminder Time?',
       deleteDesc: 'This reminder alarm will no longer trigger.',
     },
+    googleDrive: {
+      title: 'Google Drive',
+      desc: 'Connect Google account for encrypted cloud backups',
+      connect: 'Connect Google',
+      connected: 'Connected',
+      disconnect: 'Disconnect',
+      notConnected: 'Not connected to Google Drive',
+    },
+    cloudBackup: {
+      title: 'Backup to Cloud',
+      desc: 'Save a full database snapshot to your private Google Drive',
+      button: 'Backup Now',
+      inProgress: 'Backing up...',
+      lastBackup: 'Last backed up: {time}',
+      never: 'Never backed up',
+      historyButton: 'Backup List',
+    },
+    autoBackup: {
+      title: 'Auto-Backup',
+      desc: 'Automatically backup 5 minutes after new transaction mutations',
+    },
+    importCsv: {
+      title: 'Import Data from CSV',
+      desc: 'Restore transaction history from local CSV or CashRunway export file',
+      button: 'Choose CSV File',
+    },
     exportCsv: {
       title: 'Export Transactions to CSV',
       desc: 'Download all mutation records for archive or analysis',
@@ -366,6 +393,44 @@ export default {
     option30Cons: 'Slow to reflect recent overspending or recent budget cuts.',
     option30Fit: 'Best for users wanting peace of mind with predictable monthly routines.',
     close: 'Got It'
+  },
+  backupModals: {
+    list: {
+      title: 'Cloud Backups',
+      subtitle: 'Stored securely in your private Google Drive app folder',
+      emptyTitle: 'No Backups Yet',
+      emptyDesc: 'Tap "Backup Now" in Settings to create your first cloud snapshot.',
+      restoreBtn: 'Restore',
+      deleteBtn: 'Delete',
+      deleteConfirmTitle: 'Delete Backup File?',
+      deleteConfirmDesc: 'The backup file {name} will be permanently removed from Google Drive.',
+    },
+    restore: {
+      title: 'Restore Financial Data?',
+      warning: 'Restoring data will OVERWRITE all current transactions, wallets, and settings with the snapshot in this backup file.',
+      confirmButton: 'Yes, Restore Database',
+      safetyNotice: 'Make sure you intend to revert your financial status to the date of this backup.',
+      progress: 'Restoring database...',
+    },
+    csv: {
+      title: 'Import Transactions from CSV',
+      subtitle: 'Upload a CSV file to import transaction history in bulk',
+      selectFile: 'Select CSV File',
+      selectedFile: 'Selected file: {name}',
+      previewTitle: 'File Overview',
+      totalRows: 'Total Rows: {count}',
+      formatDetected: 'Detected Format: {format}',
+      formatCashRunway: 'CashRunway Export',
+      formatGeneric: 'Generic CSV',
+      strategyTitle: 'Data Merge Strategy',
+      strategyAppend: 'Append to Existing History',
+      strategyAppendDesc: 'New transactions will be added without deleting current history.',
+      strategyReplace: 'Replace All Transactions',
+      strategyReplaceDesc: 'Delete all current transactions and overwrite with CSV records.',
+      importBtn: 'Start Data Import',
+      importing: 'Importing...',
+      noDataError: 'The CSV file does not contain valid transaction rows to import.',
+    }
   },
   common: {
     cancel: 'Cancel',

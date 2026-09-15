@@ -73,6 +73,9 @@ export const settings = sqliteTable('settings', {
   themeMode: text('theme_mode').notNull().default('system'),
   isPrivacyMode: integer('is_privacy_mode').notNull().default(0),
   dualRunwayMode: integer('dual_runway_mode').notNull().default(1),
+  lastBackupDate: text('last_backup_date'),
+  googleEmail: text('google_email'),
+  autoBackupEnabled: integer('auto_backup_enabled').notNull().default(0),
 });
 
 export const walletsRelations = relations(wallets, ({ many }) => ({
@@ -187,7 +190,10 @@ export const CREATE_TABLES_SQL_STATEMENTS = [
     currency TEXT NOT NULL DEFAULT 'IDR',
     theme_mode TEXT NOT NULL DEFAULT 'system',
     is_privacy_mode INTEGER NOT NULL DEFAULT 0,
-    dual_runway_mode INTEGER NOT NULL DEFAULT 1
+    dual_runway_mode INTEGER NOT NULL DEFAULT 1,
+    last_backup_date TEXT,
+    google_email TEXT,
+    auto_backup_enabled INTEGER NOT NULL DEFAULT 0
   );`,
 ];
 

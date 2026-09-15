@@ -202,7 +202,8 @@ export default {
       financial: 'Preferensi Finansial & Hitungan',
       appearance: 'Tampilan & Bahasa',
       notifications: 'Notifikasi & Pengingat',
-      data: 'Data & Cadangan',
+      backup: 'Cadangan & Sinkronisasi',
+      data: 'Manajemen Data',
       about: 'Tentang Aplikasi'
     },
     currency: {
@@ -317,6 +318,32 @@ export default {
       deleteTitle: 'Hapus Jam Pengingat?',
       deleteDesc: 'Alarm pengingat ini tidak akan berbunyi lagi.',
     },
+    googleDrive: {
+      title: 'Google Drive',
+      desc: 'Hubungkan akun Google untuk cadangan cloud terenkripsi',
+      connect: 'Hubungkan Google',
+      connected: 'Terhubung',
+      disconnect: 'Putuskan',
+      notConnected: 'Belum terhubung ke Google Drive',
+    },
+    cloudBackup: {
+      title: 'Cadangkan ke Cloud',
+      desc: 'Simpan salinan database lengkap ke Google Drive pribadi',
+      button: 'Cadangkan Sekarang',
+      inProgress: 'Mencadangkan...',
+      lastBackup: 'Terakhir dicadangkan: {time}',
+      never: 'Belum pernah dicadangkan',
+      historyButton: 'Daftar Cadangan',
+    },
+    autoBackup: {
+      title: 'Cadangan Otomatis',
+      desc: 'Otomatis mencadangkan 5 menit setelah ada mutasi transaksi baru',
+    },
+    importCsv: {
+      title: 'Impor Data dari CSV',
+      desc: 'Pulihkan riwayat mutasi dari berkas CSV lokal atau ekspor CashRunway',
+      button: 'Pilih Berkas CSV',
+    },
     exportCsv: {
       title: 'Ekspor Mutasi ke CSV',
       desc: 'Unduh seluruh riwayat mutasi untuk arsip atau analisis spreadsheet',
@@ -366,6 +393,44 @@ export default {
     option30Cons: 'Lambat merespons pemborosan mendadak maupun penghematan baru.',
     option30Fit: 'Cocok bagi yang ingin ketenangan pikiran dengan rutinitas bulanan yang stabil.',
     close: 'Mengerti'
+  },
+  backupModals: {
+    list: {
+      title: 'Daftar Cadangan Cloud',
+      subtitle: 'Tersimpan aman di folder tersembunyi Google Drive pribadimu',
+      emptyTitle: 'Belum Ada Cadangan',
+      emptyDesc: 'Tekan "Cadangkan Sekarang" di halaman Pengaturan untuk membuat salinan data pertama.',
+      restoreBtn: 'Pulihkan',
+      deleteBtn: 'Hapus',
+      deleteConfirmTitle: 'Hapus Berkas Cadangan?',
+      deleteConfirmDesc: 'Berkas cadangan {name} akan dihapus permanen dari Google Drive.',
+    },
+    restore: {
+      title: 'Pulihkan Data Keuangan?',
+      warning: 'Memulihkan data akan MENIMPA seluruh catatan transaksi, dompet, dan pengaturan saat ini dengan salinan dari cadangan ini.',
+      confirmButton: 'Ya, Pulihkan Database',
+      safetyNotice: 'Pastikan kamu memang ingin mengembalikan status keuangan sesuai tanggal berkas cadangan.',
+      progress: 'Memulihkan database...',
+    },
+    csv: {
+      title: 'Impor Transaksi dari CSV',
+      subtitle: 'Unggah file CSV untuk memasukkan riwayat mutasi sekaligus',
+      selectFile: 'Pilih Berkas CSV',
+      selectedFile: 'Berkas terpilih: {name}',
+      previewTitle: 'Ringkasan Berkas',
+      totalRows: 'Total Baris: {count}',
+      formatDetected: 'Format Terdeteksi: {format}',
+      formatCashRunway: 'CashRunway Export',
+      formatGeneric: 'CSV Generik',
+      strategyTitle: 'Strategi Penggabungan Data',
+      strategyAppend: 'Tambahkan ke Riwayat Saat Ini',
+      strategyAppendDesc: 'Transaksi baru akan ditambahkan tanpa menghapus mutasi yang sudah ada.',
+      strategyReplace: 'Ganti Seluruh Mutasi',
+      strategyReplaceDesc: 'Hapus semua mutasi transaksi yang ada saat ini dan gantikan dengan isi CSV.',
+      importBtn: 'Mulai Impor Data',
+      importing: 'Sedang mengimpor...',
+      noDataError: 'File CSV tidak memiliki baris transaksi yang dapat diimpor.',
+    }
   },
   common: {
     cancel: 'Batal',

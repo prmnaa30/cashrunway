@@ -68,12 +68,33 @@ function RootLayoutNav() {
     setupNotificationChannelAsync();
     requestNotificationPermissionsAsync();
 
+    // Initialize backup store session
+    try {
+      const { useBackupStore } = require('@/store/useBackupStore');
+      useBackupStore.getState().initialize().catch(() => {});
+    } catch (_) {}
+
     const cleanupListeners = setupNotificationResponseListeners(() => {
       useQuickEntryStore.getState().open('expense');
     });
 
+    // AppState listener to trigger auto-backup when transitioning to background
+    const { AppState } = require('react-native');
+    const appStateSubscription = AppState.addEventListener('change', (nextAppState: string) => {
+      if (nextAppState.match(/inactive|background/)) {
+        try {
+          const { useBackupStore } = require('@/store/useBackupStore');
+          const backupState = useBackupStore.getState();
+          if (backupState.isAutoBackupEnabled && backupState.isSignedIn) {
+            backupState.createBackup(true).catch(() => {});
+          }
+        } catch (_) {}
+      }
+    });
+
     return () => {
       cleanupListeners();
+      appStateSubscription.remove();
     };
   }, []);
 

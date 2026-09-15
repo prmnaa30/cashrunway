@@ -18,12 +18,16 @@ import {
   Tag,
   Bell,
   BellRing,
+  CloudUpload,
+  FileSpreadsheet,
+  History,
 } from 'lucide-react-native';
 
 import Colors from '@/constants/Colors';
 import { useColorScheme } from '@/components/useColorScheme';
 import { useFinanceStore } from '@/store/useFinanceStore';
 import { useSettingsStore } from '@/store/useSettingStore';
+import { useBackupStore } from '@/store/useBackupStore';
 import { formatCurrency, DEFAULT_FALLBACK_BURNS } from '@/lib/format';
 import { useTranslation } from '@/lib/i18n';
 import { AppSegmentedTabs } from '@/components/ui/AppSegmentedTabs';
@@ -40,6 +44,11 @@ import {
   ManageCategoriesModal,
   ReminderManagerModal,
 } from '@/components/settings';
+import {
+  GoogleAccountCard,
+  BackupListSheet,
+  ImportCsvSheet,
+} from '@/components/backup';
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
@@ -53,6 +62,7 @@ export default function SettingsScreen() {
   useFocusEffect(
     useCallback(() => {
       scrollViewRef.current?.scrollTo({ y: 0, animated: false });
+      useBackupStore.getState().initialize().catch(() => {});
     }, [])
   );
 
@@ -74,6 +84,18 @@ export default function SettingsScreen() {
     testNotification,
   } = useSettingsStore();
 
+  const {
+    isSignedIn,
+    isBackingUp,
+    createBackup,
+    isAutoBackupEnabled,
+    toggleAutoBackup,
+    lastBackupDate,
+    backups,
+    feedbackMessage: backupFeedback,
+    error: backupError,
+  } = useBackupStore();
+
   // Modals / Sheets state
   const [isExplainerOpen, setIsExplainerOpen] = useState(false);
   const [isFallbackBurnOpen, setIsFallbackBurnOpen] = useState(false);
@@ -81,6 +103,8 @@ export default function SettingsScreen() {
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false);
   const [isManageCategoriesOpen, setIsManageCategoriesOpen] = useState(false);
   const [isReminderModalVisible, setIsReminderModalVisible] = useState(false);
+  const [isBackupListOpen, setIsBackupListOpen] = useState(false);
+  const [isImportCsvOpen, setIsImportCsvOpen] = useState(false);
   const [dangerModal, setDangerModal] = useState<{
     visible: boolean;
     type: 'reset' | 'clear';
@@ -448,7 +472,113 @@ export default function SettingsScreen() {
           )}
         </SettingSection>
 
-        {/* 4. DATA & BACKUP */}
+        {/* 4. CADANGAN & SINKRONISASI */}
+        <SettingSection title={translate('settings.sections.backup')}>
+          <GoogleAccountCard />
+
+          {isSignedIn && (
+            <>
+              <SettingRow
+                label={translate('settings.cloudBackup.title')}
+                description={
+                  lastBackupDate
+                    ? translate('settings.cloudBackup.lastBackup', {
+                        time: new Date(lastBackupDate).toLocaleDateString(undefined, {
+                          day: 'numeric',
+                          month: 'short',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        }),
+                      })
+                    : translate('settings.cloudBackup.desc')
+                }
+                icon={<CloudUpload size={18} color={colors.tint} />}
+                onPress={() => createBackup()}
+                action={
+                  <Pressable
+                    onPress={() => createBackup()}
+                    disabled={isBackingUp}
+                    className="px-3.5 py-1.5 rounded-xl bg-emerald-500/10 dark:bg-accent-champagne/15 border border-emerald-600 dark:border-accent-champagne flex-row items-center active:opacity-70"
+                  >
+                    {isBackingUp ? (
+                      <ActivityIndicator size="small" color={colors.tint} />
+                    ) : (
+                      <Text className="text-xs font-bold text-emerald-800 dark:text-accent-champagne">
+                        {translate('settings.cloudBackup.button')}
+                      </Text>
+                    )}
+                  </Pressable>
+                }
+              />
+
+              <SettingRow
+                label={translate('settings.autoBackup.title')}
+                description={translate('settings.autoBackup.desc')}
+                icon={<History size={18} color={colors.tint} />}
+                action={
+                  <Switch
+                    value={isAutoBackupEnabled}
+                    onValueChange={toggleAutoBackup}
+                    trackColor={{ false: isDark ? '#374151' : '#DCE5E0', true: colors.tint }}
+                    thumbColor={Platform.OS === 'ios' ? undefined : '#FFFFFF'}
+                  />
+                }
+              />
+
+              <SettingRow
+                label={translate('settings.cloudBackup.historyButton')}
+                description={translate('backupModals.list.subtitle')}
+                icon={<History size={18} color={colors.tint} />}
+                onPress={() => setIsBackupListOpen(true)}
+                action={
+                  <View className="px-3 py-1 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border">
+                    <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary">
+                      {backups.length} file
+                    </Text>
+                  </View>
+                }
+              />
+            </>
+          )}
+
+          <SettingRow
+            label={translate('settings.importCsv.title')}
+            description={translate('settings.importCsv.desc')}
+            icon={<FileSpreadsheet size={18} color={colors.tint} />}
+            isLast
+            onPress={() => setIsImportCsvOpen(true)}
+            action={
+              <Pressable
+                onPress={() => setIsImportCsvOpen(true)}
+                className="px-3 py-1.5 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border active:opacity-70"
+              >
+                <Text className="text-xs font-bold text-linen-text-primary dark:text-cypress-text-primary">
+                  {translate('settings.importCsv.button')}
+                </Text>
+              </Pressable>
+            }
+          />
+
+          {(backupFeedback || backupError) && (
+            <View
+              className={`px-4 py-2 border-b ${
+                backupError
+                  ? 'bg-status-danger/10 border-status-danger/20'
+                  : 'bg-status-safe/10 border-status-safe/20'
+              }`}
+            >
+              <Text
+                className={`text-xs font-semibold text-center ${
+                  backupError ? 'text-status-danger' : 'text-status-safe'
+                }`}
+              >
+                {backupError || backupFeedback}
+              </Text>
+            </View>
+          )}
+        </SettingSection>
+
+        {/* 5. MANAJEMEN DATA */}
         <SettingSection title={translate('settings.sections.data')}>
           <SettingRow
             label={translate('settings.exportCsv.title')}
@@ -603,6 +733,16 @@ export default function SettingsScreen() {
       <ReminderManagerModal
         visible={isReminderModalVisible}
         onClose={() => setIsReminderModalVisible(false)}
+      />
+
+      <BackupListSheet
+        visible={isBackupListOpen}
+        onClose={() => setIsBackupListOpen(false)}
+      />
+
+      <ImportCsvSheet
+        visible={isImportCsvOpen}
+        onClose={() => setIsImportCsvOpen(false)}
       />
     </View>
   );

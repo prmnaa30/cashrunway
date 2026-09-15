@@ -179,6 +179,13 @@ const DEFAULT_VAULT_STATS: VaultYieldStats = {
 
 let alarmSyncDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 
+function notifyDataChangedForBackup() {
+  try {
+    const { useBackupStore } = require('@/store/useBackupStore');
+    useBackupStore.getState().scheduleAutoBackup();
+  } catch (_) {}
+}
+
 export const useFinanceStore = create<FinanceState>((set, get) => ({
   wallets: [],
   transactions: [],
@@ -440,6 +447,7 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       });
 
       await get().loadAllData({ force: true, showLoading: false });
+      notifyDataChangedForBackup();
       return id;
     } catch (error) {
       console.error('Failed to add transaction:', error);
@@ -466,6 +474,7 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       });
 
       await get().loadAllData({ force: true, showLoading: false });
+      notifyDataChangedForBackup();
     } catch (error) {
       console.error('Failed to edit transaction:', error);
       set({ isLoading: false });
@@ -478,6 +487,7 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       set({ isLoading: true });
       await deleteTxDb(id);
       await get().loadAllData({ force: true, showLoading: false });
+      notifyDataChangedForBackup();
     } catch (error) {
       console.error('Failed to delete transaction:', error);
       set({ isLoading: false });
@@ -576,6 +586,7 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       });
 
       await get().loadAllData({ force: true, showLoading: false });
+      notifyDataChangedForBackup();
       return id;
     } catch (error) {
       console.error('Failed to create wallet:', error);
@@ -589,6 +600,7 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       set({ isLoading: true });
       await updateWallet(walletId, data);
       await get().loadAllData({ force: true, showLoading: false });
+      notifyDataChangedForBackup();
     } catch (error) {
       console.error('Failed to edit wallet:', error);
       set({ isLoading: false });
@@ -601,6 +613,7 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       set({ isLoading: true });
       await updateWalletBalance(walletId, newBalance);
       await get().loadAllData({ force: true, showLoading: false });
+      notifyDataChangedForBackup();
     } catch (error) {
       console.error('Failed to adjust wallet balance:', error);
       set({ isLoading: false });
@@ -613,6 +626,7 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       set({ isLoading: true });
       await softDeleteWallet(walletId);
       await get().loadAllData({ force: true, showLoading: false });
+      notifyDataChangedForBackup();
     } catch (error) {
       console.error('Failed to remove wallet:', error);
       set({ isLoading: false });
@@ -626,6 +640,7 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       set((state) => ({
         categories: [...state.categories, newCategory],
       }));
+      notifyDataChangedForBackup();
       return newCategory;
     } catch (error) {
       console.error('Failed to add category:', error);
@@ -647,6 +662,7 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
             : c
         ),
       }));
+      notifyDataChangedForBackup();
     } catch (error) {
       console.error('Failed to update category:', error);
       throw error;
@@ -660,6 +676,7 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
         categories: state.categories.filter((c) => c.id !== id),
       }));
       await get().loadAllData({ force: true, showLoading: false });
+      notifyDataChangedForBackup();
     } catch (error) {
       console.error('Failed to delete category:', error);
       throw error;

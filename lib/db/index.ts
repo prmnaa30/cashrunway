@@ -92,6 +92,15 @@ export async function initDatabase(dbInstance?: SQLite.SQLiteDatabase): Promise<
     try {
       await targetDb.execAsync(`ALTER TABLE settings ADD COLUMN reminder_times TEXT NOT NULL DEFAULT '${schema.DEFAULT_REMINDERS_JSON}';`);
     } catch (_) {}
+    try {
+      await targetDb.execAsync('ALTER TABLE settings ADD COLUMN last_backup_date TEXT;');
+    } catch (_) {}
+    try {
+      await targetDb.execAsync('ALTER TABLE settings ADD COLUMN google_email TEXT;');
+    } catch (_) {}
+    try {
+      await targetDb.execAsync('ALTER TABLE settings ADD COLUMN auto_backup_enabled INTEGER NOT NULL DEFAULT 0;');
+    } catch (_) {}
 
     const drizzleClient = dbInstance ? drizzle(dbInstance, { schema }) : db;
     await seedInitialData(drizzleClient);
@@ -536,5 +545,104 @@ export async function clearAllTransactions(): Promise<void> {
   await ensureDatabaseInitialized();
   await db.delete(schema.transactions);
   await db.update(schema.wallets).set({ balance: 0 });
+}
+
+export interface RawBackupTables {
+  wallets: Wallet[];
+  categories: Category[];
+  recurringBills: RecurringBill[];
+  transactions: Transaction[];
+  settings: Settings | null;
+}
+
+/**
+ * Retrieve all database data across all 5 tables for complete backup serialization.
+ */
+export async function getAllDataForBackup(): Promise<RawBackupTables> {
+  await ensureDatabaseInitialized();
+
+  const [allWallets, allCategories, allBills, allTransactions, appSettings] = await Promise.all([
+    db.query.wallets.findMany(),
+    db.query.categories.findMany(),
+    db.query.recurringBills.findMany(),
+    db.query.transactions.findMany({ orderBy: [desc(schema.transactions.date)] }),
+    db.query.settings.findFirst({ where: eq(schema.settings.id, 1) }),
+  ]);
+
+  return {
+    wallets: allWallets,
+    categories: allCategories,
+    recurringBills: allBills,
+    transactions: allTransactions,
+    settings: appSettings ?? null,
+  };
+}
+
+/**
+ * Restore complete database from backup payload.
+ * Safely drops mutation triggers before loading records to prevent duplicated trigger mutations,
+ * then recreates triggers and performs an SQLite integrity check.
+ */
+export async function restoreFromBackup(data: RawBackupTables): Promise<void> {
+  await ensureDatabaseInitialized();
+
+  // 1. Temporarily disable foreign keys and drop balance triggers
+  await expoDb.execAsync('PRAGMA foreign_keys = OFF;');
+  await expoDb.execAsync(`
+    DROP TRIGGER IF EXISTS trg_tx_expense_insert;
+    DROP TRIGGER IF EXISTS trg_tx_income_insert;
+    DROP TRIGGER IF EXISTS trg_tx_transfer_insert;
+    DROP TRIGGER IF EXISTS trg_tx_adjustment_insert;
+    DROP TRIGGER IF EXISTS trg_tx_delete;
+  `);
+
+  try {
+    // 2. Clear all existing data
+    await db.delete(schema.transactions);
+    await db.delete(schema.recurringBills);
+    await db.delete(schema.wallets);
+    await db.delete(schema.categories);
+    await db.delete(schema.settings);
+
+    // 3. Re-insert backup records in relational order
+    if (data.categories && data.categories.length > 0) {
+      await db.insert(schema.categories).values(data.categories);
+    }
+    if (data.wallets && data.wallets.length > 0) {
+      await db.insert(schema.wallets).values(data.wallets);
+    }
+    if (data.recurringBills && data.recurringBills.length > 0) {
+      await db.insert(schema.recurringBills).values(data.recurringBills);
+    }
+    if (data.transactions && data.transactions.length > 0) {
+      // Insert transactions in chunks to prevent SQLite variable limits if large
+      const chunkSize = 200;
+      for (let i = 0; i < data.transactions.length; i += chunkSize) {
+        const chunk = data.transactions.slice(i, i + chunkSize);
+        await db.insert(schema.transactions).values(chunk);
+      }
+    }
+    if (data.settings) {
+      await db.insert(schema.settings).values({
+        ...data.settings,
+        id: 1,
+      });
+    }
+  } finally {
+    // 4. Recreate all balance triggers
+    for (const sql of CREATE_TRIGGERS_SQL_STATEMENTS) {
+      const trimmed = sql.trim();
+      if (trimmed) {
+        await expoDb.execAsync(trimmed);
+      }
+    }
+    await expoDb.execAsync('PRAGMA foreign_keys = ON;');
+  }
+
+  // 5. Integrity check
+  const integrity = await expoDb.getAllAsync<{ integrity_check: string }>('PRAGMA integrity_check;');
+  if (integrity[0]?.integrity_check !== 'ok') {
+    console.warn('[DB Restore] Integrity check warning:', integrity);
+  }
 }
 
