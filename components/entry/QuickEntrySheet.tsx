@@ -140,49 +140,56 @@ export function QuickEntrySheet() {
     [closeQuickEntry]
   );
 
-  // Sync state with open triggers and snap sheet immediately
+  // Synchronous state adjustment during render (prevents stale frame flickering when switching transactions)
+  const activeTxId = isQuickEntryOpen ? (editingTransaction?.id ?? 'new') : null;
+  const prevTxIdRef = useRef<string | null>(null);
+
+  if (activeTxId !== null && activeTxId !== prevTxIdRef.current) {
+    prevTxIdRef.current = activeTxId;
+    if (editingTransaction) {
+      const editMode = (editingTransaction.type === 'adjustment'
+        ? 'expense'
+        : editingTransaction.type) as TransactionMode;
+      setMode(editMode);
+      setSelectedDate(editingTransaction.localDate);
+      setIsOutlier(Boolean(editingTransaction.isOutlier));
+      setNote(editingTransaction.note ?? '');
+      setFee(editingTransaction.fee ?? 0);
+      setSelectedWalletId(editingTransaction.walletId);
+      setTargetWalletId(editingTransaction.targetWalletId ?? '');
+      setSelectedCategoryId(editingTransaction.categoryId ?? null);
+      setIsSubmitting(false);
+    } else {
+      const initialMode = quickEntryType ?? 'expense';
+      setMode(initialMode);
+      setSelectedDate(formatLocalDate(new Date()));
+      setIsOutlier(false);
+      setNote('');
+      setFee(0);
+      setIsSubmitting(false);
+
+      const opWallet = wallets.find((w) => w.isVault === 0) ?? wallets[0];
+      const defaultWalletId = opWallet ? opWallet.id : '';
+      setSelectedWalletId(defaultWalletId);
+
+      const otherWallet = wallets.find((w) => w.id !== defaultWalletId);
+      setTargetWalletId(otherWallet ? otherWallet.id : '');
+
+      const defaultCat = categories.find((c) => c.type === initialMode);
+      setSelectedCategoryId(defaultCat ? defaultCat.id : null);
+    }
+  } else if (activeTxId === null && prevTxIdRef.current !== null) {
+    prevTxIdRef.current = null;
+  }
+
+  // Snap sheet smoothly on open trigger
   useEffect(() => {
     if (isQuickEntryOpen) {
       bottomSheetRef.current?.snapToIndex(0);
-
-      if (editingTransaction) {
-        const editMode = (editingTransaction.type === 'adjustment'
-          ? 'expense'
-          : editingTransaction.type) as TransactionMode;
-        setMode(editMode);
-        useQuickEntryStore.getState().setCalc(String(editingTransaction.amount), editingTransaction.amount);
-        setSelectedDate(editingTransaction.localDate);
-        setIsOutlier(Boolean(editingTransaction.isOutlier));
-        setNote(editingTransaction.note ?? '');
-        setFee(editingTransaction.fee ?? 0);
-        setSelectedWalletId(editingTransaction.walletId);
-        setTargetWalletId(editingTransaction.targetWalletId ?? '');
-        setSelectedCategoryId(editingTransaction.categoryId ?? null);
-        setIsSubmitting(false);
-      } else {
-        const initialMode = quickEntryType ?? 'expense';
-        setMode(initialMode);
-        useQuickEntryStore.getState().resetCalc();
-        setSelectedDate(formatLocalDate(new Date()));
-        setIsOutlier(false);
-        setNote('');
-        setFee(0);
-        setIsSubmitting(false);
-
-        const opWallet = wallets.find((w) => w.isVault === 0) ?? wallets[0];
-        const defaultWalletId = opWallet ? opWallet.id : '';
-        setSelectedWalletId(defaultWalletId);
-
-        const otherWallet = wallets.find((w) => w.id !== defaultWalletId);
-        setTargetWalletId(otherWallet ? otherWallet.id : '');
-
-        const defaultCat = categories.find((c) => c.type === initialMode);
-        setSelectedCategoryId(defaultCat ? defaultCat.id : null);
-      }
     } else {
       bottomSheetRef.current?.close();
     }
-  }, [isQuickEntryOpen, quickEntryType, editingTransaction, wallets, categories]);
+  }, [isQuickEntryOpen]);
 
   // Hardware back button support
   useEffect(() => {

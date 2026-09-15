@@ -33,7 +33,7 @@ export const useQuickEntryStore = create<QuickEntryState>((set, get) => ({
       amount: tx.amount,
       editingTransaction: tx,
     }),
-  close: () => set({ isOpen: false, editingTransaction: null }),
+  close: () => set({ isOpen: false, editingTransaction: null, expression: '0', amount: 0 }),
   pressKey: (key: KeypadKey) => {
     const currentExpr = get().expression;
     const next = processKeypadInput(currentExpr, key);

@@ -58,4 +58,37 @@ describe('i18n Localization Engine', () => {
   it('should return raw key if translation key does not exist', () => {
     expect(translate('non.existent.key', undefined, 'id')).toBe('non.existent.key');
   });
+
+  it('should translate all history date range keys in both en and id', () => {
+    const keys = [
+      'history.quickDateRange',
+      'history.customDateRange',
+      'history.quickAll',
+      'history.quickToday',
+      'history.quickYesterday',
+      'history.quickThisWeek',
+      'history.quickLastWeek',
+      'history.quickThisMonth',
+      'history.quickLastMonth',
+      'history.quickThisYear',
+      'history.quickLastYear',
+      'history.quickLast7Days',
+      'history.quickLast30Days',
+      'history.quickLast90Days',
+      'history.startDate',
+      'history.endDate',
+      'history.ok',
+    ];
+
+    for (const key of keys) {
+      const enText = translate(key, undefined, 'en');
+      const idText = translate(key, undefined, 'id');
+      expect(enText).not.toBe(key);
+      expect(idText).not.toBe(key);
+      expect(typeof enText).toBe('string');
+      expect(typeof idText).toBe('string');
+      expect(enText.length).toBeGreaterThan(0);
+      expect(idText.length).toBeGreaterThan(0);
+    }
+  });
 });
