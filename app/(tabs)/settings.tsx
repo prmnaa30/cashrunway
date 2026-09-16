@@ -1,5 +1,5 @@
 import React, { useRef, useCallback } from 'react';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
@@ -19,6 +19,7 @@ import { useFinanceStore } from '@/store/useFinanceStore';
 import { useSettingsStore } from '@/store/useSettingStore';
 import { useBackupStore } from '@/store/useBackupStore';
 import { useTranslation } from '@/lib/i18n';
+import { useGuardedNavigation } from '@/hooks/useGuardedNavigation';
 
 interface HubCategoryItemProps {
   icon: React.ReactNode;
@@ -88,7 +89,7 @@ function HubCategoryItem({
 }
 
 export default function SettingsScreen() {
-  const router = useRouter();
+  const { push: navigateTo, resetLock } = useGuardedNavigation();
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
@@ -99,9 +100,10 @@ export default function SettingsScreen() {
 
   useFocusEffect(
     useCallback(() => {
+      resetLock();
       scrollViewRef.current?.scrollTo({ y: 0, animated: false });
       useBackupStore.getState().initialize().catch(() => {});
-    }, [])
+    }, [resetLock])
   );
 
   const settings = useFinanceStore((s) => s.settings);
@@ -153,7 +155,7 @@ export default function SettingsScreen() {
                 categories: categories.length,
               })}
               badge={currency}
-              onPress={() => router.push('/settings/financial')}
+              onPress={() => navigateTo('/settings/financial')}
             />
 
             <HubCategoryItem
@@ -174,7 +176,7 @@ export default function SettingsScreen() {
                     ? 'EN'
                     : translate('settings.language.auto'),
               })}
-              onPress={() => router.push('/settings/appearance')}
+              onPress={() => navigateTo('/settings/appearance')}
               isLast
             />
           </View>
@@ -202,7 +204,7 @@ export default function SettingsScreen() {
                   ? translate('settings.hubSubtitles.remindersBadgeActive', { count: activeRemindersCount })
                   : undefined
               }
-              onPress={() => router.push('/settings/notifications')}
+              onPress={() => navigateTo('/settings/notifications')}
             />
 
             <HubCategoryItem
@@ -217,7 +219,7 @@ export default function SettingsScreen() {
                   : translate('settings.googleDrive.notConnected')
               }
               badge={isSignedIn ? translate('settings.hubSubtitles.cloudOnBadge') : undefined}
-              onPress={() => router.push('/settings/backup')}
+              onPress={() => navigateTo('/settings/backup')}
               isLast
             />
           </View>
@@ -236,7 +238,7 @@ export default function SettingsScreen() {
               iconBgColor="rgba(236, 72, 153, 0.15)"
               title={translate('settings.sections.data')}
               subtitle={translate('settings.subtitles.data')}
-              onPress={() => router.push('/settings/data')}
+              onPress={() => navigateTo('/settings/data')}
             />
 
             <HubCategoryItem
@@ -244,7 +246,7 @@ export default function SettingsScreen() {
               iconBgColor="rgba(100, 116, 139, 0.15)"
               title={translate('settings.sections.about')}
               subtitle={translate('settings.hubSubtitles.aboutSummary')}
-              onPress={() => router.push('/settings/about')}
+              onPress={() => navigateTo('/settings/about')}
               isLast
             />
           </View>
