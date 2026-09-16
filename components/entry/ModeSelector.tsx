@@ -33,7 +33,7 @@ function ModeSelectorComponent({
         const Icon = item.icon;
 
         let activeTextClass = 'text-linen-text-primary dark:text-cypress-text-primary';
-        let activeBgClass = 'bg-linen-card dark:bg-cypress-surface shadow-xs';
+        let activeBgClass = 'bg-linen-card dark:bg-cypress-surface';
         let iconColor = colors.textSecondary;
 
         if (isActive) {

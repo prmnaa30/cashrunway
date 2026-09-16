@@ -47,30 +47,31 @@ export function PaydayPickerModal({
         contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 28) }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="flex-row flex-wrap justify-between">
+        <View className="flex-row flex-wrap justify-start -mx-1">
           {days.map((day) => {
             const isSelected = selectedDay === day;
             return (
-              <Pressable
-                key={day}
-                onPress={() => setSelectedDay(day)}
-                hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-                className={`w-[13%] min-w-[40px] min-h-[44px] aspect-square mb-2.5 items-center justify-center rounded-xl border active:opacity-70 ${
-                  isSelected
-                    ? 'bg-cypress-surface dark:bg-accent-champagne border-cypress-surface dark:border-accent-champagne shadow-sm'
-                    : 'bg-linen-surface dark:bg-cypress-surface border-linen-border dark:border-cypress-border'
-                }`}
-              >
-                <Text
-                  className={`text-xs font-bold tabular-nums ${
+              <View key={day} style={{ width: '14.285%', padding: 3 }}>
+                <Pressable
+                  onPress={() => setSelectedDay(day)}
+                  hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
+                  className={`w-full aspect-square items-center justify-center rounded-xl border active:opacity-70 ${
                     isSelected
-                      ? 'text-white dark:text-black'
-                      : 'text-linen-text-primary dark:text-cypress-text-secondary'
+                      ? 'bg-cypress-surface dark:bg-accent-champagne border-cypress-surface dark:border-accent-champagne'
+                      : 'bg-linen-surface dark:bg-cypress-surface border-linen-border dark:border-cypress-border'
                   }`}
                 >
-                  {day}
-                </Text>
-              </Pressable>
+                  <Text
+                    className={`text-xs font-bold tabular-nums ${
+                      isSelected
+                        ? 'text-white dark:text-black font-black'
+                        : 'text-linen-text-primary dark:text-cypress-text-secondary'
+                    }`}
+                  >
+                    {day}
+                  </Text>
+                </Pressable>
+              </View>
             );
           })}
         </View>

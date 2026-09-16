@@ -59,7 +59,7 @@ export function CategoryPickerModal({
                     activeOpacity={0.7}
                     className={"items-center justify-center p-2.5 rounded-2xl border aspect-square " + (
                       isSelected
-                        ? 'bg-linen-surface dark:bg-cypress-surface border-accent-brass dark:border-accent-champagne shadow-xs'
+                        ? 'bg-linen-surface dark:bg-cypress-surface border-accent-brass dark:border-accent-champagne'
                         : 'bg-linen-card dark:bg-cypress-card border-linen-border dark:border-cypress-border active:opacity-70'
                     )}
                   >

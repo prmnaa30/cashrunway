@@ -134,7 +134,7 @@ export function FallbackBurnSheet({
                   onPress={() => handleSelectPreset(preset)}
                   className={`px-3.5 py-2 rounded-xl mr-2 border flex-row items-center ${
                     isSelected
-                      ? 'bg-cypress-surface dark:bg-accent-champagne border-cypress-surface dark:border-accent-champagne shadow-xs'
+                      ? 'bg-cypress-surface dark:bg-accent-champagne border-cypress-surface dark:border-accent-champagne'
                       : 'bg-linen-surface dark:bg-cypress-surface border-linen-border dark:border-cypress-border active:opacity-70'
                   }`}
                 >
