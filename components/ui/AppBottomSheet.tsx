@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useRef, ReactNode, useCallback } from 'react';
+import React, { useState, useEffect, useRef, ReactNode, useCallback, useMemo } from 'react';
 import {
   Modal,
   View,
   Text,
   Pressable,
-  KeyboardAvoidingView,
   Platform,
   Dimensions,
   StyleSheet,
   LayoutChangeEvent,
+  Keyboard,
+  LayoutAnimation,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -37,6 +38,10 @@ export interface AppBottomSheetProps {
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 
+const dismissKeyboard = () => {
+  Keyboard.dismiss();
+};
+
 export function AppBottomSheet({
   visible,
   onClose,
@@ -60,6 +65,40 @@ export function AppBottomSheet({
 
   const isClosingRef = useRef(false);
 
+  // Keyboard height tracking for Android & iOS inside Modal
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+
+    const showSub = Keyboard.addListener(showEvent, (e) => {
+      if (Platform.OS === 'ios') {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      }
+      setKeyboardHeight(e.endCoordinates.height);
+    });
+    const hideSub = Keyboard.addListener(hideEvent, () => {
+      if (Platform.OS === 'ios') {
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+      }
+      setKeyboardHeight(0);
+    });
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
+  const effectiveMaxHeight = useMemo(() => {
+    if (keyboardHeight > 0) {
+      const available = SCREEN_HEIGHT - keyboardHeight - 50;
+      return Math.max(200, available);
+    }
+    return maxHeight;
+  }, [keyboardHeight, maxHeight]);
+
   // Dynamic sheet height and animations
   const sheetHeight = useSharedValue(0);
   const translateY = useSharedValue(SCREEN_HEIGHT);
@@ -74,6 +113,7 @@ export function AppBottomSheet({
   }, [onClose]);
 
   const closeWithAnimation = useCallback(() => {
+    Keyboard.dismiss();
     if (isClosingRef.current) return;
     isClosingRef.current = true;
 
@@ -141,34 +181,42 @@ export function AppBottomSheet({
   }, []);
 
   // UI-thread worklet Pan Gesture
-  const panGesture = Gesture.Pan()
-    .onUpdate((e) => {
-      'worklet';
-      if (e.translationY > 0) {
-        translateY.value = e.translationY;
-      }
-    })
-    .onEnd((e) => {
-      'worklet';
-      if (e.translationY > 80 || e.velocityY > 600) {
-        const targetY = sheetHeight.value > 0 ? sheetHeight.value + 40 : SCREEN_HEIGHT;
-        translateY.value = withTiming(
-          targetY,
-          { duration: 180, easing: Easing.bezier(0.25, 0.1, 0.25, 1) },
-          (finished) => {
-            if (finished) {
-              runOnJS(finalizeClose)();
-            }
+  const panGesture = useMemo(
+    () =>
+      Gesture.Pan()
+        .onBegin(() => {
+          'worklet';
+          runOnJS(dismissKeyboard)();
+        })
+        .onUpdate((e) => {
+          'worklet';
+          if (e.translationY > 0) {
+            translateY.value = e.translationY;
           }
-        );
-        backdropOpacity.value = withTiming(0, { duration: 180 });
-      } else {
-        translateY.value = withTiming(0, {
-          duration: 200,
-          easing: Easing.bezier(0.16, 1, 0.3, 1),
-        });
-      }
-    });
+        })
+        .onEnd((e) => {
+          'worklet';
+          if (e.translationY > 80 || e.velocityY > 600) {
+            const targetY = sheetHeight.value > 0 ? sheetHeight.value + 40 : SCREEN_HEIGHT;
+            translateY.value = withTiming(
+              targetY,
+              { duration: 180, easing: Easing.bezier(0.25, 0.1, 0.25, 1) },
+              (finished) => {
+                if (finished) {
+                  runOnJS(finalizeClose)();
+                }
+              }
+            );
+            backdropOpacity.value = withTiming(0, { duration: 180 });
+          } else {
+            translateY.value = withTiming(0, {
+              duration: 200,
+              easing: Easing.bezier(0.16, 1, 0.3, 1),
+            });
+          }
+        }),
+    [finalizeClose, sheetHeight, translateY, backdropOpacity]
+  );
 
   const backdropAnimatedStyle = useAnimatedStyle(() => ({
     opacity: backdropOpacity.value,
@@ -204,17 +252,20 @@ export function AppBottomSheet({
           />
         </Animated.View>
 
-        {/* Bottom Sheet Card */}
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          className="flex-1 justify-end"
+        {/* Bottom Sheet Card with Keyboard Inset */}
+        <View
+          style={{
+            flex: 1,
+            justifyContent: 'flex-end',
+            paddingBottom: keyboardHeight,
+          }}
           pointerEvents="box-none"
         >
           <Animated.View
             onLayout={handleSheetLayout}
             style={[
               {
-                maxHeight: maxHeight as any,
+                maxHeight: effectiveMaxHeight as any,
                 ...(minHeight ? { minHeight: minHeight as any } : {}),
                 ...(height ? { height: height as any } : {}),
               },
@@ -255,15 +306,11 @@ export function AppBottomSheet({
             </View>
 
             {/* Content container */}
-            {height || minHeight ? (
-              <View className="flex-1" style={{ flex: 1 }}>
-                {children}
-              </View>
-            ) : (
-              children
-            )}
+            <View style={{ flex: height || minHeight ? 1 : undefined, flexShrink: 1 }}>
+              {children}
+            </View>
           </Animated.View>
-        </KeyboardAvoidingView>
+        </View>
       </View>
     </Modal>
   );
