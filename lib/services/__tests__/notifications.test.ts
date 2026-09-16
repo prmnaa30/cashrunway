@@ -221,7 +221,7 @@ describe('Notification Service Functions', () => {
   });
 
   describe('triggerTestNotification', () => {
-    it('schedules an immediate test notification with 1 second delay', async () => {
+    it('schedules an immediate test notification via channel trigger', async () => {
       await triggerTestNotification(45);
       expect(Notifications.scheduleNotificationAsync).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -230,9 +230,6 @@ describe('Notification Service Functions', () => {
             body: expect.stringContaining('45 hari'),
           }),
           trigger: {
-            type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-            seconds: 1,
-            repeats: false,
             channelId: 'cashrunway-reminders',
           },
         })

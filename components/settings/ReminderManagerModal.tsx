@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -41,12 +41,27 @@ export function ReminderManagerModal({ visible, onClose }: ReminderManagerModalP
   const [minute, setMinute] = useState('00');
   const [label, setLabel] = useState('');
 
+  // Scroll ref for auto-scrolling when keyboard opens or accordion expands
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, 120);
+  };
+
   // Feedback state for test notification
   const [isTesting, setIsTesting] = useState(false);
   const [testFeedback, setTestFeedback] = useState<string | null>(null);
 
   const handleToggleAdd = () => {
-    setIsAdding((prev) => !prev);
+    setIsAdding((prev) => {
+      const next = !prev;
+      if (next) {
+        scrollToBottom();
+      }
+      return next;
+    });
   };
 
   const handleSaveReminder = async () => {
@@ -94,6 +109,7 @@ export function ReminderManagerModal({ visible, onClose }: ReminderManagerModalP
       maxHeight="88%"
     >
       <ScrollView
+        ref={scrollViewRef}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{
@@ -191,6 +207,7 @@ export function ReminderManagerModal({ visible, onClose }: ReminderManagerModalP
                   <TextInput
                     value={hour}
                     onChangeText={setHour}
+                    onFocus={scrollToBottom}
                     keyboardType="number-pad"
                     maxLength={2}
                     placeholder="20"
@@ -210,6 +227,7 @@ export function ReminderManagerModal({ visible, onClose }: ReminderManagerModalP
                   <TextInput
                     value={minute}
                     onChangeText={setMinute}
+                    onFocus={scrollToBottom}
                     keyboardType="number-pad"
                     maxLength={2}
                     placeholder="00"
@@ -226,6 +244,7 @@ export function ReminderManagerModal({ visible, onClose }: ReminderManagerModalP
                 <TextInput
                   value={label}
                   onChangeText={setLabel}
+                  onFocus={scrollToBottom}
                   placeholder={translate('settings.reminders.namePlaceholder')}
                   placeholderTextColor={colors.textSecondary}
                   className="w-full min-h-[44px] px-3 py-2 rounded-xl bg-linen-surface dark:bg-cypress-card border border-linen-border dark:border-cypress-border text-xs text-linen-text-primary dark:text-cypress-text-primary font-medium"

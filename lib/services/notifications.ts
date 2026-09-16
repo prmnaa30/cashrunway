@@ -77,10 +77,15 @@ export function generateReminderMessage(
   };
 }
 
+let isNotificationChannelCreated = false;
+
 /**
  * Configure Android notification channel with custom chime sound
  */
 export async function setupNotificationChannelAsync(): Promise<void> {
+  if (isNotificationChannelCreated && Platform.OS === 'android') {
+    return;
+  }
   try {
     if (Platform.OS === 'android' || Platform.OS === 'web' || process.env.NODE_ENV === 'test') {
       await Notifications.setNotificationChannelAsync(REMINDER_CHANNEL_ID, {
@@ -91,6 +96,7 @@ export async function setupNotificationChannelAsync(): Promise<void> {
         lightColor: '#2563EB',
         enableVibrate: true,
       });
+      isNotificationChannelCreated = true;
     }
   } catch (err) {
     console.warn('[Notifications] setupNotificationChannelAsync warning:', err);
@@ -171,7 +177,7 @@ export async function syncScheduledAlarms(
 }
 
 /**
- * Trigger an immediate 1-second test notification
+ * Trigger an immediate test notification (<100ms) without AlarmManager batching
  */
 export async function triggerTestNotification(runwayDays: number): Promise<void> {
   try {
@@ -186,9 +192,6 @@ export async function triggerTestNotification(runwayDays: number): Promise<void>
         data: { isTest: true },
       },
       trigger: {
-        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-        seconds: 1,
-        repeats: false,
         channelId: REMINDER_CHANNEL_ID,
       },
     });
