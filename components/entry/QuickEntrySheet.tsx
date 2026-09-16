@@ -11,7 +11,6 @@ import BottomSheet, {
   BottomSheetView,
   BottomSheetBackdrop,
   type BottomSheetBackdropProps,
-  useBottomSheetTimingConfigs,
 } from '@gorhom/bottom-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
@@ -37,7 +36,7 @@ import { FeePickerModal } from './FeePickerModal';
 import { NoteInputModal } from './NoteInputModal';
 
 import { Pressable } from 'react-native';
-import Animated, { useAnimatedStyle, type SharedValue, Easing } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 
 interface BackdropTouchAreaProps {
   animatedPosition: SharedValue<number>;
@@ -69,11 +68,11 @@ const BackdropTouchArea = React.memo(function BackdropTouchArea({
  * Declaratively controlled via Zustand isQuickEntryOpen for 100% reliable opening on navbar click.
  */
 export function QuickEntrySheet() {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const colorScheme = useColorScheme() ?? 'dark';
   const isDark = colorScheme === 'dark';
   const colors = Colors[colorScheme];
-  const { t } = useTranslation();
 
   const isQuickEntryOpen = useQuickEntryStore((s) => s.isOpen);
   const quickEntryType = useQuickEntryStore((s) => s.type);
@@ -105,14 +104,16 @@ export function QuickEntrySheet() {
   const [isFeeModalOpen, setIsFeeModalOpen] = useState(false);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
 
-  const sheetAnimationConfigs = useBottomSheetTimingConfigs({
-    duration: 260,
-    easing: Easing.bezier(0.25, 1, 0.5, 1),
-  });
+  const sheetHeight = useMemo(
+    () => Math.min(Dimensions.get('window').height * 0.88, 575 + Math.max(insets.bottom, 12)),
+    [insets.bottom]
+  );
+  const snapPoints = useMemo(() => [sheetHeight], [sheetHeight]);
 
   const handleClose = useCallback(() => {
     bottomSheetRef.current?.close();
-  }, []);
+    closeQuickEntry();
+  }, [closeQuickEntry]);
 
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
@@ -253,9 +254,7 @@ export function QuickEntrySheet() {
   const targetWallet = wallets.find((w) => w.id === targetWalletId) ?? null;
   const selectedCategory = categories.find((c) => c.id === selectedCategoryId) ?? null;
 
-  const hasAmount = useQuickEntryStore((s) => s.amount > 0);
-  const isValid =
-    hasAmount &&
+  const isMetadataValid =
     selectedWalletId !== '' &&
     (mode === 'transfer'
       ? targetWalletId !== '' && targetWalletId !== selectedWalletId
@@ -263,13 +262,11 @@ export function QuickEntrySheet() {
     !isSubmitting;
 
   const handleSubmit = async () => {
-    if (!isValid || isSubmitting) return;
+    const finalAmount = evaluateExpression(useQuickEntryStore.getState().expression);
+    if (finalAmount <= 0 || !isMetadataValid || isSubmitting) return;
 
     try {
       setIsSubmitting(true);
-
-      const finalAmount = evaluateExpression(useQuickEntryStore.getState().expression);
-      if (finalAmount <= 0) return;
 
       const timeNow = new Date();
       const timeStr = timeNow.toTimeString().split(' ')[0];
@@ -322,18 +319,6 @@ export function QuickEntrySheet() {
   const sheetBg = isDark ? Palette.cypressCard : Palette.linenCard;
   const sheetBorder = isDark ? Palette.cypressBorder : Palette.linenBorder;
 
-  let title = editingTransaction ? t('entry.editTitle') : t('entry.title');
-  let subtitle = '';
-  if (editingTransaction) {
-    subtitle = t('entry.subtitleEdit');
-  } else if (mode === 'expense') {
-    subtitle = t('entry.subtitleExpense');
-  } else if (mode === 'income') {
-    subtitle = t('entry.subtitleIncome');
-  } else {
-    subtitle = t('entry.subtitleTransfer');
-  }
-
   return (
     <View
       style={styles.sheetOverlay}
@@ -341,9 +326,9 @@ export function QuickEntrySheet() {
     >
       <BottomSheet
         ref={bottomSheetRef}
-        index={-1}
-        enableDynamicSizing={true}
-        maxDynamicContentSize={Dimensions.get('window').height * 0.92}
+        index={isQuickEntryOpen ? 0 : -1}
+        snapPoints={snapPoints}
+        enableDynamicSizing={false}
         onChange={handleSheetChanges}
         backdropComponent={renderBackdrop}
         enablePanDownToClose={true}
@@ -351,18 +336,17 @@ export function QuickEntrySheet() {
         overDragResistanceFactor={0}
         enableContentPanningGesture={false}
         enableHandlePanningGesture={true}
-        animationConfigs={sheetAnimationConfigs}
+        animationConfigs={{ duration: 200 }}
         onClose={closeQuickEntry}
         backgroundStyle={{
           backgroundColor: sheetBg,
-          borderColor: sheetBorder,
-          borderWidth: 1,
+          borderTopColor: sheetBorder,
+          borderTopWidth: 1,
         }}
         handleIndicatorStyle={{
-          backgroundColor: isDark ? '#2D463E' : '#CBDAD3',
+          backgroundColor: isDark ? Palette.cypressBorder : Palette.linenBorder,
           width: 44,
           height: 5,
-          borderRadius: 3,
         }}
       >
         <BottomSheetView
@@ -372,36 +356,21 @@ export function QuickEntrySheet() {
             { paddingBottom: Math.max(insets.bottom, 12) },
           ]}
         >
-          {/* Header Content - matches Gambar 2 AppBottomSheet */}
-          <View
-            style={[
-              styles.header,
-              { borderBottomColor: isDark ? 'rgba(35, 58, 52, 0.6)' : 'rgba(220, 229, 224, 0.6)' },
-            ]}
-          >
-            <View style={{ flex: 1, paddingRight: 12 }}>
-              <Text
-                style={[
-                  styles.title,
-                  { color: isDark ? Palette.cypressTextPrimary : Palette.linenTextPrimary },
-                ]}
-              >
-                {title}
-              </Text>
-              <Text
-                style={[
-                  styles.subtitle,
-                  { color: isDark ? Palette.cypressTextSecondary : Palette.linenTextSecondary },
-                ]}
-              >
-                {subtitle}
-              </Text>
-            </View>
+          {/* Header Content */}
+          <View style={styles.header}>
+            <Text
+              style={[
+                styles.title,
+                { color: isDark ? Palette.cypressTextPrimary : Palette.linenTextPrimary },
+              ]}
+            >
+              {editingTransaction ? t('entry.editRecord') : t('entry.quickRecord')}
+            </Text>
 
             <TouchableOpacity
               onPress={handleClose}
               activeOpacity={0.7}
-              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               style={[
                 styles.closeButton,
                 {
@@ -409,9 +378,9 @@ export function QuickEntrySheet() {
                   borderColor: isDark ? Palette.cypressBorder : Palette.linenBorder,
                 },
               ]}
-              accessibilityLabel={t('entry.close')}
+              accessibilityLabel={t('common.close')}
             >
-              <X size={16} color={colors.textSecondary} />
+              <X size={15} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
 
@@ -452,7 +421,7 @@ export function QuickEntrySheet() {
           <View style={styles.keypadWrapper}>
             <CalculatorKeypad
               onSubmit={onKeypadSubmit}
-              isValid={isValid}
+              isValid={isMetadataValid}
               colorScheme={colorScheme}
               submitText={isSubmitting ? '...' : t('entry.save')}
             />
@@ -460,7 +429,7 @@ export function QuickEntrySheet() {
         </BottomSheetView>
       </BottomSheet>
 
-      {/* In-Sheet Pickers / Overlays with useNativeModal={false} for instant 0ms native feel */}
+      {/* In-Sheet Pickers / Overlays placed outside BottomSheet for full-screen dimming, smooth scrolling, and zero bottom-sheet layout thrashing */}
       <WalletPickerModal
         visible={isWalletModalOpen}
         wallets={wallets}
@@ -468,8 +437,7 @@ export function QuickEntrySheet() {
         onSelectWallet={setSelectedWalletId}
         onClose={() => setIsWalletModalOpen(false)}
         colorScheme={colorScheme}
-        title={mode === 'transfer' ? t('entry.sourceWalletTitle') : t('entry.walletPickerTitle')}
-        useNativeModal={false}
+        title={mode === 'transfer' ? t('entry.selectOriginWallet') : t('entry.selectSourceWallet')}
       />
 
       <WalletPickerModal
@@ -479,9 +447,8 @@ export function QuickEntrySheet() {
         onSelectWallet={setTargetWalletId}
         onClose={() => setIsTargetWalletModalOpen(false)}
         colorScheme={colorScheme}
-        title={t('entry.targetWalletTitle')}
+        title={t('entry.selectTargetWallet')}
         excludeWalletId={selectedWalletId}
-        useNativeModal={false}
       />
 
       <CategoryPickerModal
@@ -492,7 +459,6 @@ export function QuickEntrySheet() {
         onClose={() => setIsCategoryModalOpen(false)}
         mode={mode}
         colorScheme={colorScheme}
-        useNativeModal={false}
       />
 
       <DatePickerModal
@@ -501,7 +467,6 @@ export function QuickEntrySheet() {
         onSelectDate={setSelectedDate}
         onClose={() => setIsDateModalOpen(false)}
         colorScheme={colorScheme}
-        useNativeModal={false}
       />
 
       <FeePickerModal
@@ -510,7 +475,6 @@ export function QuickEntrySheet() {
         onSelectFee={setFee}
         onClose={() => setIsFeeModalOpen(false)}
         colorScheme={colorScheme}
-        useNativeModal={false}
       />
 
       <NoteInputModal
@@ -519,7 +483,6 @@ export function QuickEntrySheet() {
         onSaveNote={setNote}
         onClose={() => setIsNoteModalOpen(false)}
         colorScheme={colorScheme}
-        useNativeModal={false}
       />
     </View>
   );
@@ -545,30 +508,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingTop: 4,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    marginBottom: 8,
+    paddingBottom: 8,
   },
   title: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '900',
-    letterSpacing: -0.3,
-  },
-  subtitle: {
-    fontSize: 12,
-    lineHeight: 16,
-    marginTop: 1,
+    letterSpacing: -0.2,
   },
   closeButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
   keypadWrapper: {
-    paddingTop: 2,
+    paddingTop: 4,
     paddingBottom: 2,
   },
 });

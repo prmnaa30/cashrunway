@@ -4,8 +4,8 @@ import { Check, ChevronLeft, ChevronRight } from 'lucide-react-native';
 import { formatLocalDate, parseLocalDate, addDays, getDaysInMonth } from '@/lib/engine/dateUtils';
 import { AppModal } from '@/components/ui/AppModal';
 import { AppSegmentedTabs } from '@/components/ui/AppSegmentedTabs';
-import Colors from '@/constants/Colors';
 import { useTranslation } from '@/lib/i18n';
+import Colors from '@/constants/Colors';
 
 export interface DatePickerModalProps {
   visible: boolean;
@@ -13,37 +13,20 @@ export interface DatePickerModalProps {
   onSelectDate: (dateStr: string) => void;
   onClose: () => void;
   colorScheme: 'light' | 'dark';
-  useNativeModal?: boolean;
 }
 
-const MONTH_NAMES_EN = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December',
-];
-const MONTH_NAMES_ID = [
-  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
-];
-
-const DAY_NAMES_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const DAY_NAMES_ID = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-
-export function DatePickerModal({
+function DatePickerModalComponent({
   visible,
   selectedDate,
   onSelectDate,
   onClose,
   colorScheme,
-  useNativeModal = true,
 }: DatePickerModalProps) {
+  const { t, locale } = useTranslation();
   const colors = Colors[colorScheme];
   const isDark = colorScheme === 'dark';
-  const { t, locale } = useTranslation();
   const today = new Date();
   const todayStr = formatLocalDate(today);
-
-  const monthNames = locale === 'en' ? MONTH_NAMES_EN : MONTH_NAMES_ID;
-  const dayNames = locale === 'en' ? DAY_NAMES_EN : DAY_NAMES_ID;
 
   const [activeTab, setActiveTab] = useState<'recent' | 'custom'>('recent');
 
@@ -53,12 +36,13 @@ export function DatePickerModal({
   const [customYear, setCustomYear] = useState<number>(parsedCurrent.getFullYear());
 
   const recentDays = useMemo(() => {
+    const localeStr = locale === 'en' ? 'en-US' : 'id-ID';
     return Array.from({ length: 30 }).map((_, i) => {
       const d = addDays(today, -i);
       const dateStr = formatLocalDate(d);
-      const dayName = dayNames[d.getDay()];
+      const dayName = d.toLocaleDateString(localeStr, { weekday: 'long' });
       const dayNum = d.getDate();
-      const monthName = monthNames[d.getMonth()].slice(0, 3);
+      const monthName = d.toLocaleDateString(localeStr, { month: 'short' });
       const isToday = i === 0;
       const isYesterday = i === 1;
 
@@ -68,7 +52,7 @@ export function DatePickerModal({
 
       return { dateStr, label, isToday };
     });
-  }, [dayNames, monthNames, t]);
+  }, [locale, t]);
 
   const daysInCustomMonth = useMemo(() => {
     return getDaysInMonth(customYear, customMonth);
@@ -106,13 +90,19 @@ export function DatePickerModal({
     onClose();
   };
 
+  const displayMonthName = useMemo(() => {
+    return new Date(customYear, customMonth - 1, 1).toLocaleDateString(
+      locale === 'en' ? 'en-US' : 'id-ID',
+      { month: 'long' }
+    );
+  }, [customYear, customMonth, locale]);
+
   return (
     <AppModal
       visible={visible}
       onClose={onClose}
-      title={t('entry.datePickerTitle')}
+      title={t('entry.selectDateTitle')}
       maxWidth={400}
-      useNativeModal={useNativeModal}
     >
       {/* Segmented Switcher */}
       <View className="mb-3">
@@ -121,8 +111,8 @@ export function DatePickerModal({
           onChange={setActiveTab}
           size="sm"
           options={[
-            { key: 'recent', label: t('entry.tabRecentDays') },
-            { key: 'custom', label: t('entry.tabCustomDate') },
+            { key: 'recent', label: t('entry.recentDaysTab') },
+            { key: 'custom', label: t('entry.customDateTab') },
           ]}
         />
       </View>
@@ -177,7 +167,7 @@ export function DatePickerModal({
             </TouchableOpacity>
 
             <Text className="text-sm font-bold text-linen-text-primary dark:text-cypress-text-primary">
-              {monthNames[customMonth - 1]} {customYear}
+              {displayMonthName} {customYear}
             </Text>
 
             <TouchableOpacity
@@ -233,3 +223,5 @@ export function DatePickerModal({
     </AppModal>
   );
 }
+
+export const DatePickerModal = React.memo(DatePickerModalComponent);

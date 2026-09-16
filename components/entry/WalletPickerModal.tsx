@@ -4,8 +4,8 @@ import { Wallet as WalletIcon, Landmark, Smartphone, Vault, Check } from 'lucide
 import { Wallet } from '@/lib/db';
 import { formatCurrency } from '@/lib/format';
 import { AppModal } from '@/components/ui/AppModal';
-import Colors from '@/constants/Colors';
 import { useTranslation } from '@/lib/i18n';
+import Colors from '@/constants/Colors';
 
 export interface WalletPickerModalProps {
   visible: boolean;
@@ -17,7 +17,6 @@ export interface WalletPickerModalProps {
   isPrivacyMode?: boolean;
   title?: string;
   excludeWalletId?: string;
-  useNativeModal?: boolean;
 }
 
 function getWalletIcon(type: string, isVault: number, size = 18, color?: string) {
@@ -32,7 +31,7 @@ function getWalletIcon(type: string, isVault: number, size = 18, color?: string)
   }
 }
 
-export function WalletPickerModal({
+function WalletPickerModalComponent({
   visible,
   wallets,
   selectedWalletId,
@@ -40,14 +39,12 @@ export function WalletPickerModal({
   onClose,
   colorScheme,
   isPrivacyMode = false,
-  title: propTitle,
+  title,
   excludeWalletId,
-  useNativeModal = true,
 }: WalletPickerModalProps) {
+  const { t } = useTranslation();
   const colors = Colors[colorScheme];
   const isDark = colorScheme === 'dark';
-  const { t } = useTranslation();
-  const title = propTitle || t('entry.walletPickerTitle');
 
   const filteredWallets = useMemo(
     () => (excludeWalletId ? wallets.filter((w) => w.id !== excludeWalletId) : wallets),
@@ -58,9 +55,8 @@ export function WalletPickerModal({
     <AppModal
       visible={visible}
       onClose={onClose}
-      title={title}
+      title={title ?? t('entry.selectWalletTitle')}
       maxWidth={380}
-      useNativeModal={useNativeModal}
     >
       <ScrollView className="max-h-72" showsVerticalScrollIndicator={false}>
         {filteredWallets.map((wallet) => {
@@ -103,7 +99,7 @@ export function WalletPickerModal({
         {filteredWallets.length === 0 && (
           <View className="py-8 items-center justify-center">
             <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary">
-              Tidak ada dompet yang tersedia
+              {t('entry.noWallets')}
             </Text>
           </View>
         )}
@@ -111,3 +107,5 @@ export function WalletPickerModal({
     </AppModal>
   );
 }
+
+export const WalletPickerModal = React.memo(WalletPickerModalComponent);

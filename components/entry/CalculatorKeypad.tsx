@@ -33,22 +33,25 @@ const KeypadButton = React.memo(function KeypadButton({
   isDark = true,
 }: KeypadButtonProps) {
   return (
-    <Pressable
-      disabled={disabled}
-      onPressIn={onPressIn}
-      onPress={onPress}
-      onLongPress={onLongPress}
-      android_ripple={{
-        color: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)',
-        borderless: false,
-      }}
-      style={({ pressed }) => [
-        pressed && Platform.OS === 'ios' && styles.iosPressed,
-      ]}
-      className={`flex-1 h-14 rounded-2xl border items-center justify-center overflow-hidden ${className}`}
-    >
-      {children}
-    </Pressable>
+    <View style={styles.buttonWrapper}>
+      <Pressable
+        disabled={disabled}
+        onPressIn={onPressIn}
+        onPress={onPress}
+        onLongPress={onLongPress}
+        android_ripple={{
+          color: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)',
+          borderless: false,
+        }}
+        style={({ pressed }) => [
+          styles.pressableContent,
+          pressed && Platform.OS === 'ios' && styles.iosPressed,
+        ]}
+        className={`w-full h-full border items-center justify-center ${className}`}
+      >
+        {children}
+      </Pressable>
+    </View>
   );
 });
 
@@ -69,11 +72,15 @@ const KeyDigit = React.memo(function KeyDigit({
   isDark,
   onPressKey,
 }: KeyDigitProps) {
+  const handlePressIn = useCallback(() => {
+    onPressKey(keyId);
+  }, [keyId, onPressKey]);
+
   return (
     <KeypadButton
-      isDark={isDark}
-      onPressIn={() => onPressKey(keyId)}
+      onPressIn={handlePressIn}
       className={btnClass}
+      isDark={isDark}
     >
       <Text className={textClass}>{label}</Text>
     </KeypadButton>
@@ -81,6 +88,19 @@ const KeyDigit = React.memo(function KeyDigit({
 });
 
 const styles = StyleSheet.create({
+  buttonWrapper: {
+    flex: 1,
+    height: 56,
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  pressableContent: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
   iosPressed: {
     opacity: 0.6,
   },
@@ -89,20 +109,23 @@ const styles = StyleSheet.create({
 /**
  * Ultra-fast 4x4 keypad with 0ms touch latency.
  * Uses Pressable with delayPressIn={0} and onPressIn to register inputs on touch-down (like native dialers).
- * UI touch feedback is hardware-accelerated via android_ripple.
+ * UI touch feedback is hardware-accelerated via android_ripple with hard-clipped corners.
  */
 function CalculatorKeypadComponent({
   onKeyPress,
   onSubmit,
   isValid,
   colorScheme,
-  submitText: propSubmitText,
+  submitText,
 }: CalculatorKeypadProps) {
-  const isDark = colorScheme === 'dark';
   const { t } = useTranslation();
-  const submitText = propSubmitText || t('entry.save');
+  const isDark = colorScheme === 'dark';
 
   const pressKey = useQuickEntryStore((s) => s.pressKey);
+  const hasAmount = useQuickEntryStore((s) => s.amount > 0);
+  const isSubmitReady = isValid && hasAmount;
+  const effectiveSubmitText = submitText ?? t('entry.save');
+
   const handlePressKey = useCallback(
     (key: KeypadKey) => {
       if (onKeyPress) {
@@ -123,22 +146,22 @@ function CalculatorKeypadComponent({
   }, [handlePressKey]);
 
   const numBtnClass =
-    'bg-linen-surface dark:bg-cypress-card border-linen-border dark:border-cypress-border';
+    'bg-linen-surface dark:bg-cypress-surface border-linen-border dark:border-cypress-border';
   const numTextClass =
     'text-2xl font-bold font-mono tabular-nums text-linen-text-primary dark:text-cypress-text-primary';
 
   const opBtnClass =
-    'bg-linen-card dark:bg-cypress-surface border-linen-border dark:border-cypress-border';
+    'bg-linen-surface/70 dark:bg-cypress-surface/60 border-linen-border/70 dark:border-cypress-border/70';
   const opTextClass =
     'text-xl font-bold text-linen-text-secondary dark:text-cypress-text-secondary';
   const shortcutTextClass =
     'text-base font-extrabold font-mono tabular-nums text-linen-text-secondary dark:text-cypress-text-secondary';
 
-  const submitBtnClass = isValid
-    ? 'bg-accent-brass dark:bg-accent-champagne border-accent-brass dark:border-accent-champagne'
-    : 'bg-linen-card/40 dark:bg-cypress-surface/40 border-linen-border/40 dark:border-cypress-border/40 opacity-40';
+  const submitBtnClass = isSubmitReady
+    ? 'bg-cypress-surface dark:bg-accent-champagne border-cypress-surface dark:border-accent-champagne'
+    : 'bg-linen-surface/40 dark:bg-cypress-surface/40 border-linen-border/30 dark:border-cypress-border/30 opacity-40';
 
-  const submitTextColor = isValid
+  const submitTextColor = isSubmitReady
     ? isDark
       ? '#0C1513'
       : '#FFFFFF'
@@ -287,7 +310,7 @@ function CalculatorKeypadComponent({
           onPressKey={handlePressKey}
         />
         <KeypadButton
-          disabled={!isValid}
+          disabled={!isSubmitReady}
           onPress={onSubmit}
           className={submitBtnClass}
           isDark={isDark}
@@ -298,7 +321,7 @@ function CalculatorKeypadComponent({
               className="text-xs font-black ml-1"
               style={{ color: submitTextColor }}
             >
-              {submitText}
+              {effectiveSubmitText}
             </Text>
           </View>
         </KeypadButton>

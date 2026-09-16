@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Keyboard } from 'react-native';
 import { AppModal } from '@/components/ui/AppModal';
-import Colors from '@/constants/Colors';
 import { useTranslation } from '@/lib/i18n';
+import Colors from '@/constants/Colors';
 
 export interface NoteInputModalProps {
   visible: boolean;
@@ -10,19 +10,17 @@ export interface NoteInputModalProps {
   onSaveNote: (note: string) => void;
   onClose: () => void;
   colorScheme: 'light' | 'dark';
-  useNativeModal?: boolean;
 }
 
-export function NoteInputModal({
+function NoteInputModalComponent({
   visible,
   initialNote,
   onSaveNote,
   onClose,
   colorScheme,
-  useNativeModal = true,
 }: NoteInputModalProps) {
-  const colors = Colors[colorScheme];
   const { t } = useTranslation();
+  const colors = Colors[colorScheme];
   const [text, setText] = useState(initialNote);
 
   useEffect(() => {
@@ -41,10 +39,9 @@ export function NoteInputModal({
     <AppModal
       visible={visible}
       onClose={onClose}
-      title={t('entry.noteModalTitle')}
-      subtitle={t('entry.noteModalSubtitle')}
+      title={t('entry.noteTitle')}
+      subtitle={t('entry.noteSubtitle')}
       maxWidth={380}
-      useNativeModal={useNativeModal}
     >
       <View className="pt-2">
         <TextInput
@@ -70,7 +67,7 @@ export function NoteInputModal({
             className="flex-1 py-3 rounded-xl border border-linen-border dark:border-cypress-border items-center justify-center mr-2"
           >
             <Text className="text-xs font-bold text-linen-text-secondary dark:text-cypress-text-secondary">
-              {t('entry.clearNote')}
+              {t('entry.deleteNote')}
             </Text>
           </TouchableOpacity>
 
@@ -88,3 +85,5 @@ export function NoteInputModal({
     </AppModal>
   );
 }
+
+export const NoteInputModal = React.memo(NoteInputModalComponent);

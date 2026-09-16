@@ -7,7 +7,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
-  BackHandler,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -30,7 +29,6 @@ export interface AppModalProps {
   maxWidth?: number;
   contentClassName?: string;
   accessibilityLabel?: string;
-  useNativeModal?: boolean;
 }
 
 export function AppModal({
@@ -43,7 +41,6 @@ export function AppModal({
   maxWidth = 400,
   contentClassName = '',
   accessibilityLabel,
-  useNativeModal = true,
 }: AppModalProps) {
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
@@ -56,7 +53,7 @@ export function AppModal({
   const isClosingRef = useRef(false);
 
   const opacity = useSharedValue(0);
-  const scale = useSharedValue(0.90);
+  const scale = useSharedValue(0.94);
 
   const finalizeClose = useCallback(() => {
     setIsRendered(false);
@@ -68,10 +65,10 @@ export function AppModal({
     if (isClosingRef.current) return;
     isClosingRef.current = true;
 
-    opacity.value = withTiming(0, { duration: 160, easing: Easing.bezier(0.4, 0, 0.2, 1) });
+    opacity.value = withTiming(0, { duration: 120, easing: Easing.in(Easing.quad) });
     scale.value = withTiming(
-      0.90,
-      { duration: 160, easing: Easing.bezier(0.4, 0, 0.2, 1) },
+      0.95,
+      { duration: 120, easing: Easing.in(Easing.quad) },
       (finished) => {
         if (finished) {
           runOnJS(finalizeClose)();
@@ -84,24 +81,12 @@ export function AppModal({
     if (visible) {
       isClosingRef.current = false;
       setIsRendered(true);
-      opacity.value = 0;
-      scale.value = 0.90;
-      opacity.value = withTiming(1, { duration: 190, easing: Easing.out(Easing.quad) });
-      scale.value = withSpring(1, { damping: 18, stiffness: 220, mass: 0.7 });
+      opacity.value = withTiming(1, { duration: 130, easing: Easing.out(Easing.quad) });
+      scale.value = withTiming(1, { duration: 140, easing: Easing.out(Easing.quad) });
     } else if (isRendered && !isClosingRef.current) {
       closeWithAnimation();
     }
   }, [visible, closeWithAnimation]);
-
-  useEffect(() => {
-    if (!useNativeModal && isRendered) {
-      const sub = BackHandler.addEventListener('hardwareBackPress', () => {
-        closeWithAnimation();
-        return true;
-      });
-      return () => sub.remove();
-    }
-  }, [useNativeModal, isRendered, closeWithAnimation]);
 
   const backdropAnimatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
@@ -114,86 +99,78 @@ export function AppModal({
 
   if (!isRendered) return null;
 
-  const modalContent = (
-    <View style={StyleSheet.absoluteFill} className="items-center justify-center px-4 z-50">
-      {/* Backdrop */}
-      <Animated.View
-        style={[
-          StyleSheet.absoluteFill,
-          { backgroundColor: 'rgba(0, 0, 0, 0.65)' },
-          backdropAnimatedStyle,
-        ]}
-      >
-        <Pressable
-          style={StyleSheet.absoluteFill}
-          onPress={closeWithAnimation}
-          accessibilityLabel="Tutup dialog"
-        />
-      </Animated.View>
-
-      {/* Keyboard Avoiding Content Wrapper */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        className="w-full items-center justify-center z-10"
-        pointerEvents="box-none"
-      >
+  return (
+    <Modal
+      visible={isRendered}
+      transparent
+      animationType="none"
+      statusBarTranslucent
+      onRequestClose={closeWithAnimation}
+    >
+      <View style={StyleSheet.absoluteFill} className="items-center justify-center px-4">
+        {/* Backdrop */}
         <Animated.View
           style={[
-            { maxWidth, width: '100%' },
-            cardAnimatedStyle,
+            StyleSheet.absoluteFill,
+            { backgroundColor: 'rgba(0, 0, 0, 0.65)' },
+            backdropAnimatedStyle,
           ]}
-          className={"rounded-3xl bg-linen-card dark:bg-cypress-card border border-linen-border dark:border-cypress-border p-5 shadow-2xl " + contentClassName}
-          accessibilityRole="alert"
-          accessibilityLabel={accessibilityLabel || title}
         >
-          {/* Header */}
-          {(title || showCloseButton) && (
-            <View className="flex-row items-center justify-between pb-3 mb-2 border-b border-linen-border/60 dark:border-cypress-border/60">
-              <View className="flex-1 pr-3">
-                {title && (
-                  <Text className="text-base font-black text-linen-text-primary dark:text-cypress-text-primary">
-                    {title}
-                  </Text>
-                )}
-                {subtitle && (
-                  <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary mt-0.5 leading-4">
-                    {subtitle}
-                  </Text>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={closeWithAnimation}
+            accessibilityLabel="Tutup dialog"
+          />
+        </Animated.View>
+
+        {/* Keyboard Avoiding Content Wrapper */}
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          className="w-full items-center justify-center z-10"
+          pointerEvents="box-none"
+        >
+          <Animated.View
+            style={[
+              { maxWidth, width: '100%' },
+              cardAnimatedStyle,
+            ]}
+            className={"rounded-3xl bg-linen-card dark:bg-cypress-card border border-linen-border dark:border-cypress-border p-5 shadow-2xl " + contentClassName}
+            accessibilityRole="alert"
+            accessibilityLabel={accessibilityLabel || title}
+          >
+            {/* Header */}
+            {(title || showCloseButton) && (
+              <View className="flex-row items-center justify-between pb-3 mb-2 border-b border-linen-border/60 dark:border-cypress-border/60">
+                <View className="flex-1 pr-3">
+                  {title && (
+                    <Text className="text-base font-black text-linen-text-primary dark:text-cypress-text-primary">
+                      {title}
+                    </Text>
+                  )}
+                  {subtitle && (
+                    <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary mt-0.5 leading-4">
+                      {subtitle}
+                    </Text>
+                  )}
+                </View>
+
+                {showCloseButton && (
+                  <Pressable
+                    onPress={closeWithAnimation}
+                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                    className="min-w-[40px] min-h-[40px] rounded-full bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70"
+                    accessibilityLabel="Tutup"
+                  >
+                    <X size={16} color={colors.textSecondary} />
+                  </Pressable>
                 )}
               </View>
+            )}
 
-              {showCloseButton && (
-                <Pressable
-                  onPress={closeWithAnimation}
-                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                  className="min-w-[40px] min-h-[40px] rounded-full bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70"
-                  accessibilityLabel="Tutup"
-                >
-                  <X size={16} color={colors.textSecondary} />
-                </Pressable>
-              )}
-            </View>
-          )}
-
-          {children}
-        </Animated.View>
-      </KeyboardAvoidingView>
-    </View>
+            {children}
+          </Animated.View>
+        </KeyboardAvoidingView>
+      </View>
+    </Modal>
   );
-
-  if (useNativeModal) {
-    return (
-      <Modal
-        visible={isRendered}
-        transparent
-        animationType="none"
-        statusBarTranslucent
-        onRequestClose={closeWithAnimation}
-      >
-        {modalContent}
-      </Modal>
-    );
-  }
-
-  return modalContent;
 }

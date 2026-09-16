@@ -5,8 +5,8 @@ import { Category } from '@/lib/db';
 import { TransactionMode } from './types';
 import { AppModal } from '@/components/ui/AppModal';
 import { CategoryFormModal } from '../categories/CategoryFormModal';
-import Colors from '@/constants/Colors';
 import { useTranslation } from '@/lib/i18n';
+import Colors from '@/constants/Colors';
 
 export interface CategoryPickerModalProps {
   visible: boolean;
@@ -16,10 +16,9 @@ export interface CategoryPickerModalProps {
   onClose: () => void;
   mode: TransactionMode;
   colorScheme: 'light' | 'dark';
-  useNativeModal?: boolean;
 }
 
-export function CategoryPickerModal({
+function CategoryPickerModalComponent({
   visible,
   categories,
   selectedCategoryId,
@@ -27,11 +26,10 @@ export function CategoryPickerModal({
   onClose,
   mode,
   colorScheme,
-  useNativeModal = true,
 }: CategoryPickerModalProps) {
+  const { t } = useTranslation();
   const colors = Colors[colorScheme];
   const isDark = colorScheme === 'dark';
-  const { t } = useTranslation();
 
   const [isFormModalVisible, setIsFormModalVisible] = useState(false);
   const filteredCategories = useMemo(
@@ -41,8 +39,8 @@ export function CategoryPickerModal({
 
   const modalTitle =
     mode === 'expense'
-      ? t('entry.categoryExpenseTitle')
-      : t('entry.categoryIncomeTitle');
+      ? t('entry.selectExpenseCategory')
+      : t('entry.selectIncomeCategory');
 
   return (
     <>
@@ -51,7 +49,6 @@ export function CategoryPickerModal({
         onClose={onClose}
         title={modalTitle}
         maxWidth={400}
-        useNativeModal={useNativeModal}
       >
         <ScrollView className="max-h-80" showsVerticalScrollIndicator={false}>
           <View className="flex-row flex-wrap justify-start">
@@ -106,7 +103,7 @@ export function CategoryPickerModal({
                   numberOfLines={1}
                   className="text-[10px] font-semibold text-center text-linen-text-secondary dark:text-cypress-text-secondary mt-1"
                 >
-                  {t('entry.addCategory')}
+                  {t('entry.addNewCategory')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -129,3 +126,5 @@ export function CategoryPickerModal({
     </>
   );
 }
+
+export const CategoryPickerModal = React.memo(CategoryPickerModalComponent);
