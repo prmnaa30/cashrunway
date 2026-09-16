@@ -720,8 +720,9 @@ export const useFinanceStore = create<FinanceState>((set, get) => ({
       set({ isLoading: true });
       await clearTxDb();
       await get().loadAllData({ force: true, showLoading: false });
+      notifyDataChangedForBackup();
     } catch (error) {
-      console.error('Failed to clear transactions:', error);
+      console.error('Failed to wipe all data:', error);
       set({ isLoading: false });
       throw error;
     }

@@ -39,19 +39,29 @@ export function configureGoogleSignIn(): void {
 export async function signInWithGoogle(): Promise<{
   user: GoogleUserProfile;
   accessToken: string;
-}> {
+} | null> {
   configureGoogleSignIn();
 
   try {
     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
     const response = await GoogleSignin.signIn();
 
+    // Check if user cancelled in SDK v16+
+    if (response && typeof response === 'object' && 'type' in response) {
+      if ((response as any).type === 'cancelled') {
+        return null;
+      }
+      if ((response as any).type !== 'success') {
+        return null;
+      }
+    }
+
     const userInfo = (response as any)?.data || response;
     const userProfile: GoogleUserProfile = {
-      id: userInfo.user?.id || '',
-      email: userInfo.user?.email || '',
-      name: userInfo.user?.name || null,
-      photo: userInfo.user?.photo || null,
+      id: userInfo?.user?.id || '',
+      email: userInfo?.user?.email || '',
+      name: userInfo?.user?.name || null,
+      photo: userInfo?.user?.photo || null,
     };
 
     const tokens = await GoogleSignin.getTokens();
@@ -68,15 +78,30 @@ export async function signInWithGoogle(): Promise<{
       accessToken,
     };
   } catch (error: any) {
-    if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-      throw new Error('Sign-in was cancelled.');
+    const msg = String(error?.message || '');
+    const code = String(error?.code || '');
+
+    if (
+      error.code === statusCodes.SIGN_IN_CANCELLED ||
+      code === '13' ||
+      code === '12501' ||
+      msg.toLowerCase().includes('cancel')
+    ) {
+      return null;
     } else if (error.code === statusCodes.IN_PROGRESS) {
       throw new Error('Sign-in is already in progress.');
     } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
       throw new Error('Google Play Services is not available on your device.');
+    } else if (
+      msg.includes('getTokens requires') ||
+      msg.includes('DEVELOPER_ERROR') ||
+      code === '10'
+    ) {
+      throw new Error('Google OAuth credentials not configured yet or sign-in interrupted.');
     }
+
     console.error('[GoogleAuth] Sign-in error:', error);
-    throw new Error(error.message || 'Failed to sign in with Google.');
+    throw new Error(msg || 'Failed to sign in with Google.');
   }
 }
 

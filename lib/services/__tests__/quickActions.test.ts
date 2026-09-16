@@ -1,11 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getQuickActionItems, setupQuickActions } from '../quickActions';
-import * as QuickActions from 'expo-quick-actions';
+
+vi.mock('../../i18n', () => ({
+  translate: vi.fn((key: string) => key),
+}));
+vi.mock('@/lib/i18n', () => ({
+  translate: vi.fn((key: string) => key),
+}));
 
 vi.mock('expo-quick-actions', () => ({
   isSupported: vi.fn().mockResolvedValue(true),
   setItems: vi.fn().mockResolvedValue(undefined),
 }));
+
+import * as QuickActions from 'expo-quick-actions';
+import { getQuickActionItems, setupQuickActions } from '../quickActions';
 
 describe('Quick Actions Service', () => {
   beforeEach(() => {

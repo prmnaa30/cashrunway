@@ -21,6 +21,7 @@ import {
   CloudUpload,
   FileSpreadsheet,
   History,
+  X,
 } from 'lucide-react-native';
 
 import Colors from '@/constants/Colors';
@@ -94,6 +95,7 @@ export default function SettingsScreen() {
     backups,
     feedbackMessage: backupFeedback,
     error: backupError,
+    clearFeedback,
   } = useBackupStore();
 
   // Modals / Sheets state
@@ -545,7 +547,6 @@ export default function SettingsScreen() {
             label={translate('settings.importCsv.title')}
             description={translate('settings.importCsv.desc')}
             icon={<FileSpreadsheet size={18} color={colors.tint} />}
-            isLast
             onPress={() => setIsImportCsvOpen(true)}
             action={
               <Pressable
@@ -559,31 +560,11 @@ export default function SettingsScreen() {
             }
           />
 
-          {(backupFeedback || backupError) && (
-            <View
-              className={`px-4 py-2 border-b ${
-                backupError
-                  ? 'bg-status-danger/10 border-status-danger/20'
-                  : 'bg-status-safe/10 border-status-safe/20'
-              }`}
-            >
-              <Text
-                className={`text-xs font-semibold text-center ${
-                  backupError ? 'text-status-danger' : 'text-status-safe'
-                }`}
-              >
-                {backupError || backupFeedback}
-              </Text>
-            </View>
-          )}
-        </SettingSection>
-
-        {/* 5. MANAJEMEN DATA */}
-        <SettingSection title={translate('settings.sections.data')}>
           <SettingRow
             label={translate('settings.exportCsv.title')}
             description={translate('settings.exportCsv.desc')}
             icon={<Download size={18} color={colors.tint} />}
+            isLast
             onPress={handleExportCsv}
             action={
               <Pressable
@@ -610,6 +591,42 @@ export default function SettingsScreen() {
             </View>
           )}
 
+          {(backupFeedback || backupError) && (
+            <View
+              className={`px-4 py-2.5 border-b flex-row items-center justify-between ${
+                backupError
+                  ? 'bg-status-danger/10 border-status-danger/20'
+                  : 'bg-status-safe/10 border-status-safe/20'
+              }`}
+            >
+              <Text
+                className={`text-xs font-semibold flex-1 pr-2 ${
+                  backupError ? 'text-status-danger' : 'text-status-safe'
+                }`}
+              >
+                {backupError
+                  ? backupError.startsWith('settings.')
+                    ? translate(backupError)
+                    : backupError
+                  : backupFeedback
+                  ? backupFeedback.startsWith('settings.')
+                    ? translate(backupFeedback)
+                    : backupFeedback
+                  : null}
+              </Text>
+              <Pressable
+                onPress={clearFeedback}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                className="p-1 rounded-full active:opacity-60"
+              >
+                <X size={14} color={backupError ? '#EF4444' : colors.tint} />
+              </Pressable>
+            </View>
+          )}
+        </SettingSection>
+
+        {/* 5. MANAJEMEN DATA */}
+        <SettingSection title={translate('settings.sections.data')}>
           {__DEV__ && (
             <SettingRow
               label={translate('settings.resetDemo.title')}

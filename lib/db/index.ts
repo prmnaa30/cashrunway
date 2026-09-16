@@ -538,14 +538,36 @@ export async function resetToDemoData(): Promise<void> {
 }
 
 /**
- * Clear all transactions:
- * Empties all transaction history and zeroes active wallet balances cleanly.
+ * Wipe all database data:
+ * Completely clears all transactions, recurring bills, and wallets.
+ * Recreates a clean default operational cash wallet with zero balance.
  */
-export async function clearAllTransactions(): Promise<void> {
+export async function wipeAllData(): Promise<void> {
   await ensureDatabaseInitialized();
   await db.delete(schema.transactions);
-  await db.update(schema.wallets).set({ balance: 0 });
+  await db.delete(schema.recurringBills);
+  await db.delete(schema.wallets);
+
+  // Re-seed one clean initial cash wallet
+  await db.insert(schema.wallets).values({
+    id: 'w_cash',
+    name: 'Tunai Saku',
+    type: 'cash',
+    balance: 0,
+    isVault: 0,
+    isInterestEnabled: 0,
+    interestRate: 0,
+    interestPeriod: 'none',
+    payoutDay: 1,
+    autoTax: 0,
+    taxRate: 0.2,
+    taxThreshold: 7500000,
+    lastAccruedDate: null,
+    isDeleted: 0,
+  });
 }
+
+export const clearAllTransactions = wipeAllData;
 
 export interface RawBackupTables {
   wallets: Wallet[];

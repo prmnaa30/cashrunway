@@ -169,6 +169,9 @@ export default function HistoryScreen() {
             <Text className="text-xl font-black text-linen-text-primary dark:text-cypress-text-primary tracking-tight">
               {t('history.title')}
             </Text>
+            <Text className="text-[11px] text-linen-text-secondary dark:text-cypress-text-secondary mt-0.5">
+              {t('history.mutationCount', { count: filteredTransactions.length })}
+            </Text>
           </View>
 
           <Pressable

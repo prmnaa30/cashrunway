@@ -75,6 +75,36 @@ export interface BackupState {
 let autoBackupDebounceTimer: ReturnType<typeof setTimeout> | null = null;
 const AUTO_BACKUP_DEBOUNCE_MS = 5 * 60 * 1000; // 5 minutes
 
+function mapGoogleAuthError(err: any): string | null {
+  const msg = String(err?.message || '').toLowerCase();
+  const code = String(err?.code || '');
+  if (
+    code === '13' ||
+    code === '12501' ||
+    msg.includes('cancel') ||
+    msg.includes('sign-in cancelled') ||
+    msg.includes('sign_in_cancelled')
+  ) {
+    return null;
+  }
+  if (
+    msg.includes('gettokens requires') ||
+    msg.includes('developer_error') ||
+    msg.includes('not configured') ||
+    msg.includes('credentials') ||
+    code === '10'
+  ) {
+    return 'settings.googleDrive.errorConfig';
+  }
+  if (msg.includes('play services') || msg.includes('play_services')) {
+    return 'settings.googleDrive.errorPlayServices';
+  }
+  if (msg.includes('network') || msg.includes('internet') || msg.includes('timeout') || code === '7') {
+    return 'settings.googleDrive.errorNetwork';
+  }
+  return 'settings.googleDrive.errorGeneric';
+}
+
 export const useBackupStore = create<BackupState>((set, get) => ({
   googleUser: null,
   isSignedIn: false,
@@ -121,22 +151,29 @@ export const useBackupStore = create<BackupState>((set, get) => ({
   signIn: async () => {
     try {
       set({ isSigningIn: true, error: null });
-      const { user } = await signInWithGoogle();
+      const result = await signInWithGoogle();
+      if (!result) {
+        // User cancelled, smoothly dismiss loading
+        set({ isSigningIn: false });
+        return;
+      }
+
+      const { user } = result;
       set({
         googleUser: user,
         isSignedIn: true,
         isSigningIn: false,
-        feedbackMessage: `Connected as ${user.email}`,
+        feedbackMessage: 'settings.googleDrive.connected',
       });
 
       await updateSettings({ googleEmail: user.email });
       await get().loadBackups();
     } catch (err: any) {
+      const friendlyKey = mapGoogleAuthError(err);
       set({
         isSigningIn: false,
-        error: err.message || 'Failed to sign in with Google.',
+        error: friendlyKey,
       });
-      throw err;
     }
   },
 
@@ -147,11 +184,11 @@ export const useBackupStore = create<BackupState>((set, get) => ({
         googleUser: null,
         isSignedIn: false,
         backups: [],
-        feedbackMessage: 'Google Drive disconnected successfully.',
+        feedbackMessage: 'settings.googleDrive.disconnectSuccess',
       });
       await updateSettings({ googleEmail: null });
     } catch (err: any) {
-      set({ error: err.message || 'Failed to sign out.' });
+      set({ error: 'settings.googleDrive.errorSignOut' });
     }
   },
 
@@ -164,7 +201,7 @@ export const useBackupStore = create<BackupState>((set, get) => ({
       const files = await listBackupFiles(token);
       set({ backups: files, isLoadingBackups: false });
     } catch (err: any) {
-      set({ isLoadingBackups: false, error: err.message || 'Failed to load backup list.' });
+      set({ isLoadingBackups: false, error: 'settings.googleDrive.errorLoadFailed' });
     }
   },
 
@@ -174,7 +211,7 @@ export const useBackupStore = create<BackupState>((set, get) => ({
 
     const token = await getValidAccessToken();
     if (!token) {
-      if (!silent) set({ error: 'Please connect your Google Drive account first.' });
+      if (!silent) set({ error: 'settings.googleDrive.errorNotConnected' });
       return false;
     }
 
@@ -208,7 +245,7 @@ export const useBackupStore = create<BackupState>((set, get) => ({
         lastBackupDate: nowIso,
         backupProgress: null,
         backups: [uploadedFile, ...prev.backups.filter((f) => f.id !== uploadedFile.id)],
-        feedbackMessage: silent ? null : 'Backup saved to Google Drive successfully!',
+        feedbackMessage: silent ? null : 'settings.googleDrive.backupSuccess',
       }));
 
       return true;
@@ -217,7 +254,7 @@ export const useBackupStore = create<BackupState>((set, get) => ({
       set({
         isBackingUp: false,
         backupProgress: null,
-        error: err.message || 'Failed to create Google Drive backup.',
+        error: 'settings.googleDrive.errorBackupFailed',
       });
       return false;
     }
@@ -226,7 +263,7 @@ export const useBackupStore = create<BackupState>((set, get) => ({
   restoreBackup: async (fileId: string) => {
     const token = await getValidAccessToken();
     if (!token) {
-      set({ error: 'Google Drive session expired. Please reconnect.' });
+      set({ error: 'settings.googleDrive.errorSessionExpired' });
       return false;
     }
 
