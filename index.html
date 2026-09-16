@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CashRunway - Personal Runway & Cashflow Tracker</title>
+  <meta name="description" content="CashRunway is an offline-first personal financial management and runway calculation mobile app.">
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card-bg: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #10b981;
+      --primary-hover: #059669;
+      --border: #334155;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      margin-left: 1.5rem;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+    }
+    nav a:hover, nav a.active {
+      color: var(--text);
+    }
+    main {
+      flex: 1;
+      max-width: 900px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 3rem 1.5rem;
+    }
+    .hero {
+      text-align: center;
+      margin-bottom: 3.5rem;
+    }
+    .hero h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      line-height: 1.2;
+    }
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 1.5rem;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--primary);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3.5rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+    .card h3 {
+      font-size: 1.15rem;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+    .card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2rem 1.5rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    footer .links {
+      margin-bottom: 1rem;
+    }
+    footer .links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      margin: 0 0.75rem;
+    }
+    footer .links a:hover {
+      color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="index.html" class="logo">🚀 CashRunway</a>
+    <nav>
+      <a href="index.html" class="active">Home</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+      <a href="https://github.com/prmnaa30/cashrunway" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="badge">Offline-First Personal Finance</div>
+      <h1>Track Your Cashflow & Calculate Financial Runway</h1>
+      <p>
+        CashRunway is an offline-first mobile application designed to help individuals and founders track expenses, project runway, and maintain financial clarity with zero ads or tracking.
+      </p>
+    </section>
+
+    <section class="features">
+      <div class="card">
+        <h3>🔒 Local SQLite Database</h3>
+        <p>All financial records stay on your device by default. No data selling, no mandatory accounts, and no third-party analytics trackers.</p>
+      </div>
+      <div class="card">
+        <h3>☁️ Google Drive AppData Sync</h3>
+        <p>Optional backup to your private Google Drive app folder. Only the app can access its own backup data, preserving full privacy.</p>
+      </div>
+      <div class="card">
+        <h3>📊 Runway Projections</h3>
+        <p>Understand how many months your money will last based on your real burn rate, recurring expenses, and variable income.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="links">
+      <a href="index.html">Home</a> •
+      <a href="privacy.html">Privacy Policy</a> •
+      <a href="terms.html">Terms of Service</a> •
+      <a href="https://github.com/prmnaa30/cashrunway" target="_blank" rel="noopener">GitHub</a>
+    </div>
+    <p>&copy; 2026 CashRunway. Released under the MIT License.</p>
+  </footer>
+</body>
+</html>
