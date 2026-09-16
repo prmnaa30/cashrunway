@@ -46,6 +46,7 @@ const KeypadButton = React.memo(function KeypadButton({
           color: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)',
           borderless: false,
         }}
+        className="flex-1 w-full h-full items-center justify-center"
         style={({ pressed }) => [
           styles.pressableContent,
           pressed && Platform.OS === 'ios' && styles.iosPressed,
@@ -150,14 +151,14 @@ function CalculatorKeypadComponent({
   const numBtnClass =
     'bg-linen-surface dark:bg-cypress-surface border-linen-border dark:border-cypress-border';
   const numTextClass =
-    'text-2xl font-bold font-mono tabular-nums text-linen-text-primary dark:text-cypress-text-primary';
+    'text-2xl font-bold font-mono tabular-nums text-center text-linen-text-primary dark:text-cypress-text-primary';
 
   const opBtnClass =
     'bg-linen-surface/70 dark:bg-cypress-surface/60 border-linen-border/70 dark:border-cypress-border/70';
   const opTextClass =
-    'text-xl font-bold text-linen-text-secondary dark:text-cypress-text-secondary';
+    'text-xl font-bold text-center text-linen-text-secondary dark:text-cypress-text-secondary';
   const shortcutTextClass =
-    'text-base font-extrabold font-mono tabular-nums text-linen-text-secondary dark:text-cypress-text-secondary';
+    'text-base font-extrabold font-mono tabular-nums text-center text-linen-text-secondary dark:text-cypress-text-secondary';
 
   const submitBtnClass = isSubmitReady
     ? 'bg-cypress-surface dark:bg-accent-champagne border-cypress-surface dark:border-accent-champagne'

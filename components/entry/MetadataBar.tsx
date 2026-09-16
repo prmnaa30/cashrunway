@@ -1,5 +1,10 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+} from 'react-native-reanimated';
 import {
   Wallet as WalletIcon,
   Calendar,
@@ -37,7 +42,8 @@ export interface MetadataBarProps {
 
 /**
  * Clean action chips bar styled with NativeWind Tailwind utility classes.
- * Uses TouchableOpacity with activeOpacity for smooth tactile feedback.
+ * Features Reanimated layout transitions (LinearTransition) and fade animations
+ * for fluid morphing when switching between Expense, Income, and Transfer modes.
  */
 function MetadataBarComponent({
   mode,
@@ -86,9 +92,15 @@ function MetadataBarComponent({
   return (
     <View className="px-4 py-1 gap-2">
       {/* Row 1: Wallet & Category (or Source -> Target for Transfer) */}
-      <View className="flex-row items-center gap-2">
+      <Animated.View layout={LinearTransition.duration(200)} className="flex-row items-center gap-2">
         {mode === 'transfer' ? (
-          <View className="flex-1 flex-row items-center gap-1.5">
+          <Animated.View
+            key="transfer-row"
+            entering={FadeIn.duration(180)}
+            exiting={FadeOut.duration(140)}
+            layout={LinearTransition.duration(200)}
+            className="flex-1 flex-row items-center gap-1.5"
+          >
             {/* Source Wallet */}
             <TouchableOpacity
               onPress={onOpenWalletPicker}
@@ -129,9 +141,15 @@ function MetadataBarComponent({
               </View>
               <ChevronDown size={13} color={colors.textSecondary} />
             </TouchableOpacity>
-          </View>
+          </Animated.View>
         ) : (
-          <>
+          <Animated.View
+            key="standard-row"
+            entering={FadeIn.duration(180)}
+            exiting={FadeOut.duration(140)}
+            layout={LinearTransition.duration(200)}
+            className="flex-1 flex-row items-center gap-2"
+          >
             {/* Wallet Chip */}
             <TouchableOpacity
               onPress={onOpenWalletPicker}
@@ -167,86 +185,104 @@ function MetadataBarComponent({
               </View>
               <ChevronDown size={13} color={colors.textSecondary} />
             </TouchableOpacity>
-          </>
+          </Animated.View>
         )}
-      </View>
+      </Animated.View>
 
       {/* Row 2: Date, Outlier (or Fee), and Note */}
-      <View className="flex-row items-center gap-2">
+      <Animated.View layout={LinearTransition.duration(200)} className="flex-row items-center gap-2">
         {/* Date Chip */}
-        <TouchableOpacity
-          onPress={onOpenDatePicker}
-          activeOpacity={0.7}
-          className={`flex-row items-center py-2 px-2.5 rounded-2xl ${baseChipClass}`}
-        >
-          <Calendar size={13} color={colors.tint} />
-          <Text className="text-xs font-bold ml-1.5 text-linen-text-primary dark:text-cypress-text-primary">
-            {dateLabel}
-          </Text>
-          <ChevronDown size={12} color={colors.textSecondary} className="ml-1" />
-        </TouchableOpacity>
-
-        {/* Transfer Fee Chip (Transfer Mode) */}
-        {mode === 'transfer' && (
+        <Animated.View layout={LinearTransition.duration(200)}>
           <TouchableOpacity
-            onPress={onOpenFeePicker}
+            onPress={onOpenDatePicker}
             activeOpacity={0.7}
             className={`flex-row items-center py-2 px-2.5 rounded-2xl ${baseChipClass}`}
           >
-            <DollarSign size={13} color={colors.tint} />
-            <Text className="text-xs font-bold font-mono ml-1.5 text-linen-text-primary dark:text-cypress-text-primary">
-              {fee === 0 ? t('entry.adminFeeZero') : t('entry.adminFee', { amount: formatCurrency(fee, false) })}
+            <Calendar size={13} color={colors.tint} />
+            <Text className="text-xs font-bold ml-1.5 text-linen-text-primary dark:text-cypress-text-primary">
+              {dateLabel}
             </Text>
             <ChevronDown size={12} color={colors.textSecondary} className="ml-1" />
           </TouchableOpacity>
+        </Animated.View>
+
+        {/* Transfer Fee Chip (Transfer Mode) */}
+        {mode === 'transfer' && (
+          <Animated.View
+            key="fee-chip"
+            entering={FadeIn.duration(180)}
+            exiting={FadeOut.duration(140)}
+            layout={LinearTransition.duration(200)}
+          >
+            <TouchableOpacity
+              onPress={onOpenFeePicker}
+              activeOpacity={0.7}
+              className={`flex-row items-center py-2 px-2.5 rounded-2xl ${baseChipClass}`}
+            >
+              <DollarSign size={13} color={colors.tint} />
+              <Text className="text-xs font-bold font-mono ml-1.5 text-linen-text-primary dark:text-cypress-text-primary">
+                {fee === 0 ? t('entry.adminFeeZero') : t('entry.adminFee', { amount: formatCurrency(fee, false) })}
+              </Text>
+              <ChevronDown size={12} color={colors.textSecondary} className="ml-1" />
+            </TouchableOpacity>
+          </Animated.View>
         )}
 
         {/* Outlier Chip (Expense Mode Only) */}
         {mode === 'expense' && (
-          <TouchableOpacity
-            onPress={onToggleOutlier}
-            activeOpacity={0.7}
-            className={`flex-row items-center py-2 px-2.5 rounded-2xl border ${
-              isOutlier
-                ? 'bg-status-warning/15 border-status-warning'
-                : 'bg-linen-surface dark:bg-cypress-surface border-linen-border dark:border-cypress-border'
-            }`}
+          <Animated.View
+            key="outlier-chip"
+            entering={FadeIn.duration(180)}
+            exiting={FadeOut.duration(140)}
+            layout={LinearTransition.duration(200)}
           >
-            <AlertTriangle
-              size={13}
-              color={isOutlier ? Palette.warning : colors.textSecondary}
-            />
-            <Text
-              className={`text-xs ml-1.5 ${
+            <TouchableOpacity
+              onPress={onToggleOutlier}
+              activeOpacity={0.7}
+              className={`flex-row items-center py-2 px-2.5 rounded-2xl border ${
                 isOutlier
-                  ? 'font-extrabold text-status-warning'
-                  : 'font-bold text-linen-text-secondary dark:text-cypress-text-secondary'
+                  ? 'bg-status-warning/15 border-status-warning'
+                  : 'bg-linen-surface dark:bg-cypress-surface border-linen-border dark:border-cypress-border'
               }`}
             >
-              {isOutlier ? t('entry.anomaly') : t('entry.normal')}
-            </Text>
-          </TouchableOpacity>
+              <AlertTriangle
+                size={13}
+                color={isOutlier ? Palette.warning : colors.textSecondary}
+              />
+              <Text
+                className={`text-xs ml-1.5 ${
+                  isOutlier
+                    ? 'font-extrabold text-status-warning'
+                    : 'font-bold text-linen-text-secondary dark:text-cypress-text-secondary'
+                }`}
+              >
+                {isOutlier ? t('entry.anomaly') : t('entry.normal')}
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
         )}
 
         {/* Note Chip */}
-        <TouchableOpacity
-          onPress={onOpenNoteInput}
-          activeOpacity={0.7}
-          className={`flex-1 flex-row items-center py-2 px-2.5 rounded-2xl ${baseChipClass}`}
-        >
-          <FileText size={13} color={note ? colors.tint : colors.textSecondary} />
-          <Text
-            className={`text-xs ml-1.5 flex-1 ${
-              note
-                ? 'font-bold text-linen-text-primary dark:text-cypress-text-primary'
-                : 'italic text-linen-text-secondary dark:text-cypress-text-secondary'
-            }`}
-            numberOfLines={1}
+        <Animated.View layout={LinearTransition.duration(200)} className="flex-1">
+          <TouchableOpacity
+            onPress={onOpenNoteInput}
+            activeOpacity={0.7}
+            className={`w-full flex-row items-center py-2 px-2.5 rounded-2xl ${baseChipClass}`}
           >
-            {note ? note : t('entry.notePlaceholder')}
-          </Text>
-        </TouchableOpacity>
-      </View>
+            <FileText size={13} color={note ? colors.tint : colors.textSecondary} />
+            <Text
+              className={`text-xs ml-1.5 flex-1 ${
+                note
+                  ? 'font-bold text-linen-text-primary dark:text-cypress-text-primary'
+                  : 'italic text-linen-text-secondary dark:text-cypress-text-secondary'
+              }`}
+              numberOfLines={1}
+            >
+              {note ? note : t('entry.notePlaceholder')}
+            </Text>
+          </TouchableOpacity>
+        </Animated.View>
+      </Animated.View>
     </View>
   );
 }
