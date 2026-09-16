@@ -3,6 +3,7 @@ import { View, Text, Pressable, Platform, StyleSheet } from 'react-native';
 import { Delete, Check } from 'lucide-react-native';
 import { KeypadKey } from '@/lib/utils/calculator';
 import { useQuickEntryStore } from '@/store/useQuickEntryStore';
+import { useTranslation } from '@/lib/i18n';
 
 export interface CalculatorKeypadProps {
   onKeyPress?: (key: KeypadKey) => void;
@@ -68,15 +69,11 @@ const KeyDigit = React.memo(function KeyDigit({
   isDark,
   onPressKey,
 }: KeyDigitProps) {
-  const handlePressIn = useCallback(() => {
-    onPressKey(keyId);
-  }, [keyId, onPressKey]);
-
   return (
     <KeypadButton
-      onPressIn={handlePressIn}
-      className={btnClass}
       isDark={isDark}
+      onPressIn={() => onPressKey(keyId)}
+      className={btnClass}
     >
       <Text className={textClass}>{label}</Text>
     </KeypadButton>
@@ -99,9 +96,11 @@ function CalculatorKeypadComponent({
   onSubmit,
   isValid,
   colorScheme,
-  submitText = 'Simpan',
+  submitText: propSubmitText,
 }: CalculatorKeypadProps) {
   const isDark = colorScheme === 'dark';
+  const { t } = useTranslation();
+  const submitText = propSubmitText || t('entry.save');
 
   const pressKey = useQuickEntryStore((s) => s.pressKey);
   const handlePressKey = useCallback(

@@ -5,6 +5,7 @@ import { formatLocalDate, parseLocalDate, addDays, getDaysInMonth } from '@/lib/
 import { AppModal } from '@/components/ui/AppModal';
 import { AppSegmentedTabs } from '@/components/ui/AppSegmentedTabs';
 import Colors from '@/constants/Colors';
+import { useTranslation } from '@/lib/i18n';
 
 export interface DatePickerModalProps {
   visible: boolean;
@@ -12,14 +13,20 @@ export interface DatePickerModalProps {
   onSelectDate: (dateStr: string) => void;
   onClose: () => void;
   colorScheme: 'light' | 'dark';
+  useNativeModal?: boolean;
 }
 
-const MONTH_NAMES = [
+const MONTH_NAMES_EN = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
+const MONTH_NAMES_ID = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
 ];
 
-const DAY_NAMES = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+const DAY_NAMES_EN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAY_NAMES_ID = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
 
 export function DatePickerModal({
   visible,
@@ -27,11 +34,16 @@ export function DatePickerModal({
   onSelectDate,
   onClose,
   colorScheme,
+  useNativeModal = true,
 }: DatePickerModalProps) {
   const colors = Colors[colorScheme];
   const isDark = colorScheme === 'dark';
+  const { t, locale } = useTranslation();
   const today = new Date();
   const todayStr = formatLocalDate(today);
+
+  const monthNames = locale === 'en' ? MONTH_NAMES_EN : MONTH_NAMES_ID;
+  const dayNames = locale === 'en' ? DAY_NAMES_EN : DAY_NAMES_ID;
 
   const [activeTab, setActiveTab] = useState<'recent' | 'custom'>('recent');
 
@@ -44,19 +56,19 @@ export function DatePickerModal({
     return Array.from({ length: 30 }).map((_, i) => {
       const d = addDays(today, -i);
       const dateStr = formatLocalDate(d);
-      const dayName = DAY_NAMES[d.getDay()];
+      const dayName = dayNames[d.getDay()];
       const dayNum = d.getDate();
-      const monthName = MONTH_NAMES[d.getMonth()].slice(0, 3);
+      const monthName = monthNames[d.getMonth()].slice(0, 3);
       const isToday = i === 0;
       const isYesterday = i === 1;
 
       let label = `${dayName}, ${dayNum} ${monthName}`;
-      if (isToday) label = `Hari ini (${dayNum} ${monthName})`;
-      if (isYesterday) label = `Kemarin (${dayNum} ${monthName})`;
+      if (isToday) label = `${t('entry.today')} (${dayNum} ${monthName})`;
+      if (isYesterday) label = `${t('entry.yesterday')} (${dayNum} ${monthName})`;
 
       return { dateStr, label, isToday };
     });
-  }, []);
+  }, [dayNames, monthNames, t]);
 
   const daysInCustomMonth = useMemo(() => {
     return getDaysInMonth(customYear, customMonth);
@@ -98,8 +110,9 @@ export function DatePickerModal({
     <AppModal
       visible={visible}
       onClose={onClose}
-      title="Pilih Tanggal Transaksi"
+      title={t('entry.datePickerTitle')}
       maxWidth={400}
+      useNativeModal={useNativeModal}
     >
       {/* Segmented Switcher */}
       <View className="mb-3">
@@ -108,8 +121,8 @@ export function DatePickerModal({
           onChange={setActiveTab}
           size="sm"
           options={[
-            { key: 'recent', label: '30 Hari Terakhir' },
-            { key: 'custom', label: 'Pilih Tanggal Bebas' },
+            { key: 'recent', label: t('entry.tabRecentDays') },
+            { key: 'custom', label: t('entry.tabCustomDate') },
           ]}
         />
       </View>
@@ -164,7 +177,7 @@ export function DatePickerModal({
             </TouchableOpacity>
 
             <Text className="text-sm font-bold text-linen-text-primary dark:text-cypress-text-primary">
-              {MONTH_NAMES[customMonth - 1]} {customYear}
+              {monthNames[customMonth - 1]} {customYear}
             </Text>
 
             <TouchableOpacity
@@ -209,10 +222,10 @@ export function DatePickerModal({
           <TouchableOpacity
             onPress={handleApplyCustomDate}
             activeOpacity={0.8}
-            className="mt-3 py-3 rounded-xl bg-cypress-surface dark:bg-accent-champagne items-center justify-center shadow-xs"
+            className="mt-3 py-3 rounded-xl bg-cypress-surface dark:bg-accent-champagne items-center justify-center"
           >
             <Text className="text-xs font-bold text-white dark:text-black">
-              Terapkan Tanggal
+              {t('entry.applyDate')}
             </Text>
           </TouchableOpacity>
         </View>

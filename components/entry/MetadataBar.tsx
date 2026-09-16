@@ -14,6 +14,7 @@ import { TransactionMode } from './types';
 import { formatCurrency } from '@/lib/format';
 import { formatLocalDate } from '@/lib/engine/dateUtils';
 import Colors, { Palette } from '@/constants/Colors';
+import { useTranslation } from '@/lib/i18n';
 
 export interface MetadataBarProps {
   mode: TransactionMode;
@@ -58,19 +59,26 @@ function MetadataBarComponent({
 }: MetadataBarProps) {
   const isDark = colorScheme === 'dark';
   const colors = Colors[colorScheme];
-  const todayStr = formatLocalDate(new Date());
+  const { t } = useTranslation();
+  const today = new Date();
+  const todayStr = formatLocalDate(today);
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = formatLocalDate(yesterday);
 
-  let dateLabel = 'Hari Ini';
-  if (selectedDate !== todayStr) {
+  let dateLabel = t('entry.today');
+  if (selectedDate === yesterdayStr) {
+    dateLabel = t('entry.yesterday');
+  } else if (selectedDate !== todayStr) {
     const parts = selectedDate.split('-');
     if (parts.length === 3) {
       const day = parseInt(parts[2], 10);
+      const monthIdx = parseInt(parts[1], 10) - 1;
       const monthNames = [
-        'Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun',
-        'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des',
+        'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
       ];
-      const month = monthNames[parseInt(parts[1], 10) - 1] || '';
-      dateLabel = `${day} ${month}`;
+      dateLabel = `${day} ${monthNames[monthIdx] || ''}`;
     } else {
       dateLabel = selectedDate;
     }
@@ -100,7 +108,7 @@ function MetadataBarComponent({
                   className="text-xs font-bold ml-2 flex-1 text-linen-text-primary dark:text-cypress-text-primary"
                   numberOfLines={1}
                 >
-                  {wallet?.name ?? 'Dari'}
+                  {wallet?.name ?? t('entry.sourceWallet')}
                 </Text>
               </View>
               <ChevronDown size={13} color={colors.textSecondary} />
@@ -123,7 +131,7 @@ function MetadataBarComponent({
                   className="text-xs font-bold ml-2 flex-1 text-linen-text-primary dark:text-cypress-text-primary"
                   numberOfLines={1}
                 >
-                  {targetWallet?.name ?? 'Ke'}
+                  {targetWallet?.name ?? t('entry.targetWallet')}
                 </Text>
               </View>
               <ChevronDown size={13} color={colors.textSecondary} />
@@ -143,7 +151,7 @@ function MetadataBarComponent({
                   className="text-xs font-bold ml-2 flex-1 text-linen-text-primary dark:text-cypress-text-primary"
                   numberOfLines={1}
                 >
-                  {wallet?.name ?? 'Pilih Dompet'}
+                  {wallet?.name ?? t('entry.selectWallet')}
                 </Text>
               </View>
               <ChevronDown size={13} color={colors.textSecondary} />
@@ -161,7 +169,7 @@ function MetadataBarComponent({
                   className="text-xs font-bold ml-1 flex-1 text-linen-text-primary dark:text-cypress-text-primary"
                   numberOfLines={1}
                 >
-                  {category?.name ?? 'Pilih Kategori'}
+                  {category?.name ?? t('entry.selectCategory')}
                 </Text>
               </View>
               <ChevronDown size={13} color={colors.textSecondary} />
@@ -194,7 +202,9 @@ function MetadataBarComponent({
           >
             <DollarSign size={13} color={colors.tint} />
             <Text className="text-xs font-bold font-mono ml-1.5 text-linen-text-primary dark:text-cypress-text-primary">
-              {fee === 0 ? 'Admin: Rp 0' : `Admin: ${formatCurrency(fee, false)}`}
+              {fee === 0
+                ? t('entry.adminFee', { amount: formatCurrency(0, false) })
+                : t('entry.adminFee', { amount: formatCurrency(fee, false) })}
             </Text>
             <ChevronDown size={12} color={colors.textSecondary} className="ml-1" />
           </TouchableOpacity>
@@ -222,7 +232,7 @@ function MetadataBarComponent({
                   : 'font-bold text-linen-text-secondary dark:text-cypress-text-secondary'
               }`}
             >
-              {isOutlier ? 'Anomali' : 'Normal'}
+              {isOutlier ? t('entry.anomaly') : t('entry.normal')}
             </Text>
           </TouchableOpacity>
         )}
@@ -242,7 +252,7 @@ function MetadataBarComponent({
             }`}
             numberOfLines={1}
           >
-            {note ? note : 'Catatan...'}
+            {note ? note : t('entry.notesPlaceholder')}
           </Text>
         </TouchableOpacity>
       </View>

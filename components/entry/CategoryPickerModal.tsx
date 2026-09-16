@@ -6,6 +6,7 @@ import { TransactionMode } from './types';
 import { AppModal } from '@/components/ui/AppModal';
 import { CategoryFormModal } from '../categories/CategoryFormModal';
 import Colors from '@/constants/Colors';
+import { useTranslation } from '@/lib/i18n';
 
 export interface CategoryPickerModalProps {
   visible: boolean;
@@ -15,6 +16,7 @@ export interface CategoryPickerModalProps {
   onClose: () => void;
   mode: TransactionMode;
   colorScheme: 'light' | 'dark';
+  useNativeModal?: boolean;
 }
 
 export function CategoryPickerModal({
@@ -25,9 +27,11 @@ export function CategoryPickerModal({
   onClose,
   mode,
   colorScheme,
+  useNativeModal = true,
 }: CategoryPickerModalProps) {
   const colors = Colors[colorScheme];
   const isDark = colorScheme === 'dark';
+  const { t } = useTranslation();
 
   const [isFormModalVisible, setIsFormModalVisible] = useState(false);
   const filteredCategories = useMemo(
@@ -35,7 +39,10 @@ export function CategoryPickerModal({
     [categories, mode]
   );
 
-  const modalTitle = mode === 'expense' ? 'Pilih Kategori Pengeluaran' : 'Pilih Kategori Pemasukan';
+  const modalTitle =
+    mode === 'expense'
+      ? t('entry.categoryExpenseTitle')
+      : t('entry.categoryIncomeTitle');
 
   return (
     <>
@@ -44,6 +51,7 @@ export function CategoryPickerModal({
         onClose={onClose}
         title={modalTitle}
         maxWidth={400}
+        useNativeModal={useNativeModal}
       >
         <ScrollView className="max-h-80" showsVerticalScrollIndicator={false}>
           <View className="flex-row flex-wrap justify-start">
@@ -98,7 +106,7 @@ export function CategoryPickerModal({
                   numberOfLines={1}
                   className="text-[10px] font-semibold text-center text-linen-text-secondary dark:text-cypress-text-secondary mt-1"
                 >
-                  Tambah
+                  {t('entry.addCategory')}
                 </Text>
               </TouchableOpacity>
             </View>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Keyboard } from 'react-native';
 import { AppModal } from '@/components/ui/AppModal';
 import Colors from '@/constants/Colors';
+import { useTranslation } from '@/lib/i18n';
 
 export interface NoteInputModalProps {
   visible: boolean;
@@ -9,6 +10,7 @@ export interface NoteInputModalProps {
   onSaveNote: (note: string) => void;
   onClose: () => void;
   colorScheme: 'light' | 'dark';
+  useNativeModal?: boolean;
 }
 
 export function NoteInputModal({
@@ -17,8 +19,10 @@ export function NoteInputModal({
   onSaveNote,
   onClose,
   colorScheme,
+  useNativeModal = true,
 }: NoteInputModalProps) {
   const colors = Colors[colorScheme];
+  const { t } = useTranslation();
   const [text, setText] = useState(initialNote);
 
   useEffect(() => {
@@ -37,15 +41,16 @@ export function NoteInputModal({
     <AppModal
       visible={visible}
       onClose={onClose}
-      title="Catatan Transaksi"
-      subtitle="Tambahkan keterangan atau rincian transaksi"
+      title={t('entry.noteModalTitle')}
+      subtitle={t('entry.noteModalSubtitle')}
       maxWidth={380}
+      useNativeModal={useNativeModal}
     >
       <View className="pt-2">
         <TextInput
           value={text}
           onChangeText={setText}
-          placeholder="Tulis catatan di sini (opsional)..."
+          placeholder={t('entry.noteInputPlaceholder')}
           placeholderTextColor={colors.textSecondary}
           multiline
           numberOfLines={3}
@@ -65,17 +70,17 @@ export function NoteInputModal({
             className="flex-1 py-3 rounded-xl border border-linen-border dark:border-cypress-border items-center justify-center mr-2"
           >
             <Text className="text-xs font-bold text-linen-text-secondary dark:text-cypress-text-secondary">
-              Hapus Catatan
+              {t('entry.clearNote')}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
             onPress={handleSave}
             activeOpacity={0.8}
-            className="flex-1 py-3 rounded-xl bg-cypress-surface dark:bg-accent-champagne items-center justify-center shadow-xs"
+            className="flex-1 py-3 rounded-xl bg-cypress-surface dark:bg-accent-champagne items-center justify-center"
           >
             <Text className="text-xs font-bold text-white dark:text-black">
-              Simpan
+              {t('entry.saveNote')}
             </Text>
           </TouchableOpacity>
         </View>

@@ -3,6 +3,7 @@ import { View, Text, Pressable } from 'react-native';
 import { ArrowDownLeft, ArrowUpRight, ArrowLeftRight } from 'lucide-react-native';
 import { TransactionMode } from './types';
 import Colors from '@/constants/Colors';
+import { useTranslation } from '@/lib/i18n';
 
 export interface ModeSelectorProps {
   mode: TransactionMode;
@@ -19,11 +20,12 @@ function ModeSelectorComponent({
   colorScheme,
 }: ModeSelectorProps) {
   const colors = Colors[colorScheme];
+  const { t } = useTranslation();
 
   const modes: { id: TransactionMode; label: string; icon: any }[] = [
-    { id: 'expense', label: 'Pengeluaran', icon: ArrowDownLeft },
-    { id: 'income', label: 'Pemasukan', icon: ArrowUpRight },
-    { id: 'transfer', label: 'Transfer', icon: ArrowLeftRight },
+    { id: 'expense', label: t('entry.modeExpense'), icon: ArrowDownLeft },
+    { id: 'income', label: t('entry.modeIncome'), icon: ArrowUpRight },
+    { id: 'transfer', label: t('entry.modeTransfer'), icon: ArrowLeftRight },
   ];
 
   return (

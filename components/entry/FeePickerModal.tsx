@@ -3,6 +3,9 @@ import { View, Text, TextInput, TouchableOpacity, Keyboard } from 'react-native'
 import { DollarSign, Check } from 'lucide-react-native';
 import { AppModal } from '@/components/ui/AppModal';
 import Colors from '@/constants/Colors';
+import { useTranslation } from '@/lib/i18n';
+import { formatCurrency, getCurrencySymbol } from '@/lib/format';
+import { useSettingsStore } from '@/store/useSettingStore';
 
 export interface FeePickerModalProps {
   visible: boolean;
@@ -10,14 +13,10 @@ export interface FeePickerModalProps {
   onSelectFee: (fee: number) => void;
   onClose: () => void;
   colorScheme: 'light' | 'dark';
+  useNativeModal?: boolean;
 }
 
-const FEE_PRESETS = [
-  { label: 'Gratis (Rp 0)', value: 0 },
-  { label: 'Rp 1.000', value: 1000 },
-  { label: 'Rp 2.500', value: 2500 },
-  { label: 'Rp 6.500', value: 6500 },
-];
+const DEFAULT_FEE_VALUES = [0, 1000, 2500, 6500];
 
 export function FeePickerModal({
   visible,
@@ -25,9 +24,13 @@ export function FeePickerModal({
   onSelectFee,
   onClose,
   colorScheme,
+  useNativeModal = true,
 }: FeePickerModalProps) {
   const colors = Colors[colorScheme];
   const isDark = colorScheme === 'dark';
+  const { t } = useTranslation();
+  const currency = useSettingsStore((s) => s.currency);
+  const symbol = getCurrencySymbol(currency);
   const [customText, setCustomText] = useState(currentFee > 0 ? String(currentFee) : '');
 
   useEffect(() => {
@@ -53,23 +56,28 @@ export function FeePickerModal({
     <AppModal
       visible={visible}
       onClose={onClose}
-      title="Biaya Transfer / Admin"
-      subtitle="Biaya transaksi antar dompet atau bank"
+      title={t('entry.feePickerTitle')}
+      subtitle={t('entry.feePickerSubtitle')}
       maxWidth={380}
+      useNativeModal={useNativeModal}
     >
       <View className="pt-1">
         {/* Preset Options */}
         <View className="mb-4">
           <Text className="text-xs font-bold uppercase tracking-wider text-linen-text-secondary dark:text-cypress-text-secondary mb-2">
-            Preset Biaya Populer
+            {t('entry.popularFeePresets')}
           </Text>
           <View className="space-y-2">
-            {FEE_PRESETS.map((preset) => {
-              const isSelected = currentFee === preset.value;
+            {DEFAULT_FEE_VALUES.map((val) => {
+              const isSelected = currentFee === val;
+              const label =
+                val === 0
+                  ? t('entry.freeFee', { amount: formatCurrency(0, false) })
+                  : formatCurrency(val, false);
               return (
                 <TouchableOpacity
-                  key={preset.value}
-                  onPress={() => handleSelectPreset(preset.value)}
+                  key={val}
+                  onPress={() => handleSelectPreset(val)}
                   activeOpacity={0.7}
                   className={"flex-row items-center justify-between p-3.5 rounded-xl border mb-2 " + (
                     isSelected
@@ -84,7 +92,7 @@ export function FeePickerModal({
                         : 'text-linen-text-primary dark:text-cypress-text-primary'
                     )}
                   >
-                    {preset.label}
+                    {label}
                   </Text>
                   {isSelected && (
                     <Check size={16} color={isDark ? '#D4AF37' : '#B8860B'} />
@@ -98,11 +106,11 @@ export function FeePickerModal({
         {/* Custom Input */}
         <View className="mb-4">
           <Text className="text-xs font-bold uppercase tracking-wider text-linen-text-secondary dark:text-cypress-text-secondary mb-2">
-            Nominal Kustom
+            {t('entry.customFeeNominal')}
           </Text>
           <View className="flex-row items-center px-3.5 py-2.5 rounded-xl bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border">
             <Text className="text-xs font-bold text-linen-text-secondary dark:text-cypress-text-secondary mr-2">
-              Rp
+              {symbol}
             </Text>
             <TextInput
               value={customText}
@@ -119,10 +127,10 @@ export function FeePickerModal({
         <TouchableOpacity
           onPress={handleApplyCustom}
           activeOpacity={0.8}
-          className="w-full py-3 rounded-xl bg-cypress-surface dark:bg-accent-champagne items-center justify-center shadow-xs"
+          className="w-full py-3 rounded-xl bg-cypress-surface dark:bg-accent-champagne items-center justify-center"
         >
           <Text className="text-xs font-bold text-white dark:text-black">
-            Gunakan Nominal Ini
+            {t('entry.applyFee')}
           </Text>
         </TouchableOpacity>
       </View>

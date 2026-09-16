@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
+  BackHandler,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -29,6 +30,7 @@ export interface AppModalProps {
   maxWidth?: number;
   contentClassName?: string;
   accessibilityLabel?: string;
+  useNativeModal?: boolean;
 }
 
 export function AppModal({
@@ -41,6 +43,7 @@ export function AppModal({
   maxWidth = 400,
   contentClassName = '',
   accessibilityLabel,
+  useNativeModal = true,
 }: AppModalProps) {
   const colorScheme = useColorScheme() ?? 'dark';
   const colors = Colors[colorScheme];
@@ -81,12 +84,22 @@ export function AppModal({
     if (visible) {
       isClosingRef.current = false;
       setIsRendered(true);
-      opacity.value = withTiming(1, { duration: 190 });
-      scale.value = withTiming(1, { duration: 200, easing: Easing.out(Easing.cubic) });
+      opacity.value = withTiming(1, { duration: 160 });
+      scale.value = withTiming(1, { duration: 170, easing: Easing.out(Easing.cubic) });
     } else if (isRendered && !isClosingRef.current) {
       closeWithAnimation();
     }
   }, [visible, closeWithAnimation]);
+
+  useEffect(() => {
+    if (!useNativeModal && isRendered) {
+      const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+        closeWithAnimation();
+        return true;
+      });
+      return () => sub.remove();
+    }
+  }, [useNativeModal, isRendered, closeWithAnimation]);
 
   const backdropAnimatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
@@ -99,78 +112,86 @@ export function AppModal({
 
   if (!isRendered) return null;
 
-  return (
-    <Modal
-      visible={isRendered}
-      transparent
-      animationType="none"
-      statusBarTranslucent
-      onRequestClose={closeWithAnimation}
-    >
-      <View style={StyleSheet.absoluteFill} className="items-center justify-center px-4">
-        {/* Backdrop */}
+  const modalContent = (
+    <View style={StyleSheet.absoluteFill} className="items-center justify-center px-4 z-50">
+      {/* Backdrop */}
+      <Animated.View
+        style={[
+          StyleSheet.absoluteFill,
+          { backgroundColor: 'rgba(0, 0, 0, 0.65)' },
+          backdropAnimatedStyle,
+        ]}
+      >
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          onPress={closeWithAnimation}
+          accessibilityLabel="Tutup dialog"
+        />
+      </Animated.View>
+
+      {/* Keyboard Avoiding Content Wrapper */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        className="w-full items-center justify-center z-10"
+        pointerEvents="box-none"
+      >
         <Animated.View
           style={[
-            StyleSheet.absoluteFill,
-            { backgroundColor: 'rgba(0, 0, 0, 0.65)' },
-            backdropAnimatedStyle,
+            { maxWidth, width: '100%' },
+            cardAnimatedStyle,
           ]}
+          className={"rounded-3xl bg-linen-card dark:bg-cypress-card border border-linen-border dark:border-cypress-border p-5 shadow-2xl " + contentClassName}
+          accessibilityRole="alert"
+          accessibilityLabel={accessibilityLabel || title}
         >
-          <Pressable
-            style={StyleSheet.absoluteFill}
-            onPress={closeWithAnimation}
-            accessibilityLabel="Tutup dialog"
-          />
-        </Animated.View>
-
-        {/* Keyboard Avoiding Content Wrapper */}
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-          className="w-full items-center justify-center z-10"
-          pointerEvents="box-none"
-        >
-          <Animated.View
-            style={[
-              { maxWidth, width: '100%' },
-              cardAnimatedStyle,
-            ]}
-            className={"rounded-3xl bg-linen-card dark:bg-cypress-card border border-linen-border dark:border-cypress-border p-5 shadow-2xl " + contentClassName}
-            accessibilityRole="alert"
-            accessibilityLabel={accessibilityLabel || title}
-          >
-            {/* Header */}
-            {(title || showCloseButton) && (
-              <View className="flex-row items-center justify-between pb-3 mb-2 border-b border-linen-border/60 dark:border-cypress-border/60">
-                <View className="flex-1 pr-3">
-                  {title && (
-                    <Text className="text-base font-black text-linen-text-primary dark:text-cypress-text-primary">
-                      {title}
-                    </Text>
-                  )}
-                  {subtitle && (
-                    <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary mt-0.5 leading-4">
-                      {subtitle}
-                    </Text>
-                  )}
-                </View>
-
-                {showCloseButton && (
-                  <Pressable
-                    onPress={closeWithAnimation}
-                    hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-                    className="min-w-[40px] min-h-[40px] rounded-full bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70"
-                    accessibilityLabel="Tutup"
-                  >
-                    <X size={16} color={colors.textSecondary} />
-                  </Pressable>
+          {/* Header */}
+          {(title || showCloseButton) && (
+            <View className="flex-row items-center justify-between pb-3 mb-2 border-b border-linen-border/60 dark:border-cypress-border/60">
+              <View className="flex-1 pr-3">
+                {title && (
+                  <Text className="text-base font-black text-linen-text-primary dark:text-cypress-text-primary">
+                    {title}
+                  </Text>
+                )}
+                {subtitle && (
+                  <Text className="text-xs text-linen-text-secondary dark:text-cypress-text-secondary mt-0.5 leading-4">
+                    {subtitle}
+                  </Text>
                 )}
               </View>
-            )}
 
-            {children}
-          </Animated.View>
-        </KeyboardAvoidingView>
-      </View>
-    </Modal>
+              {showCloseButton && (
+                <Pressable
+                  onPress={closeWithAnimation}
+                  hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+                  className="min-w-[40px] min-h-[40px] rounded-full bg-linen-surface dark:bg-cypress-surface border border-linen-border dark:border-cypress-border items-center justify-center active:opacity-70"
+                  accessibilityLabel="Tutup"
+                >
+                  <X size={16} color={colors.textSecondary} />
+                </Pressable>
+              )}
+            </View>
+          )}
+
+          {children}
+        </Animated.View>
+      </KeyboardAvoidingView>
+    </View>
   );
+
+  if (useNativeModal) {
+    return (
+      <Modal
+        visible={isRendered}
+        transparent
+        animationType="none"
+        statusBarTranslucent
+        onRequestClose={closeWithAnimation}
+      >
+        {modalContent}
+      </Modal>
+    );
+  }
+
+  return modalContent;
 }

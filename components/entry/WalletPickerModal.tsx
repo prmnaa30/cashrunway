@@ -5,6 +5,7 @@ import { Wallet } from '@/lib/db';
 import { formatCurrency } from '@/lib/format';
 import { AppModal } from '@/components/ui/AppModal';
 import Colors from '@/constants/Colors';
+import { useTranslation } from '@/lib/i18n';
 
 export interface WalletPickerModalProps {
   visible: boolean;
@@ -16,6 +17,7 @@ export interface WalletPickerModalProps {
   isPrivacyMode?: boolean;
   title?: string;
   excludeWalletId?: string;
+  useNativeModal?: boolean;
 }
 
 function getWalletIcon(type: string, isVault: number, size = 18, color?: string) {
@@ -38,11 +40,14 @@ export function WalletPickerModal({
   onClose,
   colorScheme,
   isPrivacyMode = false,
-  title = 'Pilih Dompet',
+  title: propTitle,
   excludeWalletId,
+  useNativeModal = true,
 }: WalletPickerModalProps) {
   const colors = Colors[colorScheme];
   const isDark = colorScheme === 'dark';
+  const { t } = useTranslation();
+  const title = propTitle || t('entry.walletPickerTitle');
 
   const filteredWallets = useMemo(
     () => (excludeWalletId ? wallets.filter((w) => w.id !== excludeWalletId) : wallets),
@@ -55,6 +60,7 @@ export function WalletPickerModal({
       onClose={onClose}
       title={title}
       maxWidth={380}
+      useNativeModal={useNativeModal}
     >
       <ScrollView className="max-h-72" showsVerticalScrollIndicator={false}>
         {filteredWallets.map((wallet) => {
