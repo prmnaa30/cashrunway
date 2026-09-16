@@ -92,7 +92,9 @@ export function BackupListSheet({ visible, onClose }: BackupListSheetProps) {
         onClose={onClose}
         title={t('backupModals.list.title')}
         subtitle={t('backupModals.list.subtitle')}
-        maxHeight="80%"
+        maxHeight="85%"
+        height="75%"
+        minHeight={420}
       >
         <View className="flex-row justify-end px-4 pt-1 pb-2">
           <Pressable
@@ -114,7 +116,11 @@ export function BackupListSheet({ visible, onClose }: BackupListSheetProps) {
           </Pressable>
         </View>
 
-        <ScrollView className="flex-1 px-4 py-2" showsVerticalScrollIndicator={false}>
+        <ScrollView
+          className="flex-1 px-4"
+          contentContainerStyle={{ paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
+        >
           {isLoadingBackups && backups.length === 0 ? (
             <View className="py-12 items-center justify-center">
               <ActivityIndicator size="large" color={colors.tint} />

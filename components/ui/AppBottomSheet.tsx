@@ -29,6 +29,8 @@ export interface AppBottomSheetProps {
   subtitle?: string;
   children: ReactNode;
   maxHeight?: string | number;
+  minHeight?: string | number;
+  height?: string | number;
   showHandle?: boolean;
   contentClassName?: string;
 }
@@ -42,6 +44,8 @@ export function AppBottomSheet({
   subtitle,
   children,
   maxHeight = '90%',
+  minHeight,
+  height,
   showHandle = true,
   contentClassName = '',
 }: AppBottomSheetProps) {
@@ -209,7 +213,11 @@ export function AppBottomSheet({
           <Animated.View
             onLayout={handleSheetLayout}
             style={[
-              { maxHeight: maxHeight as any },
+              {
+                maxHeight: maxHeight as any,
+                ...(minHeight ? { minHeight: minHeight as any } : {}),
+                ...(height ? { height: height as any } : {}),
+              },
               sheetAnimatedStyle,
             ]}
             className={"bg-linen-card dark:bg-cypress-card rounded-t-3xl border-t border-linen-border dark:border-cypress-border shadow-2xl " + contentClassName}
@@ -246,8 +254,14 @@ export function AppBottomSheet({
               </Pressable>
             </View>
 
-            {/* Content with dynamic transition only when opened */}
-            {children}
+            {/* Content container */}
+            {height || minHeight ? (
+              <View className="flex-1" style={{ flex: 1 }}>
+                {children}
+              </View>
+            ) : (
+              children
+            )}
           </Animated.View>
         </KeyboardAvoidingView>
       </View>

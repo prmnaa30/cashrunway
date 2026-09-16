@@ -33,6 +33,18 @@ export function configureGoogleSignIn(): void {
   }
 }
 
+let inFlightGetTokensPromise: Promise<{ accessToken: string; idToken?: string }> | null = null;
+
+async function safeGetTokens(): Promise<{ accessToken: string; idToken?: string }> {
+  if (inFlightGetTokensPromise) {
+    return inFlightGetTokensPromise;
+  }
+  inFlightGetTokensPromise = GoogleSignin.getTokens().finally(() => {
+    inFlightGetTokensPromise = null;
+  });
+  return inFlightGetTokensPromise;
+}
+
 /**
  * Authenticate with Google and cache session securely.
  */
@@ -64,7 +76,7 @@ export async function signInWithGoogle(): Promise<{
       photo: userInfo?.user?.photo || null,
     };
 
-    const tokens = await GoogleSignin.getTokens();
+    const tokens = await safeGetTokens();
     const accessToken = tokens.accessToken;
 
     // Cache user profile and token
@@ -133,7 +145,7 @@ export async function getValidAccessToken(): Promise<string | null> {
     const isSignedInNative = await GoogleSignin.hasPreviousSignIn();
 
     if (isSignedInNative) {
-      const tokens = await GoogleSignin.getTokens();
+      const tokens = await safeGetTokens();
       if (tokens.accessToken) {
         await SecureStore.setItemAsync(SECURE_KEY_ACCESS_TOKEN, tokens.accessToken);
         return tokens.accessToken;

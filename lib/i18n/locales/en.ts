@@ -210,12 +210,36 @@ export default {
   settings: {
     title: 'Settings',
     sections: {
-      financial: 'Financial & Engine Preferences',
+      financial: 'Financial Preferences',
       appearance: 'Appearance & Language',
       notifications: 'Notifications & Reminders',
       backup: 'Backup & Sync',
       data: 'Data Management',
       about: 'About App'
+    },
+    subtitles: {
+      financial: 'Currency, payday cycle, burn window, categories',
+      appearance: 'Dark/light theme, language, privacy balance mask',
+      notifications: 'Daily transaction logging reminder schedule',
+      backup: 'Google Drive sync, CSV export and import',
+      data: 'Reload simulation demo data or wipe database',
+      about: 'App version, SQLite architecture, and info'
+    },
+    hubGroups: {
+      system: 'SYSTEM PREFERENCES',
+      notificationsBackup: 'NOTIFICATIONS & BACKUP',
+      dataAbout: 'DATA & ABOUT',
+    },
+    hubSubtitles: {
+      financialSummary: '{currency} · {burnDays}d Burn · Day {payday} · {categories} Categories',
+      appearanceSummary: '{theme} · {language}',
+      remindersSummaryActive: '{count} active reminders',
+      remindersSummaryDisabled: 'Disabled',
+      remindersBadgeActive: '{count} Active',
+      cloudConnected: 'Google Drive ({email})',
+      cloudOnBadge: 'Cloud On',
+      aboutSummary: 'v1.0.0 · SQLite · Local First',
+      privacyFooter: 'CashRunway · Local First & Privacy Focused',
     },
     currency: {
       title: 'Main Currency',
@@ -286,7 +310,7 @@ export default {
     theme: {
       title: 'Color Mode',
       desc: 'Select interface color scheme',
-      auto: 'Auto',
+      system: 'Auto',
       light: 'Light',
       dark: 'Dark',
       autoHint: 'Follows device system theme preference.',
@@ -310,6 +334,12 @@ export default {
     reminders: {
       dailyTitle: 'Daily Expense Reminders',
       dailyDesc: 'Receive routine alerts to record your daily spending',
+      title: 'Enable Daily Reminders',
+      desc: 'Trigger reminder alarms to record expenses and track cash runway',
+      timesTitle: 'Reminder Schedules',
+      timesDesc: '{count} reminder alarms active per day',
+      testTitle: 'Test Sound Notification',
+      testDesc: 'Send an immediate test alert to verify notification sound & vibration',
       activeSchedule: 'Active Reminder Schedules:',
       noSchedule: 'No active reminder schedules at the moment.',
       manageButton: 'Manage Reminders',
@@ -398,7 +428,9 @@ export default {
       version: 'App Version',
       storage: 'Storage',
       storageDesc: 'Local First (SQLite WAL On-Device)',
-      tagline: 'Financial Survival & Daily Cash Runway'
+      tagline: 'Financial Survival & Daily Cash Runway',
+      privacyTitle: 'Privacy First',
+      privacyDesc: 'All your financial data is safely stored locally on your device.'
     }
   },
   explainer: {
@@ -473,6 +505,8 @@ export default {
     close: 'Close',
     loading: 'Loading...',
     search: 'Search...',
-    refresh: 'Refresh'
+    refresh: 'Refresh',
+    active: 'Active',
+    disabled: 'Disabled'
   }
 };

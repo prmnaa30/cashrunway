@@ -20,6 +20,7 @@ import {
   restoreFromBackup,
   getSettings,
   updateSettings,
+  ensureDatabaseInitialized,
 } from '@/lib/db';
 import { serializeBackup, validateBackupPayload } from '@/lib/backup/serializer';
 import {
@@ -124,10 +125,11 @@ export const useBackupStore = create<BackupState>((set, get) => ({
 
   initialize: async () => {
     try {
+      await ensureDatabaseInitialized().catch(() => {});
       const [signedIn, storedProfile, dbSettings] = await Promise.all([
         isGoogleSignedIn(),
         getStoredUserProfile(),
-        getSettings(),
+        getSettings().catch(() => null),
       ]);
 
       const isAuto = Boolean(dbSettings?.autoBackupEnabled);

@@ -55,10 +55,10 @@ export function PaydayPickerModal({
                 key={day}
                 onPress={() => setSelectedDay(day)}
                 hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-                className={`w-[13%] min-w-[40px] min-h-[44px] aspect-square mb-2.5 items-center justify-center rounded-xl border ${
+                className={`w-[13%] min-w-[40px] min-h-[44px] aspect-square mb-2.5 items-center justify-center rounded-xl border active:opacity-70 ${
                   isSelected
                     ? 'bg-cypress-surface dark:bg-accent-champagne border-cypress-surface dark:border-accent-champagne shadow-sm'
-                    : 'bg-linen-surface dark:bg-cypress-surface border-linen-border dark:border-cypress-border active:opacity-70'
+                    : 'bg-linen-surface dark:bg-cypress-surface border-linen-border dark:border-cypress-border'
                 }`}
               >
                 <Text

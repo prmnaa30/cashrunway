@@ -125,7 +125,9 @@ export function ImportCsvSheet({ visible, onClose }: ImportCsvSheetProps) {
       onClose={handleClose}
       title={t('backupModals.csv.title')}
       subtitle={t('backupModals.csv.subtitle')}
-      maxHeight="85%"
+      maxHeight="90%"
+      height="80%"
+      minHeight={460}
     >
       <ScrollView className="flex-1 px-4 py-2" showsVerticalScrollIndicator={false}>
         {/* Step 1: Select CSV File */}

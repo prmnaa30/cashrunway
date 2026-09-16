@@ -8,3 +8,4 @@ export * from './CurrencyPickerModal';
 export * from './DangerConfirmModal';
 export * from './ManageCategoriesModal';
 export * from './ReminderManagerModal';
+export * from './SettingsSubHeader';

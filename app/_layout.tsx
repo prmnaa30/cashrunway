@@ -111,6 +111,12 @@ function RootLayoutNav() {
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="settings/financial" options={{ headerShown: false }} />
+        <Stack.Screen name="settings/appearance" options={{ headerShown: false }} />
+        <Stack.Screen name="settings/notifications" options={{ headerShown: false }} />
+        <Stack.Screen name="settings/backup" options={{ headerShown: false }} />
+        <Stack.Screen name="settings/data" options={{ headerShown: false }} />
+        <Stack.Screen name="settings/about" options={{ headerShown: false }} />
       </Stack>
     </ThemeProvider>
   );

@@ -210,12 +210,36 @@ export default {
   settings: {
     title: 'Pengaturan',
     sections: {
-      financial: 'Preferensi Finansial & Hitungan',
+      financial: 'Preferensi Finansial',
       appearance: 'Tampilan & Bahasa',
       notifications: 'Notifikasi & Pengingat',
       backup: 'Cadangan & Sinkronisasi',
       data: 'Manajemen Data',
       about: 'Tentang Aplikasi'
+    },
+    subtitles: {
+      financial: 'Mata uang, siklus gajian, rentang analisis, kategori',
+      appearance: 'Tema gelap/terang, bahasa, sensor angka privasi',
+      notifications: 'Jadwal alarm pengingat harian pencatatan mutasi',
+      backup: 'Sinkronisasi Google Drive, ekspor dan impor file CSV',
+      data: 'Muat data contoh simulasi atau bersihkan basis data',
+      about: 'Versi aplikasi, arsitektur SQLite, dan privasi'
+    },
+    hubGroups: {
+      system: 'PREFERENSI SISTEM',
+      notificationsBackup: 'NOTIFIKASI & CADANGAN',
+      dataAbout: 'DATA & TENTANG',
+    },
+    hubSubtitles: {
+      financialSummary: '{currency} · {burnDays}hr Burn · Tgl {payday} · {categories} Kategori',
+      appearanceSummary: '{theme} · {language}',
+      remindersSummaryActive: '{count} alarm aktif',
+      remindersSummaryDisabled: 'Dinonaktifkan',
+      remindersBadgeActive: '{count} Aktif',
+      cloudConnected: 'Google Drive ({email})',
+      cloudOnBadge: 'Cloud Aktif',
+      aboutSummary: 'v1.0.0 · SQLite · Tersimpan Lokal',
+      privacyFooter: 'CashRunway · Data Lokal & Privasi Terjaga',
     },
     currency: {
       title: 'Mata Uang Utama',
@@ -286,7 +310,7 @@ export default {
     theme: {
       title: 'Tema Warna',
       desc: 'Pilih skema warna tampilan',
-      auto: 'Otomatis',
+      system: 'Otomatis',
       light: 'Terang',
       dark: 'Gelap',
       autoHint: 'Mengikuti mode tema sistem smartphone.',
@@ -310,6 +334,12 @@ export default {
     reminders: {
       dailyTitle: 'Pengingat Pengeluaran Rutin',
       dailyDesc: 'Dapatkan notifikasi alarm rutin agar tidak lupa mencatat pengeluaran',
+      title: 'Aktifkan Pengingat Harian',
+      desc: 'Bunyikan alarm pengingat untuk evaluasi dan pencatatan belanja',
+      timesTitle: 'Jadwal Jam Pengingat',
+      timesDesc: '{count} alarm pengingat aktif per hari',
+      testTitle: 'Uji Notifikasi Suara',
+      testDesc: 'Kirim notifikasi contoh langsung ke perangkat untuk uji suara & getar',
       activeSchedule: 'Jadwal Pengingat Aktif:',
       noSchedule: 'Belum ada jadwal pengingat yang diaktifkan.',
       manageButton: 'Kelola Pengingat',
@@ -398,7 +428,9 @@ export default {
       version: 'Versi Aplikasi',
       storage: 'Penyimpanan Data',
       storageDesc: 'Local First (SQLite WAL On-Device)',
-      tagline: 'Financial Survival & Daily Cash Runway'
+      tagline: 'Financial Survival & Daily Cash Runway',
+      privacyTitle: 'Privasi Terjaga',
+      privacyDesc: 'Semua data keuangan tersimpan lokal di perangkat Anda secara aman.'
     }
   },
   explainer: {
@@ -473,6 +505,8 @@ export default {
     close: 'Tutup',
     loading: 'Memuat...',
     search: 'Cari...',
-    refresh: 'Muat Ulang'
+    refresh: 'Muat Ulang',
+    active: 'Aktif',
+    disabled: 'Nonaktif'
   }
 };
