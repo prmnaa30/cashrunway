@@ -33,7 +33,10 @@ const KeypadButton = React.memo(function KeypadButton({
   isDark = true,
 }: KeypadButtonProps) {
   return (
-    <View style={styles.buttonWrapper}>
+    <View
+      style={styles.buttonWrapper}
+      className={`border rounded-2xl overflow-hidden ${className}`}
+    >
       <Pressable
         disabled={disabled}
         onPressIn={onPressIn}
@@ -47,7 +50,6 @@ const KeypadButton = React.memo(function KeypadButton({
           styles.pressableContent,
           pressed && Platform.OS === 'ios' && styles.iosPressed,
         ]}
-        className={`w-full h-full border items-center justify-center ${className}`}
       >
         {children}
       </Pressable>
@@ -98,8 +100,8 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     height: '100%',
-    borderRadius: 16,
-    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   iosPressed: {
     opacity: 0.6,
