@@ -52,6 +52,7 @@ export function DeleteTransactionModal({
       onClose={onClose}
       showCloseButton={true}
       maxWidth={380}
+      useNativeModal={false}
     >
       <View className="items-center mb-3">
         <View className="w-12 h-12 rounded-2xl bg-status-danger/10 border border-status-danger/25 items-center justify-center mb-2">

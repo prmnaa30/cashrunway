@@ -56,7 +56,7 @@ export function AppModal({
   const isClosingRef = useRef(false);
 
   const opacity = useSharedValue(0);
-  const scale = useSharedValue(0.94);
+  const scale = useSharedValue(0.90);
 
   const finalizeClose = useCallback(() => {
     setIsRendered(false);
@@ -70,8 +70,8 @@ export function AppModal({
 
     opacity.value = withTiming(0, { duration: 160, easing: Easing.bezier(0.4, 0, 0.2, 1) });
     scale.value = withTiming(
-      0.94,
-      { duration: 170, easing: Easing.bezier(0.4, 0, 0.2, 1) },
+      0.90,
+      { duration: 160, easing: Easing.bezier(0.4, 0, 0.2, 1) },
       (finished) => {
         if (finished) {
           runOnJS(finalizeClose)();
@@ -84,8 +84,10 @@ export function AppModal({
     if (visible) {
       isClosingRef.current = false;
       setIsRendered(true);
-      opacity.value = withTiming(1, { duration: 160 });
-      scale.value = withTiming(1, { duration: 170, easing: Easing.out(Easing.cubic) });
+      opacity.value = 0;
+      scale.value = 0.90;
+      opacity.value = withTiming(1, { duration: 190, easing: Easing.out(Easing.quad) });
+      scale.value = withSpring(1, { damping: 18, stiffness: 220, mass: 0.7 });
     } else if (isRendered && !isClosingRef.current) {
       closeWithAnimation();
     }

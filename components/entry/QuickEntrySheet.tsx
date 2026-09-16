@@ -11,6 +11,7 @@ import BottomSheet, {
   BottomSheetView,
   BottomSheetBackdrop,
   type BottomSheetBackdropProps,
+  useBottomSheetTimingConfigs,
 } from '@gorhom/bottom-sheet';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
@@ -36,7 +37,7 @@ import { FeePickerModal } from './FeePickerModal';
 import { NoteInputModal } from './NoteInputModal';
 
 import { Pressable } from 'react-native';
-import Animated, { useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, type SharedValue, Easing } from 'react-native-reanimated';
 
 interface BackdropTouchAreaProps {
   animatedPosition: SharedValue<number>;
@@ -104,16 +105,14 @@ export function QuickEntrySheet() {
   const [isFeeModalOpen, setIsFeeModalOpen] = useState(false);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
 
-  const sheetHeight = useMemo(
-    () => Math.min(Dimensions.get('window').height * 0.90, 605 + Math.max(insets.bottom, 12)),
-    [insets.bottom]
-  );
-  const snapPoints = useMemo(() => [sheetHeight], [sheetHeight]);
+  const sheetAnimationConfigs = useBottomSheetTimingConfigs({
+    duration: 260,
+    easing: Easing.bezier(0.25, 1, 0.5, 1),
+  });
 
   const handleClose = useCallback(() => {
     bottomSheetRef.current?.close();
-    closeQuickEntry();
-  }, [closeQuickEntry]);
+  }, []);
 
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
@@ -342,9 +341,9 @@ export function QuickEntrySheet() {
     >
       <BottomSheet
         ref={bottomSheetRef}
-        index={isQuickEntryOpen ? 0 : -1}
-        snapPoints={snapPoints}
-        enableDynamicSizing={false}
+        index={-1}
+        enableDynamicSizing={true}
+        maxDynamicContentSize={Dimensions.get('window').height * 0.92}
         onChange={handleSheetChanges}
         backdropComponent={renderBackdrop}
         enablePanDownToClose={true}
@@ -352,7 +351,7 @@ export function QuickEntrySheet() {
         overDragResistanceFactor={0}
         enableContentPanningGesture={false}
         enableHandlePanningGesture={true}
-        animationConfigs={{ duration: 220 }}
+        animationConfigs={sheetAnimationConfigs}
         onClose={closeQuickEntry}
         backgroundStyle={{
           backgroundColor: sheetBg,
